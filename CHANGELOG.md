@@ -5,6 +5,35 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 27.08.2026 — Kalite kapısı, izlenebilirlik arayüzü ve tehlikeli madde akışı
+
+**Eklendi**
+- **84 test** (`tests/`): Bölüm 1'deki dört ihlal edilemez kural,
+  yedi rolün yetkileri, izlenebilirlik ve `bbox_format` regresyon testleri.
+  Test veri tabanı ayrı; şema gerçek Alembic göçüyle kuruluyor
+- İşlem geçmişi **arayüzü** — Bölüm 4.2 "arayüzde de görünür olmalı"
+  diyordu, uç nokta vardı ama ekran yoktu. Tespit detayında ve ayrı bir
+  sayfada, kayıt türüne göre süzülebilir
+- Rol onay ekranı (yönetici) — kayıt sırasında rol seçilemediği için
+  yetkiyi yönetici bu ekrandan verir
+- Tehlikeli madde **yönlendirme** akışı: `POST /tehlikeli`,
+  `GET /tehlikeli/tespit/{id}` ve tespit detayında kart. Teşhis değil,
+  yönlendirme kaydıdır; kayıt yokken "güvenli" denmez
+
+**Düzeltildi**
+- Doğrulayıcı uzman hiçbir enkaz alanını göremiyordu; kuyruktan doğrulama
+  yapıyor ama tespiti bağlamında göremiyor, ölçüm ve laboratuvar kaydı
+  ekleyemiyordu. Görünürlük artık **iş üzerinden** türetiliyor
+- İşlem geçmişi listesinde ham ISO tarih damgaları görünüyordu;
+  `dogrulayan_id` ve `dogrulama_tarihi` başlık satırıyla tekrar ediyordu
+
+**Belgelendi**
+- `docs/kurulum.md`: Vite vekili yapılandırma değişikliğinden sonra bazen
+  yeniden yüklenmiyor ve `/api` isteklerine `index.html` dönüyor. Belirti
+  girişin sessizce başarısız olması; kontrol **durum koduna değil gövdeye**
+  bakarak yapılmalı
+- `docs/kullanici-kilavuzu.md`: tehlikeli madde incelemesi bölümü
+
 ### 27.08.2026 — P0 tamamlandı
 
 **Eklendi**

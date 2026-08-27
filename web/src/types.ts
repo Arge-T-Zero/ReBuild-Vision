@@ -121,6 +121,28 @@ export interface SistemDurumu {
   model_metrikleri: string
 }
 
+/**
+ * Tehlikeli madde kaydı — TEŞHİS DEĞİL.
+ * Bu tipte bilinçli olarak olasılık, risk seviyesi veya madde adı yoktur.
+ */
+export interface TehlikeliKayit {
+  id: number
+  tespit_id: number
+  durum: 'incelemeye_yonlendirildi' | 'lab_sonucu_var'
+  lab_sonucu_notu: string | null
+  giren_id: number
+  tarih: string
+}
+
+export interface TehlikeliYanit {
+  tespit_id: number
+  kayitlar: TehlikeliKayit[]
+  /** Kayıt yoksa yokluğun güvenlik anlamına gelmediğini söyleyen metin */
+  aciklama: string | null
+  /** 'degerlendirilmedi' | 'kayit_var' — asla 'guvenli' değil */
+  degerlendirme: string
+}
+
 export interface IslemGecmisi {
   id: number
   kayit_tipi: string
