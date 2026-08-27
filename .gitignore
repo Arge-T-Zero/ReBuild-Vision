@@ -41,5 +41,10 @@ data/saha-foto/*
 # --- Yüklenen görüntüler (çalışma zamanı) ---
 api/yuklenenler/
 
+# --- Test çıktıları ---
+.pytest_cache/
+tests/__pycache__/
+.coverage
+
 # --- İşletim sistemi ---
 .DS_Store

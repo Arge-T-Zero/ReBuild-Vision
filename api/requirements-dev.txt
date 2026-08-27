@@ -1,0 +1,7 @@
+# Geliştirme ve test bağımlılıkları.
+# Üretim imajına GİRMEZ; api/requirements.txt ayrıdır.
+
+-r requirements.txt
+
+pytest==8.3.4          # MIT
+pytest-asyncio==0.25.2 # Apache-2.0
