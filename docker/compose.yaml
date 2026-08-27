@@ -62,11 +62,6 @@ services:
         condition: service_healthy
       model-mock:
         condition: service_started
-    # Şema göçü her açılışta uygulanır; jüri ayrıca bir komut çalıştırmaz.
-    command: >
-      sh -c "alembic -c api/alembic.ini upgrade head &&
-             python scripts/demo_veri.py &&
-             uvicorn api.app.main:app --host 0.0.0.0 --port 8000"
     restart: unless-stopped
 
   web:

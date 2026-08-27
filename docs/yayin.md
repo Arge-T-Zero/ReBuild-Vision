@@ -276,6 +276,13 @@ servisi **Manual Deploy → Clear build cache & deploy** ile yeniden başlatın.
 Transaction pooler (port 6543) kullanılmıştır. **Session pooler** (port
 5432) dizesine geçin — gerekçe adım 1.4'te.
 
+**`Exited with status 127` / `sh: 1: uvicorn ...: not found`**
+Başlatma komutu `render.yaml` içindeki `dockerCommand` alanına yazılmıştır.
+Render bu alandaki çok parçalı `sh -c "..."` dizesini doğru ayrıştırmıyor;
+komutun tamamını tek bir program adı sanıyor. Çözüm: başlatmayı YAML'den
+çıkarıp Dockerfile'a almak — API için `docker/baslat-api.sh`, model servisi
+için kabuk biçimi `CMD`. `dockerCommand` alanı boş kalmalıdır.
+
 **API çalışıyor ama sorgular boş sonuç dönüyor**
 Otomatik RLS tabloları kilitlemiş olabilir. Supabase **SQL Editor**'de:
 
