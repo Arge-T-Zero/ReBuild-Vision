@@ -1,0 +1,18 @@
+{
+  "surum": "0.1",
+  "durum": "KAYNAK BEKLENIYOR",
+  "aciklama": "Hacim -> agirlik donusum katsayilari. Her katsayi icin dogrulanmis bir kaynak ZORUNLUDUR. dogrulandi:false olan katsayi ile miktar HESAPLANMAZ (ana talimat Bolum 14: olculmemis/dayanaksiz sayi uretilmez).",
+  "birim": "ton/m3",
+  "katsayilar": [
+    { "sinif": "beton",           "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "dolgu_toprak",    "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "ahsap",           "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "sert_plastik",    "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "yumusak_plastik", "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "metal",           "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "tekstil",         "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "karton",          "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
+    { "sinif": "alcipan",         "alt": null, "ust": null, "kaynak": null, "dogrulandi": false }
+  ],
+  "not": "konteyner sinifi malzeme olmadigi icin (siniflar.json malzeme_mi:false) burada yer almaz."
+}
