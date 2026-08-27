@@ -1,6 +1,19 @@
 # Yayın (canlı demo ortamı)
 
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 28.08.2026
+**Durum:** ✅ **Canlı ve uçtan uca doğrulandı**
+
+| Parça | Adres |
+|---|---|
+| Arayüz | https://re-build-vision.vercel.app |
+| API | https://rebuild-vision-api.onrender.com |
+| Model servisi | https://rebuild-vision-model.onrender.com |
+| Veri tabanı | Supabase · PostgreSQL 17.6 + PostGIS 3.3.7 |
+
+Doğrulananlar (28.08.2026): `/api` yönlendirmesi backend'e ulaşıyor ·
+giriş çalışıyor · onaysız hesap 403 alıyor · kayıtta rol yükseltme
+denemesi yok sayılıyor · dört ihlal edilemez kural bulutta da SQL
+seviyesinde tutuyor · PostGIS geometrisi çalışıyor.
 
 Bu belge, herkese açık demo bağlantısının nasıl kurulduğunu anlatır.
 
@@ -195,9 +208,16 @@ curl https://rebuild-vision-api.onrender.com/sistem/durum
 
 `model_servisi.ulasilabilir: true` dönmelidir.
 
-> **Ücretsiz katman uyarısı:** Render ücretsiz servisleri 15 dakika
-> hareketsizlikten sonra uyutur. İlk istek ~50 saniye sürer. Demo veya
-> sunum öncesi bağlantıyı bir kez açıp uyandırın.
+> **Ücretsiz katman sınırları — ikisini de bilin:**
+>
+> 1. **Uyku:** Render servisleri 15 dakika hareketsizlikten sonra uyutur;
+>    ilk istek ~50 saniye sürer. **Sunum ve demo öncesi bağlantıyı bir kez
+>    açıp uyandırın.**
+> 2. **Yüklenen görüntüler kalıcı değildir.** Ücretsiz katmanda dosya
+>    sistemi her dağıtımda sıfırlanır; canlıda yüklenen görüntüler yeni
+>    dağıtımda kaybolur. Demo için sorun değildir, ancak canlı ortama
+>    saklanması gereken bir şey yüklenmemelidir. (Zaten Madde 9.1/10.5
+>    gereği oraya yalnızca sentetik veri girer.)
 
 ---
 
