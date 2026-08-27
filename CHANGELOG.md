@@ -8,7 +8,7 @@ GG.AA.YYYY.
 ### 27.08.2026 — Kalite kapısı, izlenebilirlik arayüzü ve tehlikeli madde akışı
 
 **Eklendi**
-- **84 test** (`tests/`): Bölüm 1'deki dört ihlal edilemez kural,
+- **89 test** (`tests/`): Bölüm 1'deki dört ihlal edilemez kural,
   yedi rolün yetkileri, izlenebilirlik ve `bbox_format` regresyon testleri.
   Test veri tabanı ayrı; şema gerçek Alembic göçüyle kuruluyor
 - İşlem geçmişi **arayüzü** — Bölüm 4.2 "arayüzde de görünür olmalı"
@@ -19,6 +19,18 @@ GG.AA.YYYY.
 - Tehlikeli madde **yönlendirme** akışı: `POST /tehlikeli`,
   `GET /tehlikeli/tespit/{id}` ve tespit detayında kart. Teşhis değil,
   yönlendirme kaydıdır; kayıt yokken "güvenli" denmez
+
+**Docker paketi**
+- `docker/api.Dockerfile` · `model-mock.Dockerfile` · `web.Dockerfile`
+  (çok aşamalı → nginx) · `nginx.conf` · `compose.yaml` · `.dockerignore`
+- Tek giriş noktası `http://localhost:8080`; şema göçü ve demo verisi
+  açılışta otomatik
+- `.dockerignore` Bakanlık verisinin imaja sızmasını da engeller (Madde 9.1)
+- `tests/test_agpl_siniri.py`: `api/` bağımlılıklarında ve kodunda model
+  kütüphanesi bulunmadığı, model adresinin yalnızca `model_client.py`
+  içinde kullanıldığı testle korunuyor — yorum satırına güvenilmiyor
+- ⚠️ **Henüz temiz bir ortamda çalıştırılmadı.** Madde 10.3 dosyalar
+  yazıldığı için değil, çalıştığı doğrulandığı için karşılanır (K-009)
 
 **Düzeltildi**
 - Doğrulayıcı uzman hiçbir enkaz alanını göremiyordu; kuyruktan doğrulama

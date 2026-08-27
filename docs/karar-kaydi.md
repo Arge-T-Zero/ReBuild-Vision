@@ -159,12 +159,30 @@ Durum**.
 - **⚠️ Sonuç:** Bugün itibarıyla teslim paketi **şartname Madde 10.3'ü
   karşılamıyor**: *"Teslim edilen proje, jüri veya teknik komite tarafından
   bağımsız bir ortamda kurulabilir ve çalıştırılabilir olmalıdır."*
-- **Telafi planı:** Depo Docker'a hazır yapıda kuruldu (her servisin
-  bağımlılıkları kendi klasöründe kilitli, `docker/` klasörü açık).
-  Dockerfile ve `compose.yaml` eklemek saatlik iştir. **En geç 03.09'daki
-  "teslim paketi kontrolü" gününe kadar tamamlanmalı ve temiz bir ortamda
-  doğrulanmalıdır.** Takvimdeki tek günlük tampon buraya harcanmamalıdır.
-- **Durum:** 🔴 **AÇIK** — kapatılması gereken risk.
+
+### Güncelleme — 27.08.2026 akşamı
+
+Docker dosyalarının **tamamı yazıldı**: `api.Dockerfile`,
+`model-mock.Dockerfile`, `web.Dockerfile` (çok aşamalı → nginx),
+`nginx.conf`, `compose.yaml` ve `.dockerignore`.
+
+Sınananlar: `compose.yaml` YAML geçerliliği, kopyalanan bütün yolların
+depoda bulunması, `api` imajının model kütüphanesi içermemesi
+(`tests/test_agpl_siniri.py`).
+
+**Sınanamayan — ve asıl önemli olan:** temiz bir ortamda
+`docker compose up` ile fiilen çalıştırma. Docker kurulu olmadığı için
+bu adım atılamadı.
+
+> **Madde 10.3, dosyalar yazıldığı için değil, çalıştığı doğrulandığı
+> için karşılanır.** Kalan iş küçük ama vazgeçilmezdir.
+
+Doğrulama kontrol listesi: `docker/README.md`.
+
+- **Kalan iş:** Docker kurulup `docker compose -f docker/compose.yaml up
+  --build` çalıştırılacak. **En geç 03.09'daki "teslim paketi kontrolü"
+  gününe kadar.** Takvimdeki tek günlük tampon buraya harcanmamalıdır.
+- **Durum:** 🟠 **KISMEN AÇIK** — kod hazır, doğrulama bekliyor.
 
 ---
 

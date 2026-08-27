@@ -1,0 +1,37 @@
+# Derleme bağlamına GİRMEYECEKLER.
+#
+# Bu dosya yalnızca imaj boyutuyla ilgili değildir: Bakanlık verisi ve
+# maskelenmemiş saha fotoğraflarının imaja sızmasını da engeller
+# (şartname Madde 9.1 ve 10.7).
+
+# --- Gizli yapılandırma ---
+.env
+**/.env
+
+# --- Madde 9.1: Bakanlık verisi imaja ASLA girmez ---
+data/bakanlik/
+data/saha-foto/
+
+# --- Ortamlar ve derleme çıktıları ---
+.venv-mock/
+api/.venv/
+model-mock/.venv/
+model-service/.venv/
+web/node_modules/
+web/dist/
+**/__pycache__/
+.pytest_cache/
+
+# --- Model ağırlıkları (ayrı imajda) ---
+model-service/weights/
+
+# --- Çalışma zamanı yüklemeleri (hacim olarak bağlanır) ---
+api/yuklenenler/
+
+# --- Sürüm kontrolü ve editör ---
+.git/
+.gitignore
+.DS_Store
+
+# --- Mobil (ayrı paketlenir) ---
+mobile/

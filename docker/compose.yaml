@@ -1,0 +1,85 @@
+# ReBuild Vision — çalıştırılabilir uygulama paketi
+#
+# Şartname Madde 10.3: proje bağımsız bir ortamda kurulabilir ve
+# çalıştırılabilir olmalıdır.
+#
+#   docker compose -f docker/compose.yaml up
+#
+# ⚠️ DURUM: Bu dosya yazılmıştır ancak HENÜZ TEMİZ BİR ORTAMDA
+# DOĞRULANMAMIŞTIR — geliştirme makinesinde Docker kurulu değildi.
+# Doğrulanmadan Madde 10.3 karşılanmış sayılmaz.
+# Bkz. docs/karar-kaydi.md K-009 ve docker/README.md.
+
+name: rebuild-vision
+
+services:
+  veritabani:
+    # PostGIS resmi imajı — PostgreSQL 17 + PostGIS 3.5
+    # PostGIS GPL-2.0 lisanslıdır (docs/lisans-analizi.md Bölüm 4).
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_DB: rebuild_vision
+      POSTGRES_USER: rebuild
+      POSTGRES_PASSWORD: ${VERITABANI_PAROLA:-gelistirme_parolasi_DEGISTIRIN}
+    volumes:
+      - veritabani_verisi:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rebuild -d rebuild_vision"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # Sahte model servisi. Gerçek model hazır olduğunda `model-service`
+  # eklenecek ve api'nin MODEL_SERVICE_URL değeri ona çevrilecektir —
+  # tek satırlık değişiklik (docs/lisans-analizi.md Bölüm 3.4).
+  model-mock:
+    build:
+      context: ..
+      dockerfile: docker/model-mock.Dockerfile
+    healthcheck:
+      test: ["CMD-SHELL",
+             "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8090/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    environment:
+      VERITABANI_URL: postgresql+asyncpg://rebuild:${VERITABANI_PAROLA:-gelistirme_parolasi_DEGISTIRIN}@veritabani:5432/rebuild_vision
+      MODEL_SERVICE_URL: http://model-mock:8090
+      JWT_GIZLI_ANAHTAR: ${JWT_GIZLI_ANAHTAR:-gelistirme-icin-guvensiz-anahtar-DEGISTIRIN}
+      IZIN_VERILEN_KAYNAKLAR: http://localhost:8080
+      YUKLEME_KLASORU: api/yuklenenler
+    volumes:
+      - yuklenen_goruntuler:/uygulama/api/yuklenenler
+    depends_on:
+      veritabani:
+        condition: service_healthy
+      model-mock:
+        condition: service_started
+    # Şema göçü her açılışta uygulanır; jüri ayrıca bir komut çalıştırmaz.
+    command: >
+      sh -c "alembic -c api/alembic.ini upgrade head &&
+             python scripts/demo_veri.py &&
+             uvicorn api.app.main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/web.Dockerfile
+    ports:
+      # Tek giriş noktası: arayüz ve /api vekili aynı porttan sunulur.
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  veritabani_verisi:
+  yuklenen_goruntuler:
