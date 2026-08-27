@@ -11,7 +11,7 @@ from ..deps import aktif_kullanici
 from ..models import Goruntu, IslemGecmisi, Kullanici, Tespit
 from ..schemas import IslemGecmisiCikti
 from ..services import model_client
-from ..services.queries import hesaba_girebilir
+from ..services.queries import gecerli_sinif, hesaba_girebilir
 
 router = APIRouter(tags=["sistem"])
 
@@ -70,10 +70,13 @@ async def harita(
     Yalnızca DOĞRULANMIŞ ve MALZEME olan tespitler döner — filtre veri
     katmanındadır (ana talimat Bölüm 1.4, docs/karar-kaydi.md K-007).
     """
+    # Uzman düzeltmesi model tahminini geçersiz kılar; gruplama GEÇERLİ
+    # sınıf üzerinden yapılır.
+    sinif = gecerli_sinif().label("sinif")
     sorgu = hesaba_girebilir(
-        select(Tespit.sinif, func.count(Tespit.id))
+        select(sinif, func.count(Tespit.id))
         .join(Goruntu, Tespit.goruntu_id == Goruntu.id)
-    ).group_by(Tespit.sinif)
+    ).group_by(sinif)
 
     y = await db.execute(sorgu)
     return {

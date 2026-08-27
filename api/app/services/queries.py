@@ -9,7 +9,7 @@ Miktar, harita ve rapor üreten her sorgu buradaki yardımcılardan geçer.
 """
 from __future__ import annotations
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select, func, select
 
 from ..core.config import malzeme_siniflari
 from ..core.permissions import TUM_SAHALARI_GORUR, Rol
@@ -26,14 +26,29 @@ def sadece_dogrulanmis(sorgu: Select) -> Select:
     return sorgu.where(Tespit.dogrulama_durumu.in_(DOGRULANMIS))
 
 
+def gecerli_sinif():
+    """Kaydın GEÇERLİ sınıfı: uzman düzelttiyse düzeltilen sınıf.
+
+    Projenin ayırt edici iddiası insan denetimli yapay zekâdır; uzmanın
+    düzeltmesi model tahminini geçersiz kılar. Miktar, harita ve rapor
+    hesaplarında modelin ilk tahmini değil, insanın onayladığı sınıf
+    kullanılır. Ham tahmin `tespit.sinif` alanında ve islem_gecmisi'nde
+    izlenebilirlik için korunur.
+    """
+    return func.coalesce(Tespit.duzeltilen_sinif, Tespit.sinif)
+
+
 def sadece_malzeme(sorgu: Select) -> Select:
     """Malzeme olmayan sınıfları eler.
 
     `konteyner` (skip bin) atığın içinde bulunduğu kaptır, atık değildir.
     Miktara katılırsa sistem var olmayan bir malzeme kütlesi üretir.
     Bkz. docs/karar-kaydi.md K-007.
+
+    Filtre GEÇERLİ sınıf üzerinden çalışır: uzman bir kaydı `konteyner`
+    olarak düzelttiyse o kayıt da hesaptan çıkar.
     """
-    return sorgu.where(Tespit.sinif.in_(tuple(malzeme_siniflari())))
+    return sorgu.where(gecerli_sinif().in_(tuple(malzeme_siniflari())))
 
 
 def hesaba_girebilir(sorgu: Select) -> Select:
