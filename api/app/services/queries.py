@@ -68,6 +68,29 @@ def gorulebilir_alanlar(rol: Rol | None, kullanici_id: int) -> Select:
     sorgu = select(EnkazAlani)
     if rol in TUM_SAHALARI_GORUR:
         return sorgu
+
+    if rol == Rol.UZMAN:
+        # Doğrulayıcı uzman, rapordaki tanıma göre "atandığı sahaları"
+        # görür. Uzmana saha atama akışı henüz uygulanmadığı için
+        # görünürlük İŞ ÜZERİNDEN türetilir: uzman, inceleme bekleyen ya da
+        # kendisinin doğruladığı bir tespit içeren sahaları görür.
+        #
+        # Bu bilinçli bir ara çözümdür; "her şeyi görsün" demekten daha
+        # dar, "hiçbir şeyi görmesin" demekten kullanışlıdır. Kuyruktan
+        # doğrulama yapan uzmanın tespiti bağlamında görebilmesi,
+        # ölçüm ve laboratuvar kaydı ekleyebilmesi için gereklidir.
+        # Bkz. docs/mimari.md — bilinen mimari boşluklar.
+        uzman_alt = (
+            select(Goruntu.enkaz_alani_id)
+            .join(Tespit, Tespit.goruntu_id == Goruntu.id)
+            .where(
+                Tespit.inceleme_gerekli.is_(True)
+                | (Tespit.dogrulayan_id == kullanici_id)
+                | (Tespit.dogrulama_durumu == DogrulamaDurumu.BEKLEMEDE)
+            )
+        )
+        return sorgu.where(EnkazAlani.id.in_(uzman_alt))
+
     # Diğer roller yalnızca oluşturdukları ya da görüntü yükledikleri
     # sahaları görür.
     alt = select(Goruntu.enkaz_alani_id).where(Goruntu.yukleyen_id == kullanici_id)

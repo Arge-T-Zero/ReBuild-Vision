@@ -132,3 +132,33 @@ async def test_parola_ozeti_hicbir_yanitta_gorunmez(istemci, jeton, kullanicilar
     y = await istemci.get("/auth/ben", headers=await jeton("saha"))
     assert "sifre_hash" not in y.text
     assert "parola" not in y.text.lower()
+
+
+async def test_uzman_inceleme_bekleyen_sahayi_gorur(istemci, jeton, tespit_kur):
+    """Uzman, iş bulunan sahaları görür.
+
+    Uzmana saha atama akışı henüz yok; görünürlük iş üzerinden türetilir.
+    Uzman kuyruktan doğrulama yaparken tespiti bağlamında görebilmeli,
+    ölçüm ve laboratuvar kaydı ekleyebilmelidir.
+    """
+    await tespit_kur("beton", inceleme=True)
+
+    uzman = (await istemci.get("/enkaz-alani", headers=await jeton("uzman"))).json()
+    assert len(uzman) == 1, "Uzman inceleme bekleyen sahayı görmeli"
+
+
+async def test_uzman_isi_olmayan_sahayi_gormez(istemci, jeton, tespit_kur,
+                                               kullanicilar):
+    """Görünürlük iş üzerinden türetilir; her saha açılmaz."""
+    tid = await tespit_kur("beton")
+    # Tek tespit onaylanınca ortada bekleyen iş kalmaz.
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "onaylandi"})
+
+    # Uzman kendi doğruladığı kaydı görmeye devam eder (izlenebilirlik).
+    uzman = (await istemci.get("/enkaz-alani", headers=await jeton("uzman"))).json()
+    assert len(uzman) == 1
+
+    # Yıkım firmasının o sahada hiçbir işi yok.
+    yikim = (await istemci.get("/enkaz-alani", headers=await jeton("yikim"))).json()
+    assert len(yikim) == 0

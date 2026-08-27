@@ -168,7 +168,7 @@ sınıflar (şu an `konteyner`) miktar ve harita hesaplarına girmez.
 | Boşluk | Etki | Durum |
 |---|---|---|
 | Docker paketi yok | Madde 10.3 karşılanmıyor | 🔴 K-009, hedef 03.09 |
-| Uzmana/firmaya saha atama akışı yok | Bu roller yalnızca kendi ilişkili sahalarını görür | 🟡 P1 kapsamında |
+| Uzmana/firmaya saha atama akışı yok | Uzman görünürlüğü **iş üzerinden** türetiliyor: inceleme bekleyen ya da kendi doğruladığı tespiti içeren sahaları görür. Yıkım firması ve tesis operatörü yalnızca ilişkili sahalarını görür | 🟡 ara çözüm |
 | Mobil uygulama yok | P2 | ⏳ 31.08–02.09 |
 | Katsayı tablosu boş | Hacim→ağırlık dönüşümü yapılamıyor | 🟡 kaynak bekliyor |
 | Gerçek model bağlı değil | Sahte servis kullanılıyor | ⏳ 03.09 |

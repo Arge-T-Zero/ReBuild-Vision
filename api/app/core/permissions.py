@@ -32,6 +32,14 @@ DOGRULAYABILIR = {Rol.YONETICI, Rol.UZMAN}
 RAPOR_ALABILIR = {Rol.YONETICI, Rol.BELEDIYE, Rol.AFAD}
 ROL_ATAYABILIR = {Rol.YONETICI}
 
+# Tehlikeli madde YÖNLENDİRMESİ — teşhis değil (ana talimat Bölüm 1.2).
+# Sahada şüphe uyandıran bir durumu gören herkes incelemeye yönlendirebilir.
+INCELEMEYE_YONLENDIREBILIR = {Rol.YONETICI, Rol.SAHA, Rol.UZMAN, Rol.BELEDIYE}
+
+# Laboratuvar sonucunu YALNIZCA insan girer ve yalnızca yetkili uzman.
+# Model bu alana asla yazmaz.
+LAB_SONUCU_GIREBILIR = {Rol.YONETICI, Rol.UZMAN}
+
 # Yalnızca görüntüleme yapabilen roller — hiçbir yazma işlemi yapamazlar.
 SALT_OKUNUR = {Rol.YIKIM, Rol.TESIS}
 

@@ -208,6 +208,42 @@ Düzeltme yaptığınızda:
 
 ---
 
+## 7.5. Tehlikeli madde incelemesi
+
+Tespit detayında **Tehlikeli madde incelemesi** kartı bulunur.
+
+> **Sistem tehlikeli madde teşhisi yapmaz.** Bu bölüm bir tahmin üretmez;
+> yalnızca uzman ve laboratuvar incelemesi kayıtlarını tutar.
+
+### Kayıt yoksa ne görürsünüz
+
+> *Bu tespit için laboratuvar/uzman inceleme kaydı bulunmuyor. Kayıt
+> bulunmaması, alanın tehlikeli madde içermediği anlamına GELMEZ. Sistem
+> tehlikeli madde teşhisi yapmaz.*
+
+Burada yeşil bir "temiz" göstergesi **bilinçli olarak yoktur.** Yokluk,
+güvenlik anlamına gelmez.
+
+### İncelemeye yönlendirme
+
+*(Saha personeli, doğrulayıcı uzman, belediye yetkilisi veya yönetici)*
+
+Sahada şüphe uyandıran bir durum gördüyseniz **"İncelemeye yönlendir"**
+düğmesine basın. Bu bir teşhis değildir; kaydın anlamı yalnızca "bu
+tespite bakılsın"dır.
+
+### Laboratuvar sonucu girme
+
+*(Yalnızca doğrulayıcı uzman veya yönetici)*
+
+**"Laboratuvar sonucu gir"** ile sonucu yazarsınız. Rapor numarasını da
+yazın — not alanı zorunludur çünkü sonucun bir dayanağı olmalıdır.
+
+**Sonucu model değil, yetkili insan girer.** Sistemin bu alana yazma
+yetkisi yoktur.
+
+---
+
 ## 8. Malzeme Kaynak Haritası
 
 **Malzeme haritası** sekmesinde enkaz alanları ve doğrulanmış malzeme

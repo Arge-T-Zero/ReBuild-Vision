@@ -7,10 +7,16 @@ import {
 import { CizilemeyenKutuUyarisi, TespitKutulari } from '../bilesenler/TespitKutulari'
 import { MiktarKarti } from '../bilesenler/MiktarKarti'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
+import { TehlikeliKarti } from '../bilesenler/TehlikeliKarti'
 import type { Goruntu, Miktar, Olcum, Tespit } from '../types'
 
 const YUKLEYEBILIR = new Set(['yonetici', 'saha', 'belediye'])
 const OLCEBILIR = new Set(['yonetici', 'saha', 'uzman'])
+
+// Tehlikeli madde YÖNLENDİRMESİ — teşhis değil (ana talimat Bölüm 1.2).
+// api/app/core/permissions.py ile aynı kümeler.
+const YONLENDIREBILIR = new Set(['yonetici', 'saha', 'uzman', 'belediye'])
+const LAB_GIREBILIR = new Set(['yonetici', 'uzman'])
 
 export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }) {
   const { kullanici, durum, siniflar } = useDurum()
@@ -104,6 +110,7 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
               key={g.id} goruntu={g} siniflar={siniflar}
               secili={seciliTespit} secildi={setSeciliTespit}
               olcebilir={OLCEBILIR.has(kullanici?.rol ?? '')}
+              rol={kullanici?.rol ?? ''}
             />
           ))}
         </div>
@@ -112,12 +119,13 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
   )
 }
 
-function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir }: {
+function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
   goruntu: Goruntu
   siniflar: Map<string, { renk: string; gorunen_ad: string; malzeme_mi: boolean }>
   secili: number | null
   secildi: (id: number) => void
   olcebilir: boolean
+  rol: string
 }) {
   return (
     <Kart className="p-4">
@@ -147,6 +155,7 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir }: {
                   acik={secili === t.id}
                   ac={() => secildi(t.id)}
                   olcebilir={olcebilir}
+                  rol={rol}
                 />
               </li>
             ))}
@@ -157,12 +166,13 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir }: {
   )
 }
 
-function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir }: {
+function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir, rol }: {
   tespit: Tespit
   siniflar: Map<string, { renk: string; gorunen_ad: string; malzeme_mi: boolean }>
   acik: boolean
   ac: () => void
   olcebilir: boolean
+  rol: string
 }) {
   const [miktar, setMiktar] = useState<Miktar | null>(null)
   const [olcumler, setOlcumler] = useState<Olcum[]>([])
@@ -213,6 +223,13 @@ function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir }: {
             miktar={miktar} olcumler={olcumler}
             olcumEklenebilir={olcebilir && (tanim?.malzeme_mi ?? true)}
             olcumEklendi={yenile}
+          />
+
+          {/* Teşhis değil, yönlendirme kaydı (ana talimat Bölüm 1.2) */}
+          <TehlikeliKarti
+            tespitId={tespit.id}
+            yonlendirebilir={YONLENDIREBILIR.has(rol)}
+            labGirebilir={LAB_GIREBILIR.has(rol)}
           />
 
           {/* İzlenebilirlik arayüzde de görünür (ana talimat Bölüm 4.2) */}

@@ -1,6 +1,7 @@
 import type {
   EnkazAlani, Goruntu, IslemGecmisi, Kullanici, Miktar, Olcum,
-  SiniflarYaniti, SistemDurumu, Tespit, YuklemeSonucu,
+  SiniflarYaniti, SistemDurumu, TehlikeliKayit, TehlikeliYanit, Tespit,
+  YuklemeSonucu,
 } from './types'
 
 const TABAN = '/api'
@@ -79,6 +80,17 @@ export const api = {
     }),
 
   miktar: (tespitId: number) => istek<Miktar>(`/miktar/${tespitId}`),
+
+  tehlikeliKayitlar: (tespitId: number) =>
+    istek<TehlikeliYanit>(`/tehlikeli/tespit/${tespitId}`),
+  tehlikeliYonlendir: (govde: {
+    tespit_id: number
+    durum: 'incelemeye_yonlendirildi' | 'lab_sonucu_var'
+    lab_sonucu_notu?: string
+  }) => istek<TehlikeliKayit>('/tehlikeli', {
+    method: 'POST', body: JSON.stringify(govde),
+  }),
+
   olcumler: (tespitId: number) => istek<Olcum[]>(`/olcum/tespit/${tespitId}`),
   olcumEkle: (govde: unknown) =>
     istek<Olcum>('/olcum', { method: 'POST', body: JSON.stringify(govde) }),
