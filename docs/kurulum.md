@@ -5,17 +5,26 @@ tarafından bağımsız bir ortamda kurulabilir ve çalıştırılabilir olmalı
 
 ---
 
-## ⚠️ Mevcut durum — Docker paketi henüz hazır değil
+## İki kurulum yolu
 
-**Bu proje şu an tek komutla (`docker compose up`) çalıştırılamamaktadır.**
-Bu bir eksiktir, gizlenmemektedir.
+### A. Docker — yazıldı, henüz DOĞRULANMADI ⚠️
 
-- Gerekçe ve telafi planı: `docs/karar-kaydi.md` **K-009**
-- Hedef tarih: **03.09.2026** (teslim paketi kontrol günü)
-- Depo Docker'a hazır yapıdadır: her servisin bağımlılıkları kendi
-  klasöründe sürüm kilitli olarak durur.
+```bash
+docker compose -f docker/compose.yaml up --build
+# Tek adres: http://localhost:8080
+```
 
-Aşağıdaki yerel kurulum yolu çalışmaktadır ve doğrulanmıştır.
+Dockerfile'lar ve `compose.yaml` hazırdır; şema göçü ve demo verisi
+açılışta otomatik çalışır. Ancak **temiz bir ortamda fiilen
+çalıştırılmamıştır** — geliştirme makinesinde Docker kurulu değildi.
+
+**Madde 10.3, dosyalar yazıldığı için değil, çalıştığı doğrulandığı için
+karşılanır.** Ayrıntı ve doğrulama kontrol listesi: `docker/README.md`,
+karar kaydı: `docs/karar-kaydi.md` **K-009**.
+
+### B. Yerel kurulum — doğrulanmıştır ✅
+
+Aşağıdaki adımlar geliştirme makinesinde uçtan uca çalıştırılmıştır.
 
 ---
 
