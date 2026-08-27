@@ -19,8 +19,10 @@ RUN pip install --no-cache-dir -r api/requirements.txt
 # Uygulama kodu ve çalışma zamanında okunan yapılandırma dosyaları.
 COPY api/ api/
 COPY siniflar.json katsayilar.json ./
-# Açılışta göç ve demo verisi çalıştırılır (compose.yaml komutu).
+# Açılışta göç ve demo verisi çalıştırılır (docker/baslat-api.sh).
 COPY scripts/demo_veri.py scripts/demo_veri.py
+COPY docker/baslat-api.sh /baslat-api.sh
+RUN chmod +x /baslat-api.sh
 
 # Yüklenen görüntüler için kalıcı hacim bağlanır (compose.yaml).
 RUN mkdir -p api/yuklenenler
@@ -32,4 +34,5 @@ USER rebuild
 
 EXPOSE 8000
 
-CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Göç → demo verisi → sunucu. Ayrıntı ve gerekçe betiğin başında.
+CMD ["/baslat-api.sh"]

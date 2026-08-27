@@ -24,5 +24,6 @@ USER rebuild
 
 EXPOSE 8090
 
-CMD ["uvicorn", "app:app", "--app-dir", "model-mock", \
-     "--host", "0.0.0.0", "--port", "8090"]
+# Kabuk biçimi bilinçli: Render dinlenecek portu PORT ile bildirir ve
+# exec biçiminde ${PORT} genişlemez. Yerelde/compose'da 8090'a düşer.
+CMD uvicorn app:app --app-dir model-mock --host 0.0.0.0 --port ${PORT:-8090}

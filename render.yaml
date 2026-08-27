@@ -20,10 +20,9 @@ services:
     plan: free
     region: frankfurt
     healthCheckPath: /health
-    # Render dinlenecek portu PORT değişkeniyle verir; Dockerfile'daki
-    # sabit port yerine onu kullanmak gerekir.
-    dockerCommand: >
-      sh -c "uvicorn app:app --app-dir model-mock --host 0.0.0.0 --port $PORT" 
+    # Başlatma komutu Dockerfile'dadır (kabuk biçimi CMD, ${PORT} genişler).
+    # Render'ın dockerCommand alanı çok parçalı bir sh -c dizesini doğru
+    # ayrıştırmıyor ve çıkış kodu 127 veriyordu.
 
   # --- API ---------------------------------------------------------------
   - type: web
@@ -35,10 +34,8 @@ services:
     region: frankfurt
     healthCheckPath: /
     # Şema göçü her açılışta uygulanır; ayrıca komut çalıştırmak gerekmez.
-    dockerCommand: >
-      sh -c "alembic -c api/alembic.ini upgrade head &&
-             python scripts/demo_veri.py &&
-             uvicorn api.app.main:app --host 0.0.0.0 --port $PORT"
+    # Şema göçü ve demo verisi açılışta docker/baslat-api.sh içinde
+    # çalışır; ayrıca komut vermeye gerek yoktur.
     envVars:
       # ORTAM=uretim iken varsayılan JWT anahtarıyla uygulama BAŞLAMAZ.
       # Bu bilinçli bir korumadır: o anahtar depoda açıkça yazılıdır.
