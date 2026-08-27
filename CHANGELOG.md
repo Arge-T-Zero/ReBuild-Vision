@@ -5,6 +5,38 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 28.08.2026 — Canlı demo ortamı yayında
+
+**Eklendi**
+- **https://re-build-vision.vercel.app** — uçtan uca çalışan canlı demo
+- `render.yaml` (Render Blueprint), `web/vercel.json` (API yönlendirmesi,
+  güvenlik başlıkları), `docker/baslat-api.sh`
+- `docs/yayin.md` — kurulum, mimari, sorun giderme
+
+**Düzeltildi**
+- Render dağıtımı `status 127` ile başarısız oluyordu: `render.yaml`
+  `dockerCommand` alanına yazılan çok parçalı `sh -c "..."` dizesi doğru
+  ayrıştırılmıyor, komutun tamamı tek program adı sanılıyordu. Başlatma
+  Dockerfile'a alındı
+- `${PORT}` exec biçimli `CMD` içinde genişlemiyordu; kabuk biçimine
+  geçildi
+- Bağlantı dizesinin sonuna karışan satır sonu
+  `database "postgres\n" does not exist` hatası veriyordu. Bütün metin
+  ayarları artık okunurken kırpılıyor
+
+**Güvenlik**
+- Depo herkese açıldı; öncesinde geçmiş tarandı: `.env`, anahtar, Bakanlık
+  verisi, gerçek e-posta hiçbir commit'te yok
+- Supabase **Data API kapalı** — açık olsaydı `kullanici` (parola özeti),
+  `tespit` ve `islem_gecmisi` tabloları herkese açık REST uç noktasından
+  erişilebilir olurdu
+- `ORTAM=uretim` iken varsayılan JWT anahtarıyla uygulama başlamıyor
+
+**Bilinen sınırlar (ücretsiz katman)**
+- 15 dk hareketsizlikten sonra uyku; ilk istek ~50 sn
+- Yüklenen görüntüler dağıtımda sıfırlanır
+- ⚠️ Model hâlâ sahte; arayüzde bunu gösteren işaret yok (K-011)
+
 ### 27.08.2026 — Kalite kapısı, izlenebilirlik arayüzü ve tehlikeli madde akışı
 
 **Eklendi**
