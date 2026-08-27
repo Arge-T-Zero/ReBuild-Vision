@@ -4,20 +4,100 @@
   "karar_tarihi": "2026-08-27",
   "belge": "docs/siniflar.md",
   "siniflar": [
-    { "id": 0, "ad": "beton",            "gorunen_ad": "Beton",            "cdw_seg": "concrete",      "malzeme_mi": true,  "renk": "#9AA6B2" },
-    { "id": 1, "ad": "dolgu_toprak",     "gorunen_ad": "Dolgu toprak",     "cdw_seg": "fill dirt",     "malzeme_mi": true,  "renk": "#A8763E" },
-    { "id": 2, "ad": "ahsap",            "gorunen_ad": "Ahşap",            "cdw_seg": "timber",        "malzeme_mi": true,  "renk": "#D98C3F" },
-    { "id": 3, "ad": "sert_plastik",     "gorunen_ad": "Sert plastik",     "cdw_seg": "hard plastic",  "malzeme_mi": true,  "renk": "#2F9E8F" },
-    { "id": 4, "ad": "yumusak_plastik",  "gorunen_ad": "Yumuşak plastik",  "cdw_seg": "soft plastic",  "malzeme_mi": true,  "renk": "#5FC9BF" },
-    { "id": 5, "ad": "metal",            "gorunen_ad": "Metal",            "cdw_seg": "steel",         "malzeme_mi": true,  "renk": "#5B8DEF" },
-    { "id": 6, "ad": "tekstil",          "gorunen_ad": "Tekstil",          "cdw_seg": "fabric",        "malzeme_mi": true,  "renk": "#B77BD0" },
-    { "id": 7, "ad": "karton",           "gorunen_ad": "Karton",           "cdw_seg": "cardboard",     "malzeme_mi": true,  "renk": "#C9A227" },
-    { "id": 8, "ad": "alcipan",          "gorunen_ad": "Alçıpan",          "cdw_seg": "plasterboard",  "malzeme_mi": true,  "renk": "#E4E4E7" },
-    { "id": 9, "ad": "konteyner",        "gorunen_ad": "Konteyner",        "cdw_seg": "skip bin",      "malzeme_mi": false, "renk": "#6B7280" }
+    {
+      "id": 0,
+      "ad": "beton",
+      "gorunen_ad": "Beton",
+      "cdw_seg": "concrete",
+      "malzeme_mi": true,
+      "renk": "#9085e9"
+    },
+    {
+      "id": 1,
+      "ad": "dolgu_toprak",
+      "gorunen_ad": "Dolgu toprak",
+      "cdw_seg": "fill dirt",
+      "malzeme_mi": true,
+      "renk": "#a06a2c"
+    },
+    {
+      "id": 2,
+      "ad": "ahsap",
+      "gorunen_ad": "Ahşap",
+      "cdw_seg": "timber",
+      "malzeme_mi": true,
+      "renk": "#d95926"
+    },
+    {
+      "id": 3,
+      "ad": "sert_plastik",
+      "gorunen_ad": "Sert plastik",
+      "cdw_seg": "hard plastic",
+      "malzeme_mi": true,
+      "renk": "#199e70"
+    },
+    {
+      "id": 4,
+      "ad": "yumusak_plastik",
+      "gorunen_ad": "Yumuşak plastik",
+      "cdw_seg": "soft plastic",
+      "malzeme_mi": true,
+      "renk": "#008300"
+    },
+    {
+      "id": 5,
+      "ad": "metal",
+      "gorunen_ad": "Metal",
+      "cdw_seg": "steel",
+      "malzeme_mi": true,
+      "renk": "#3987e5"
+    },
+    {
+      "id": 6,
+      "ad": "tekstil",
+      "gorunen_ad": "Tekstil",
+      "cdw_seg": "fabric",
+      "malzeme_mi": true,
+      "renk": "#d55181"
+    },
+    {
+      "id": 7,
+      "ad": "karton",
+      "gorunen_ad": "Karton",
+      "cdw_seg": "cardboard",
+      "malzeme_mi": true,
+      "renk": "#c98500"
+    },
+    {
+      "id": 8,
+      "ad": "alcipan",
+      "gorunen_ad": "Alçıpan",
+      "cdw_seg": "plasterboard",
+      "malzeme_mi": true,
+      "renk": "#e66767"
+    },
+    {
+      "id": 9,
+      "ad": "konteyner",
+      "gorunen_ad": "Konteyner",
+      "cdw_seg": "skip bin",
+      "malzeme_mi": false,
+      "renk": "#6b7280"
+    }
   ],
   "kapsanmayan_gruplar": [
-    { "ad": "cam",     "not": "CDW-Seg'de sınıf yok. Raporda örnek olarak anılıyor. Model bu sınıfı tanımaz." },
-    { "ad": "seramik", "not": "CDW-Seg'de sınıf yok. Raporda örnek olarak anılıyor. Model bu sınıfı tanımaz." },
-    { "ad": "tugla",   "not": "CDW-Seg 'concrete' sınıfı betonu kapsar; tuğla ayrı sınıf değildir." }
-  ]
+    {
+      "ad": "cam",
+      "not": "CDW-Seg'de sınıf yok. Raporda örnek olarak anılıyor. Model bu sınıfı tanımaz."
+    },
+    {
+      "ad": "seramik",
+      "not": "CDW-Seg'de sınıf yok. Raporda örnek olarak anılıyor. Model bu sınıfı tanımaz."
+    },
+    {
+      "ad": "tugla",
+      "not": "CDW-Seg 'concrete' sınıfı betonu kapsar; tuğla ayrı sınıf değildir."
+    }
+  ],
+  "renk_notu": "Renkler dataviz dogrulayicisiyla sinanmistir (koyu zemin #161b22): parlaklik bandi, kroma tabani, renk korlugu ayrimi, normal gorus tabani ve zemin kontrasti - besi de gecer. Komsu ikililer bu sirayla dogrulandigi icin SIRA DEGISTIRILMEMELIDIR. konteyner malzeme olmadigi icin kategorik paletten renk almaz, notr gridir. Renk hicbir yerde TEK BASINA anlam tasimaz - her rozette metin etiketi vardir."
 }

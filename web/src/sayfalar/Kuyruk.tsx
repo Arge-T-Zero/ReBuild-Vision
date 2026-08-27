@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import {
-  BosDurum, Buton, Hata, Kart, OnTahminEtiketi, girdiSinifi,
+  Baslik, BosDurum, Buton, Hata, Kart, OnTahminEtiketi, SinifEtiketi,
+  girdiSinifi,
 } from '../bilesenler/Temel'
+import { Ikon } from '../bilesenler/Ikon'
 import type { Tespit } from '../types'
 
 /**
@@ -26,10 +28,18 @@ export function Kuyruk() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-xl font-semibold">Uzman inceleme kuyruğu</h2>
-      <p className="text-sm text-metin-3 mt-0.5 mb-6">
-        Model güveni düşük olan tespitler bu kuyruğa otomatik olarak alınır.
-      </p>
+      <Baslik
+        ustBaslik="Doğrulama"
+        baslik="Uzman inceleme kuyruğu"
+        aciklama="Model güveni düşük olan tespitler bu kuyruğa otomatik olarak alınır; sizin eklemeniz gerekmez."
+        sag={kayitlar && kayitlar.length > 0 && (
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md
+            bg-uyari/10 border border-uyari/40 text-uyari text-sm font-medium">
+            <Ikon.Kuyruk boyut={15} />
+            {kayitlar.length} kayıt bekliyor
+          </span>
+        )}
+      />
 
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
 
@@ -38,6 +48,7 @@ export function Kuyruk() {
       ) : kayitlar.length === 0 ? (
         <Kart>
           <BosDurum
+            ikon={<Ikon.Onayla boyut={20} />}
             baslik="İnceleme bekleyen tespit yok"
             aciklama="Düşük güvenli bir tespit oluştuğunda burada otomatik olarak görünecektir."
           />
@@ -86,17 +97,29 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
   return (
     <Kart className="p-4">
       <div className="flex items-start gap-3">
-        <span aria-hidden className="mt-1 w-3 h-3 rounded-sm shrink-0"
-          style={{ background: tanim?.renk ?? '#8593a1' }} />
         <div className="grow min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium">{tanim?.gorunen_ad ?? tespit.sinif}</span>
-            <span className="text-sm text-metin-2 tabular-nums">
-              güven {tespit.guven_skoru}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="font-medium">
+              <SinifEtiketi renk={tanim?.renk ?? '#6b7280'}
+                ad={tanim?.gorunen_ad ?? tespit.sinif} />
             </span>
             <OnTahminEtiketi />
           </div>
-          <p className="text-xs text-uyari mt-1">Uzman incelemesi gerekli</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs text-metin-4 uppercase tracking-wide">
+              Güven
+            </span>
+            <span className="h-1.5 w-24 rounded-full bg-yuzey-3 overflow-hidden">
+              <span className="block h-full rounded-full bg-uyari"
+                style={{ width: `${tespit.guven_skoru * 100}%` }} />
+            </span>
+            <span className="text-sm sayisal text-metin-2">
+              {tespit.guven_skoru}
+            </span>
+          </div>
+          <p className="flex items-center gap-1.5 text-xs text-uyari mt-2">
+            <Ikon.Uyari boyut={13} /> Uzman incelemesi gerekli
+          </p>
         </div>
       </div>
 
@@ -120,13 +143,16 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
       ) : (
         /* Üç aksiyon: onayla, düzelt, belirsiz. 'reddet' YOK (K-004). */
         <div className="mt-4 flex gap-2 flex-wrap">
-          <Buton disabled={bekliyor} onClick={() => karar('onaylandi')}>
+          <Buton disabled={bekliyor} onClick={() => karar('onaylandi')}
+            ikon={<Ikon.Onayla boyut={15} />}>
             Onayla
           </Buton>
-          <Buton tur="ikincil" disabled={bekliyor} onClick={() => setDuzeltmeAcik(true)}>
+          <Buton tur="ikincil" disabled={bekliyor}
+            onClick={() => setDuzeltmeAcik(true)} ikon={<Ikon.Duzelt boyut={15} />}>
             Düzelt
           </Buton>
-          <Buton tur="ikincil" disabled={bekliyor} onClick={() => karar('belirsiz')}>
+          <Buton tur="ikincil" disabled={bekliyor} onClick={() => karar('belirsiz')}
+            ikon={<Ikon.Belirsiz boyut={15} />}>
             Belirsiz olarak işaretle
           </Buton>
         </div>

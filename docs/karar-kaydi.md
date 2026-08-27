@@ -200,6 +200,79 @@ Doğrulama kontrol listesi: `docker/README.md`.
 
 ---
 
+## K-011 · Arayüzdeki "sahte model servisi" işareti kaldırıldı ⚠️ İTİRAZ KAYITLI
+
+- **Tarih:** 27.08.2026
+- **Karar:** Ekip kararıyla arayüzden model durumu bandı **kaldırıldı**.
+  Sistem sahte servisle çalışırken arayüzde bunu gösteren bir işaret
+  bulunmuyor.
+- **Gerekçe (ekip):** Sistem herkese açık bir bağlantıdan yayınlanacak;
+  bant vitrini bozuyordu. Gerçek model geldiğinde tespitler zaten gerçek
+  olacak.
+- **⚠️ Kaydedilen itiraz:** Ana talimat **Bölüm 9.5** bu işareti ismen
+  istiyor:
+
+  > "Arayüzde sahte servis kullanılıyorsa bunu gösteren bir işaret dursun —
+  > demo sırasında yanlışlıkla 'gerçek model çalışıyor' izlenimi
+  > verilmesin."
+
+  Herkese açık bir bağlantıda etiketsiz sahte tespitler göstermek, bağlantıyı
+  açan herkesin (jüri, mentör, üçüncü kişiler) gerçek bir modelin çalıştığını
+  sanmasına yol açar. Bu, projenin dürüstlük iddiasıyla çelişir.
+
+  Ara çözüm önerilmişti (turuncu bant yerine sakin bir "Demo · model
+  bağlanmadı" rozeti); kabul edilmedi.
+
+- **Korunanlar:** API tarafında dürüstlük sürüyor — `/sistem/durum`
+  yanıtı hâlâ `sahte: true` döner, `model-mock` kendini
+  `yolo11-rebuild-SAHTE` olarak tanıtır, örnek çıktı dosyası
+  `ornek_cikti_SAHTE.json` adını taşır. Altbilgideki *"Model metrikleri:
+  henüz ölçülmedi"* cümlesi de yerinde duruyor (Bölüm 14).
+- **Durum:** 🟠 Uygulandı — itiraz kayıtlı. Gerçek model bağlanana kadar
+  geçerli bir risktir.
+
+---
+
+## K-012 · Malzeme renkleri ölçülerek seçildi
+
+- **Tarih:** 27.08.2026
+- **Karar:** Dokuz malzeme sınıfının renkleri, doğrulanmış kategorik
+  paletten ölçülerek atandı. Sıra sabittir ve değiştirilmemelidir.
+- **Gerekçe:** İlk palet gözle seçilmişti ve beş kontrolün **dördünden
+  kaldı**: parlaklık bandı, kroma tabanı, renk körlüğü ayrımı ve normal
+  görüş tabanı. Özellikle `#9AA6B2`/`#E4E4E7`/`#6B7280` üçlüsü gri olarak
+  okunuyordu ve iki kahve/turuncu ton normal görüşte dahi ayırt
+  edilemiyordu (ΔE 10.6, taban 15).
+- **Yöntem:** Bütün ikili mesafeler ölçüldü, ardından her komşu ikilinin
+  eşiği geçtiği bir sıralama permütasyon taramasıyla bulundu. Sonuç:
+  en zayıf komşu renk körlüğü ΔE **8.6**, normal görüş ΔE **19.3** —
+  beş kontrol de geçiyor.
+- **Not:** `konteyner` malzeme olmadığı için kategorik paletten renk almaz
+  (K-007 ile tutarlı), nötr gridir.
+- **Durum:** Uygulandı. Ayrıntı: `docs/siniflar.md`.
+
+---
+
+## K-013 · Depo herkese açılıyor
+
+- **Tarih:** 27.08.2026
+- **Karar:** GitHub deposu `private` → `public` yapılacak.
+- **Gerekçe:** Vercel'in ücretsiz katmanı kurum (organization) hesaplarında
+  özel depoya bağlanmıyor.
+- **Açılmadan önce yapılan denetim:**
+  - Geçmişte `.env`, anahtar dosyası, Bakanlık verisi, maskelenmemiş saha
+    fotoğrafı ve gerçek e-posta adresi **bulunmadığı** doğrulandı.
+  - Varsayılan JWT anahtarıyla üretime çıkış **engellendi**: `ORTAM=uretim`
+    iken uygulama açılmıyor. Depo açık olduğunda o anahtar da açık olacağı
+    için, onunla imzalanan jetonlar taklit edilebilirdi.
+- **Kalan risk:** Demo hesapları (`demo1234`) herkese açık bir yayında
+  herkesin giriş yapmasına ve görüntü yüklemesine izin verir. Yalnızca
+  sentetik veri bulunduğu için Madde 10.7 ihlali yok, ancak depolama
+  kötüye kullanımı mümkündür.
+- **Durum:** Uygulandı (depo ayarı ekip tarafından değiştirilecek).
+
+---
+
 ## Mentör görüşmeleri
 
 | # | Tarih | Katılımcılar | Sorulan | Karar |
