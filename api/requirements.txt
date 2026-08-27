@@ -1,0 +1,27 @@
+# ReBuild Vision — backend
+#
+# ÖNEMLİ: Bu dosyada 'ultralytics' YER ALMAZ ve ALMAYACAKTIR.
+# Model çıkarımı ayrı bir serviste (model-service/) çalışır ve buraya
+# yalnızca HTTP ile bağlanılır. Gerekçe: docs/lisans-analizi.md Bölüm 3.4
+# (AGPL-3.0 sınırının belirginleştirilmesi).
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Veri tabanı — asyncpg (Apache-2.0) bilinçli tercih, psycopg (LGPL) değil.
+# Gerekçe: docs/karar-kaydi.md K-003
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+geoalchemy2==0.16.0
+alembic==1.14.0
+
+# Kimlik doğrulama — tamamen yerel (docs/karar-kaydi.md K-005)
+pyjwt==2.10.1
+bcrypt==4.2.1
+
+# Yardımcılar
+pydantic==2.10.4
+pydantic-settings==2.7.0
+httpx==0.28.1
+pillow==11.1.0
