@@ -70,6 +70,21 @@ ayrı bir süreçte çalışır ve HTTP ile çağrılır. Gerekçe:
 
 ---
 
+## Canlı demo
+
+**https://re-build-vision.vercel.app**
+
+Demo hesapları ve parolaları: [`docs/kurulum.md`](docs/kurulum.md) Bölüm 8.
+Yayın mimarisi ve kurulum adımları: [`docs/yayin.md`](docs/yayin.md).
+
+> Canlı ortamda **yalnızca sentetik demo verisi** bulunur. Bakanlık verisi
+> ve maskelenmemiş saha fotoğrafı buraya asla yüklenmez (Madde 9.1, 10.5).
+>
+> Canlı bağlantı, Madde 10.3'ün yerine geçmez — jürinin bağımsız ortamda
+> çalıştırması için `docker compose` paketi kullanılır.
+
+---
+
 ## Kurulum
 
 Ayrıntılı adımlar: [`docs/kurulum.md`](docs/kurulum.md)
