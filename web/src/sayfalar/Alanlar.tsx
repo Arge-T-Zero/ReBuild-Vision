@@ -90,7 +90,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
 
                 <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 grow">
                   <div>
-                    <dt className="text-[11px] uppercase tracking-wide text-metin-4">
+                    <dt className="text-xs uppercase tracking-wide text-metin-4">
                       Görüntü
                     </dt>
                     <dd className="text-lg font-medium sayisal">
@@ -98,7 +98,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
                     </dd>
                   </div>
                   <div className="min-w-0">
-                    <dt className="text-[11px] uppercase tracking-wide text-metin-4">
+                    <dt className="text-xs uppercase tracking-wide text-metin-4">
                       Sorumlu
                     </dt>
                     <dd className="text-sm text-metin-2 truncate">
@@ -107,7 +107,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
                   </div>
                   {a.konum && (
                     <div className="col-span-2">
-                      <dt className="text-[11px] uppercase tracking-wide text-metin-4">
+                      <dt className="text-xs uppercase tracking-wide text-metin-4">
                         Konum
                       </dt>
                       <dd className="text-xs text-metin-3 sayisal">
@@ -138,7 +138,7 @@ function ErisimRozeti({ durum }: { durum: EnkazAlani['erisim_durumu'] }) {
     kapali: { m: 'Kapalı', s: 'border-dikkat/50 text-dikkat bg-dikkat/10' },
   }[durum]
   return (
-    <span className={`shrink-0 px-2 py-0.5 rounded border text-[11px]
+    <span className={`shrink-0 px-2 py-0.5 rounded border text-xs
       font-medium whitespace-nowrap ${t.s}`}>
       {t.m}
     </span>
