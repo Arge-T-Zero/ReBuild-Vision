@@ -28,12 +28,14 @@ mobile/.flutter-plugins-dependencies
 model-service/weights/
 
 # --- Madde 9.1: Bakanlık verisi ASLA commit edilmez ---
-data/bakanlik/
+# NOT: klasörün KENDİSİ değil, İÇERİĞİ dışlanır. Klasör dışlanırsa git
+# içine hiç bakmaz ve aşağıdaki '!' kuralları çalışmaz.
+data/bakanlik/*
 !data/bakanlik/.gitkeep
 !data/bakanlik/UYARI.md
 
 # --- Madde 10.7: gerçek saha fotoğrafları (maskelenmemiş) ---
-data/saha-foto/
+data/saha-foto/*
 !data/saha-foto/.gitkeep
 
 # --- Yüklenen görüntüler (çalışma zamanı) ---
