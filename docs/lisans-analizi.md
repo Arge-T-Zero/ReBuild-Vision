@@ -75,6 +75,10 @@ konuşulur · *veri* = kod değil içerik.
 | **leaflet** | 1.9.4 | **BSD-2-Clause** | kütüphane | https://github.com/Leaflet/Leaflet |
 | @tanstack/react-query | 5.x | MIT | kütüphane | https://github.com/TanStack/query |
 | tailwindcss | 4.x | MIT | derleme aracı | https://github.com/tailwindlabs/tailwindcss |
+| @tailwindcss/vite | 4.x | MIT | derleme aracı | https://github.com/tailwindlabs/tailwindcss |
+| @types/leaflet | 1.9 | MIT (DefinitelyTyped) | tip tanımı (derleme) | https://github.com/DefinitelyTyped/DefinitelyTyped |
+| @vitejs/plugin-react | 5.x | MIT | derleme aracı | https://github.com/vitejs/vite-plugin-react |
+| oxlint | 1.x | MIT | geliştirme aracı (lint) | https://github.com/oxc-project/oxc |
 
 ### 2.5. Yardımcı betikler (`scripts/`)
 

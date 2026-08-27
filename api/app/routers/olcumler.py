@@ -81,7 +81,9 @@ async def miktar(
         )
 
     y = await db.execute(select(Olcum).where(Olcum.tespit_id == tespit_id))
-    sonuc = miktar_servisi.hesapla(t.sinif, list(y.scalars()))
+    # Uzman düzeltmesi varsa katsayı ve malzeme kontrolü DÜZELTİLEN sınıfa
+    # göre yapılır — insanın kararı modelinkini geçersiz kılar.
+    sonuc = miktar_servisi.hesapla(t.duzeltilen_sinif or t.sinif, list(y.scalars()))
 
     if not sonuc.hesaplandi:
         # Satır YAZILMAZ. Sıfır yazılmaz, NULL yazılmaz — satır yoktur.

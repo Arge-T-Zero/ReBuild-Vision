@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* ReBuild Vision tema
+ *
+ * Saha koşulunda, güneş altında, eldivenli parmakla kullanılacak bir
+ * kamu afet yönetimi aracı. Yüksek kontrast, koyu grafit taban, geniş
+ * dokunma alanları, dekorasyon yok.
+ *
+ * Renk hiçbir zaman TEK BAŞINA anlam taşımaz — her renkli göstergenin
+ * yanında metin etiketi vardır (ana talimat Bölüm 9.3).
+ */
+@theme {
+  --color-taban:      #0e1116;
+  --color-yuzey:      #161b22;
+  --color-yuzey-2:    #1f262e;
+  --color-kenar:      #2f3944;
+  --color-kenar-net:  #4a5765;
+
+  --color-metin:      #f2f5f8;
+  --color-metin-2:    #b6c2ce;
+  --color-metin-3:    #8593a1;
+
+  --color-vurgu:      #4da3ff;
+  --color-vurgu-koyu: #1c66b8;
+
+  --color-uyari:      #ffb020;
+  --color-dikkat:     #ff7a45;
+  --color-olumlu:     #3fbf7f;
+
+  /* Malzeme sınıfı renkleri — siniflar.json ile aynı değerler */
+  --color-m-beton:            #9aa6b2;
+  --color-m-dolgu_toprak:     #a8763e;
+  --color-m-ahsap:            #d98c3f;
+  --color-m-sert_plastik:     #2f9e8f;
+  --color-m-yumusak_plastik:  #5fc9bf;
+  --color-m-metal:            #5b8def;
+  --color-m-tekstil:          #b77bd0;
+  --color-m-karton:           #c9a227;
+  --color-m-alcipan:          #e4e4e7;
+  --color-m-konteyner:        #6b7280;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  background: var(--color-taban);
+  color: var(--color-metin);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Odak halkası her zaman görünür — eldivenli/klavye kullanımı için. */
+:focus-visible {
+  outline: 3px solid var(--color-vurgu);
+  outline-offset: 2px;
+}
+
+/* Dokunma hedefi en az 44px (WCAG 2.5.5). */
+button, a[role="button"], input, select, textarea {
+  min-height: 44px;
+}
+
+.leaflet-container {
+  background: var(--color-yuzey);
+  font-family: inherit;
+}
