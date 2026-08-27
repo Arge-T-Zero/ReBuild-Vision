@@ -21,8 +21,10 @@ export function Buton({
       'bg-transparent text-dikkat border border-dikkat/40 hover:bg-dikkat/10',
   }[tur]
 
+  // Küçük boyutta bile dokunma hedefi 32px'in altına inmez; ölçümde
+  // 'Çıkış' düğmesi 24px çıkmıştı (WCAG 2.5.5).
   const olcu = boyut === 'kucuk'
-    ? 'px-2.5 py-1 text-xs !min-h-0 gap-1.5'
+    ? 'px-2.5 py-1.5 text-xs min-h-8 gap-1.5'
     : 'px-3.5 py-2 text-sm gap-2'
 
   return (
@@ -201,7 +203,7 @@ export function DogrulamaRozeti({ durum, boyut = 'normal' }: {
   return (
     <span className={`inline-flex items-center gap-1 rounded border
       font-medium whitespace-nowrap ${tanim.sinif}
-      ${boyut === 'kucuk' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'}`}>
+      ${boyut === 'kucuk' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-0.5 text-xs'}`}>
       {tanim.ikon}
       {tanim.metin}
     </span>
@@ -215,7 +217,7 @@ export function DogrulamaRozeti({ durum, boyut = 'normal' }: {
 export function OnTahminEtiketi() {
   return (
     <span className="inline-block px-1.5 py-0.5 rounded bg-yuzey-3
-      border border-kenar-net text-[10px] uppercase tracking-wider
+      border border-kenar-net text-[11px] uppercase tracking-wider
       text-metin-3 font-medium whitespace-nowrap">
       ön tahmin
     </span>

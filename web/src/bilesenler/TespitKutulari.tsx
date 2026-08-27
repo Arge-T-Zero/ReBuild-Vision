@@ -69,7 +69,7 @@ export function TespitKutulari({
             }}
           >
             <span
-              className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-[11px]
+              className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-xs
                 font-semibold whitespace-nowrap"
               style={{ background: renk, color: '#0e1116' }}
             >

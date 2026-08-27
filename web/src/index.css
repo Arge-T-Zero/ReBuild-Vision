@@ -11,21 +11,24 @@
  * yanında metin etiketi vardır (ana talimat Bölüm 9.3).
  */
 @theme {
-  /* Yüzeyler — dört kademe, gerçek derinlik için */
-  --color-taban:      #0b0e13;
-  --color-yuzey:      #12161d;
-  --color-yuzey-2:    #1a1f28;
-  --color-yuzey-3:    #232935;
+  /* Yüzeyler — taban gerçek siyah, üstündeki katmanlar yükseldikçe açılır.
+   * Siyah taban kartların ve panellerin sınırını gözle ayırt edilir kılar;
+   * güneş altında da en yüksek kontrastı verir. */
+  --color-taban:      #000000;
+  --color-yuzey:      #171e28;   /* kart — siyaha göre 1.25:1 */
+  --color-yuzey-2:    #1c242f;   /* iç panel — 1.34:1 */
+  --color-yuzey-3:    #28313d;   /* girinti/etkin — 1.60:1 */
 
-  --color-kenar:      #2a323e;
-  --color-kenar-net:  #3d4757;
-  --color-kenar-parlak: #55637a;
+  --color-kenar:      #354052;   /* 2.01:1 — çizgi gözle net seçilir */
+  --color-kenar-net:  #475364;   /* 2.69:1 */
+  --color-kenar-parlak: #5f6c81;
 
-  /* Metin — dört kademe */
+  /* Metin — dört kademe. Her kademe kendi zemininde WCAG AA'yı geçer;
+   * değerler ölçülerek seçilmiştir (bkz. scripts/erisilebilirlik.md). */
   --color-metin:      #f3f6fa;
-  --color-metin-2:    #c2ccd8;
-  --color-metin-3:    #8d9aab;
-  --color-metin-4:    #6b7688;
+  --color-metin-2:    #c8d2de;
+  --color-metin-3:    #9aa7b8;
+  --color-metin-4:    #8492a4;
 
   --color-vurgu:      #4d9bff;
   --color-vurgu-2:    #7ab5ff;
