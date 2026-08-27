@@ -6,6 +6,7 @@ import {
 } from '../bilesenler/Temel'
 import { CizilemeyenKutuUyarisi, TespitKutulari } from '../bilesenler/TespitKutulari'
 import { MiktarKarti } from '../bilesenler/MiktarKarti'
+import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
 import type { Goruntu, Miktar, Olcum, Tespit } from '../types'
 
 const YUKLEYEBILIR = new Set(['yonetici', 'saha', 'belediye'])
@@ -207,12 +208,20 @@ function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir }: {
       </button>
 
       {acik && miktar && (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 space-y-3">
           <MiktarKarti
             miktar={miktar} olcumler={olcumler}
             olcumEklenebilir={olcebilir && (tanim?.malzeme_mi ?? true)}
             olcumEklendi={yenile}
           />
+
+          {/* İzlenebilirlik arayüzde de görünür (ana talimat Bölüm 4.2) */}
+          <div className="border border-kenar rounded-lg p-4 bg-yuzey-2/40">
+            <IslemGecmisiListesi
+              kayitTipi="tespit" kayitId={tespit.id}
+              baslik="Bu tespitin geçmişi" limit={10} kompakt
+            />
+          </div>
         </div>
       )}
     </div>

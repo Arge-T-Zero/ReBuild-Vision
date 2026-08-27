@@ -7,12 +7,16 @@ import { Alanlar } from './sayfalar/Alanlar'
 import { AlanDetay } from './sayfalar/AlanDetay'
 import { Kuyruk } from './sayfalar/Kuyruk'
 import { HaritaSayfasi } from './sayfalar/HaritaSayfasi'
+import { Gecmis } from './sayfalar/Gecmis'
+import { Yonetici } from './sayfalar/Yonetici'
 
 type Sayfa =
   | { ad: 'alanlar' }
   | { ad: 'alan'; id: number }
   | { ad: 'kuyruk' }
   | { ad: 'harita' }
+  | { ad: 'gecmis' }
+  | { ad: 'yonetici' }
 
 const ROL_ADI: Record<string, string> = {
   yonetici: 'Yönetici',
@@ -55,6 +59,12 @@ function Kabuk() {
       gorunur: DOGRULAYABILIR.has(kullanici.rol ?? ''),
     },
     { ad: 'harita', etiket: 'Malzeme haritası', gorunur: true },
+    { ad: 'gecmis', etiket: 'İşlem geçmişi', gorunur: true },
+    {
+      ad: 'yonetici',
+      etiket: 'Rol onayları',
+      gorunur: kullanici.rol === 'yonetici',
+    },
   ]
 
   return (
@@ -99,6 +109,8 @@ function Kabuk() {
         )}
         {sayfa.ad === 'kuyruk' && <Kuyruk />}
         {sayfa.ad === 'harita' && <HaritaSayfasi />}
+        {sayfa.ad === 'gecmis' && <Gecmis />}
+        {sayfa.ad === 'yonetici' && <Yonetici />}
       </main>
 
       <footer className="border-t border-kenar py-3 px-6">
