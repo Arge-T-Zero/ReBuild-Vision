@@ -283,6 +283,14 @@ komutun tamamını tek bir program adı sanıyor. Çözüm: başlatmayı YAML'de
 çıkarıp Dockerfile'a almak — API için `docker/baslat-api.sh`, model servisi
 için kabuk biçimi `CMD`. `dockerCommand` alanı boş kalmalıdır.
 
+**`InvalidCatalogNameError: database "postgres\n" does not exist`**
+Bağlantı dizesinin sonuna görünmez bir satır sonu karışmıştır — panele
+yapıştırırken çok kolay olur. Dize doğrudur, hata yanıltıcıdır.
+
+Uygulama artık bütün metin ayarlarını okurken kırpıyor, yani bu hata
+kendiliğinden çözülür. Yine de Render'da `VERITABANI_URL` değerini
+yeniden yapıştırıp sonunda boşluk/satır sonu bırakmamak temiz olur.
+
 **API çalışıyor ama sorgular boş sonuç dönüyor**
 Otomatik RLS tabloları kilitlemiş olabilir. Supabase **SQL Editor**'de:
 

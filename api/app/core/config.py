@@ -5,6 +5,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEPO_KOKU = Path(__file__).resolve().parents[3]
@@ -27,6 +28,23 @@ class Ayarlar(BaseSettings):
     jwt_gecerlilik_dakika: int = 480
     yukleme_klasoru: str = "api/yuklenenler"
     izin_verilen_kaynaklar: str = "http://localhost:5173"
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def _bosluk_kirp(cls, deger):
+        """Ortam değişkenlerinin başındaki/sonundaki boşluğu temizler.
+
+        Yayın panellerine (Render, Vercel) değer yapıştırırken sona bir
+        satır sonu karışması çok kolaydır ve verdiği hata insanı yanlış
+        yere götürür:
+
+            asyncpg.exceptions.InvalidCatalogNameError:
+            database "postgres\\n" does not exist
+
+        Dize doğrudur, sonundaki görünmez karakter yüzünden reddedilir.
+        Bu yüzden bütün metin ayarları okunurken kırpılır.
+        """
+        return deger.strip() if isinstance(deger, str) else deger
 
     # 'gelistirme' | 'uretim'. Üretimde güvensiz varsayılanlar reddedilir.
     ortam: str = "gelistirme"
