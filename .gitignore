@@ -1,0 +1,43 @@
+# --- Gizli yapılandırma ---
+.env
+api/.env
+web/.env
+model-service/.env
+
+# --- Python ortamları ---
+.venv-mock/
+api/.venv/
+model-mock/.venv/
+model-service/.venv/
+api/app/__pycache__/
+api/**/__pycache__/
+model-mock/__pycache__/
+model-service/__pycache__/
+
+# --- Node ---
+web/node_modules/
+web/dist/
+web/.vite/
+
+# --- Flutter ---
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+
+# --- Model ağırlıkları (büyük ikili dosyalar) ---
+model-service/weights/
+
+# --- Madde 9.1: Bakanlık verisi ASLA commit edilmez ---
+data/bakanlik/
+!data/bakanlik/.gitkeep
+!data/bakanlik/UYARI.md
+
+# --- Madde 10.7: gerçek saha fotoğrafları (maskelenmemiş) ---
+data/saha-foto/
+!data/saha-foto/.gitkeep
+
+# --- Yüklenen görüntüler (çalışma zamanı) ---
+api/yuklenenler/
+
+# --- İşletim sistemi ---
+.DS_Store

@@ -1,0 +1,34 @@
+LİSANS KARARI BEKLEMEDE
+=======================
+
+Bu dosyaya bilinçli olarak henüz bir lisans metni yazılmamıştır.
+
+Gerekçe
+-------
+Proje, AGPL-3.0 lisanslı Ultralytics YOLO11 bileşenini kullanmaktadır.
+AGPL-3.0 §13, yazılımın ağ üzerinden hizmet olarak sunulmasını da
+kopyaleft tetikleyicisi sayar. Bu durum, TEKNOFEST 2026 Sıfır Atık ve
+Döngüsel Ekonomi Yarışması şartnamesinin Madde 5.5'i ("ürünün kullanım
+hakları ve sahipliği Kuruma bedelsiz olarak devredilecektir") ile
+çözülmesi gereken bir gerilim oluşturmaktadır.
+
+Bu gerilim çözülmeden buraya izin verici bir lisans metni (örneğin MIT)
+yazmak hukuken tutarsız olur ve yanlış bir taahhüt üretir.
+
+Ayrıntılı analiz
+----------------
+docs/lisans-analizi.md — Bölüm 3 (AGPL-3.0) ve Bölüm 6 (LICENSE kararı)
+
+Süreç
+-----
+Konu, şartname Madde 5.2 kapsamındaki ilk mentör görüşmesinde
+sorulacaktır. Alınan cevap docs/karar-kaydi.md'ye tarihli olarak
+işlenecek ve bu dosya tek seferde doldurulacaktır.
+
+Üçüncü taraf bileşenlerin lisansları
+------------------------------------
+Bu karar beklerken dahi, kullanılan üçüncü taraf bileşenlerin kendi
+lisansları geçerlidir ve docs/lisans-analizi.md Bölüm 2'de eksiksiz
+listelenmiştir.
+
+Takım Arge-T Zero — 27.08.2026
