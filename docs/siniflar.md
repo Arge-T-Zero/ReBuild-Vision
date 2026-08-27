@@ -8,18 +8,36 @@ dosyayı okur.
 
 ## Sınıf tablosu
 
-| id | CDW-Seg (İngilizce) | Sistem adı | Görünen ad | Malzeme mi? |
-|---|---|---|---|---|
-| 0 | concrete | `beton` | Beton | ✅ |
-| 1 | fill dirt | `dolgu_toprak` | Dolgu toprak | ✅ |
-| 2 | timber | `ahsap` | Ahşap | ✅ |
-| 3 | hard plastic | `sert_plastik` | Sert plastik | ✅ |
-| 4 | soft plastic | `yumusak_plastik` | Yumuşak plastik | ✅ |
-| 5 | steel | `metal` | Metal | ✅ |
-| 6 | fabric | `tekstil` | Tekstil | ✅ |
-| 7 | cardboard | `karton` | Karton | ✅ |
-| 8 | plasterboard | `alcipan` | Alçıpan | ✅ |
-| 9 | skip bin | `konteyner` | Konteyner | ❌ **hayır** |
+| id | CDW-Seg (İngilizce) | Sistem adı | Görünen ad | Malzeme mi? | Renk |
+|---|---|---|---|---|---|
+| 0 | concrete | `beton` | Beton | ✅ | `#9085e9` |
+| 1 | fill dirt | `dolgu_toprak` | Dolgu toprak | ✅ | `#a06a2c` |
+| 2 | timber | `ahsap` | Ahşap | ✅ | `#d95926` |
+| 3 | hard plastic | `sert_plastik` | Sert plastik | ✅ | `#199e70` |
+| 4 | soft plastic | `yumusak_plastik` | Yumuşak plastik | ✅ | `#008300` |
+| 5 | steel | `metal` | Metal | ✅ | `#3987e5` |
+| 6 | fabric | `tekstil` | Tekstil | ✅ | `#d55181` |
+| 7 | cardboard | `karton` | Karton | ✅ | `#c98500` |
+| 8 | plasterboard | `alcipan` | Alçıpan | ✅ | `#e66767` |
+| 9 | skip bin | `konteyner` | Konteyner | ❌ **hayır** | `#6b7280` |
+
+### Renkler ölçülerek seçildi
+
+Renkler gözle değil, **dataviz doğrulayıcısıyla** seçilmiştir (koyu
+zemin `#161b22`). Beş kontrolün beşi de geçer: parlaklık bandı, kroma
+tabanı, renk körlüğü ayrımı (en zayıf komşu ΔE 8.6), normal görüş tabanı
+(en zayıf komşu ΔE 19.3) ve zemin kontrastı.
+
+İlk elle seçilen palet dört kontrolden kalmıştı; sıralama, bütün
+permütasyonlar taranarak bulundu. **Sıra doğrulamanın kendisidir —
+değiştirilmemelidir.**
+
+`konteyner` malzeme olmadığı için kategorik paletten renk almaz; nötr
+gridir.
+
+> Renk hiçbir yerde **tek başına** anlam taşımaz: her kutuda, her rozette
+> ve her lejant satırında metin etiketi vardır. Bu aynı zamanda renk
+> körlüğü ayrımının 6–8 bandında olmasını meşru kılan ikincil kodlamadır.
 
 ## `konteyner` neden özel
 

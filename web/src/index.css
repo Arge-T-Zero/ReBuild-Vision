@@ -3,42 +3,55 @@
 
 /* ReBuild Vision tema
  *
- * Saha koşulunda, güneş altında, eldivenli parmakla kullanılacak bir
- * kamu afet yönetimi aracı. Yüksek kontrast, koyu grafit taban, geniş
- * dokunma alanları, dekorasyon yok.
+ * Saha koşulunda, güneş altında, eldivenli parmakla kullanılacak bir kamu
+ * afet yönetimi aracı. Yüksek kontrast, koyu grafit taban, geniş dokunma
+ * alanları, veri yoğun ama sakin. Dekorasyon yok.
  *
  * Renk hiçbir zaman TEK BAŞINA anlam taşımaz — her renkli göstergenin
  * yanında metin etiketi vardır (ana talimat Bölüm 9.3).
  */
 @theme {
-  --color-taban:      #0e1116;
-  --color-yuzey:      #161b22;
-  --color-yuzey-2:    #1f262e;
-  --color-kenar:      #2f3944;
-  --color-kenar-net:  #4a5765;
+  /* Yüzeyler — dört kademe, gerçek derinlik için */
+  --color-taban:      #0b0e13;
+  --color-yuzey:      #12161d;
+  --color-yuzey-2:    #1a1f28;
+  --color-yuzey-3:    #232935;
 
-  --color-metin:      #f2f5f8;
-  --color-metin-2:    #b6c2ce;
-  --color-metin-3:    #8593a1;
+  --color-kenar:      #2a323e;
+  --color-kenar-net:  #3d4757;
+  --color-kenar-parlak: #55637a;
 
-  --color-vurgu:      #4da3ff;
-  --color-vurgu-koyu: #1c66b8;
+  /* Metin — dört kademe */
+  --color-metin:      #f3f6fa;
+  --color-metin-2:    #c2ccd8;
+  --color-metin-3:    #8d9aab;
+  --color-metin-4:    #6b7688;
 
-  --color-uyari:      #ffb020;
-  --color-dikkat:     #ff7a45;
-  --color-olumlu:     #3fbf7f;
+  --color-vurgu:      #4d9bff;
+  --color-vurgu-2:    #7ab5ff;
+  --color-vurgu-koyu: #1a5fb4;
 
-  /* Malzeme sınıfı renkleri — siniflar.json ile aynı değerler */
-  --color-m-beton:            #9aa6b2;
-  --color-m-dolgu_toprak:     #a8763e;
-  --color-m-ahsap:            #d98c3f;
-  --color-m-sert_plastik:     #2f9e8f;
-  --color-m-yumusak_plastik:  #5fc9bf;
-  --color-m-metal:            #5b8def;
-  --color-m-tekstil:          #b77bd0;
-  --color-m-karton:           #c9a227;
-  --color-m-alcipan:          #e4e4e7;
+  /* Durum renkleri — kategorik paletten AYRI tutulur, seri rengi olarak
+   * kullanılmaz (dataviz: status colors are reserved). */
+  --color-uyari:      #e0a02a;
+  --color-dikkat:     #e8734a;
+  --color-olumlu:     #35a97a;
+
+  /* Malzeme sınıfı renkleri — siniflar.json ile birebir aynı.
+   * Bu değerler dataviz doğrulayıcısından geçmiştir; sıra dahil
+   * değiştirilmemelidir. */
+  --color-m-ahsap:            #d95926;
+  --color-m-sert_plastik:     #199e70;
+  --color-m-metal:            #3987e5;
+  --color-m-karton:           #c98500;
+  --color-m-tekstil:          #d55181;
+  --color-m-yumusak_plastik:  #008300;
+  --color-m-alcipan:          #e66767;
+  --color-m-beton:            #9085e9;
+  --color-m-dolgu_toprak:     #a06a2c;
   --color-m-konteyner:        #6b7280;
+
+  --radius-kart: 10px;
 }
 
 html, body, #root { height: 100%; }
@@ -46,14 +59,20 @@ html, body, #root { height: 100%; }
 body {
   background: var(--color-taban);
   color: var(--color-metin);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+               "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* Sayısal değerler her yerde hizalı okunur — güven skorları, miktarlar. */
+.sayisal { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 
 /* Odak halkası her zaman görünür — eldivenli/klavye kullanımı için. */
 :focus-visible {
-  outline: 3px solid var(--color-vurgu);
+  outline: 2px solid var(--color-vurgu);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Dokunma hedefi en az 44px (WCAG 2.5.5). */
@@ -61,7 +80,41 @@ button, a[role="button"], input, select, textarea {
   min-height: 44px;
 }
 
+/* İnce, ölçülü kaydırma çubuğu — veri yoğun panellerde. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-kenar-net) transparent;
+}
+
 .leaflet-container {
-  background: var(--color-yuzey);
+  background: var(--color-yuzey-2);
   font-family: inherit;
+}
+
+/* Leaflet'in açık temalı denetimlerini karanlık temaya uydur. */
+.leaflet-control-zoom a {
+  background: var(--color-yuzey-2) !important;
+  color: var(--color-metin) !important;
+  border-color: var(--color-kenar) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: var(--color-yuzey-3) !important;
+}
+.leaflet-control-attribution {
+  background: rgba(11, 14, 19, 0.82) !important;
+  color: var(--color-metin-3) !important;
+}
+.leaflet-control-attribution a { color: var(--color-metin-2) !important; }
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background: var(--color-yuzey-2) !important;
+  color: var(--color-metin) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+
+/* Karo görüntülerini koyu temaya yaklaştırır; harita okunur kalır ama
+ * arayüzün geri kalanıyla aynı ağırlıkta durur. */
+.harita-koyu .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(1.08) contrast(0.82)
+          saturate(0.45);
 }

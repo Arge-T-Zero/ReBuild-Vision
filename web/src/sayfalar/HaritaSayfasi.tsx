@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import { Harita, isaretciIkonu } from '../lib/leaflet/Harita'
-import { BosDurum, Hata, KapsamUyarisi, Kart } from '../bilesenler/Temel'
+import {
+  Baslik, BosDurum, Hata, KapsamUyarisi, Kart, OzetSayi,
+} from '../bilesenler/Temel'
+import { MalzemeDagilimi } from '../bilesenler/MalzemeDagilimi'
+import { Ikon } from '../bilesenler/Ikon'
 import type { EnkazAlani } from '../types'
 import L from 'leaflet'
 
@@ -53,7 +57,13 @@ export function HaritaSayfasi() {
       }
     })
     if (noktalar.length > 0 && harita) {
-      harita.fitBounds(L.latLngBounds(noktalar).pad(0.3))
+      if (noktalar.length === 1) {
+        // Tek nokta için fitBounds dejenere bir sınır üretir ve harita
+        // azami yakınlığa gider; kırsal bir alanda ekran boş kalır.
+        harita.setView(noktalar[0], 14)
+      } else {
+        harita.fitBounds(L.latLngBounds(noktalar).pad(0.3), { maxZoom: 15 })
+      }
     }
   }, [alanlar, katman, harita])
 
@@ -69,68 +79,86 @@ export function HaritaSayfasi() {
     })
   }
 
+  const toplam = (dagilim ?? []).reduce((t, d) => t + d.adet, 0)
+
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-xl font-semibold">Malzeme Kaynak Haritası</h2>
-      <p className="text-sm text-metin-3 mt-0.5 mb-4">{not}</p>
+    <div className="max-w-[1400px] mx-auto p-6">
+      <Baslik
+        ustBaslik="Doğrulanmış kayıtlar"
+        baslik="Malzeme Kaynak Haritası"
+        aciklama={not}
+      />
 
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <Harita merkez={[40.9862, 40.5219]} yakinlik={13} yukseklik="520px"
-          hazir={setHarita} etiket="Malzeme kaynak haritası" />
+      {dagilim !== null && dagilim.length > 0 && (
+        <Kart className="mb-5 grid grid-cols-2 sm:grid-cols-3 divide-x divide-kenar">
+          <OzetSayi deger={toplam} etiket="Doğrulanmış tespit" />
+          <OzetSayi deger={dagilim.length} etiket="Farklı malzeme türü" />
+          <OzetSayi deger={alanlar.length} etiket="Enkaz alanı" />
+        </Kart>
+      )}
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="harita-koyu">
+          <Harita merkez={[40.9862, 40.5219]} yakinlik={13} yukseklik="560px"
+            hazir={setHarita} etiket="Malzeme kaynak haritası" />
+        </div>
 
         <div className="space-y-4">
           <Kart className="p-4">
-            <h3 className="text-sm font-semibold text-metin-2 mb-3">
-              Malzeme türü filtresi
-            </h3>
+            <div className="flex items-baseline justify-between gap-2 mb-3">
+              <h3 className="text-sm font-semibold text-metin-2">
+                Malzeme dağılımı
+              </h3>
+              {seciliSiniflar.size > 0 && (
+                <button onClick={() => setSeciliSiniflar(new Set())}
+                  className="text-xs text-metin-3 hover:text-metin !min-h-0">
+                  Filtreyi temizle
+                </button>
+              )}
+            </div>
+
             {dagilim === null ? (
               <p className="text-sm text-metin-3">Yükleniyor…</p>
             ) : dagilim.length === 0 ? (
               <BosDurum
+                ikon={<Ikon.Harita boyut={20} />}
                 baslik="Doğrulanmış kayıt yok"
                 aciklama="Haritada yalnızca uzman tarafından doğrulanmış tespitler gösterilir. Önce inceleme kuyruğundaki kayıtları doğrulayın."
               />
             ) : (
-              <ul className="space-y-1.5">
-                {dagilim.map((d) => {
-                  const t = siniflar.get(d.sinif)
-                  const secili = seciliSiniflar.size === 0 || seciliSiniflar.has(d.sinif)
-                  return (
-                    <li key={d.sinif}>
-                      <button onClick={() => filtreDegistir(d.sinif)}
-                        aria-pressed={seciliSiniflar.has(d.sinif)}
-                        className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded
-                          text-left ${secili ? '' : 'opacity-40'} hover:bg-yuzey-2`}>
-                        <span aria-hidden className="w-3 h-3 rounded-sm shrink-0"
-                          style={{ background: t?.renk ?? '#8593a1' }} />
-                        <span className="grow text-sm">{t?.gorunen_ad ?? d.sinif}</span>
-                        <span className="text-sm text-metin-2 tabular-nums">{d.adet}</span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
+              <MalzemeDagilimi
+                dagilim={dagilim} siniflar={siniflar}
+                secili={seciliSiniflar} secildi={filtreDegistir}
+              />
             )}
+
             {gorunen.length > 0 && (
-              <p className="text-xs text-metin-3 mt-3 pt-3 border-t border-kenar">
-                Gösterilen: {gorunen.reduce((t, d) => t + d.adet, 0)} doğrulanmış tespit
+              <p className="text-xs text-metin-4 mt-3 pt-3 border-t border-kenar">
+                Gösterilen: <span className="sayisal text-metin-3">
+                  {gorunen.reduce((t, d) => t + d.adet, 0)}
+                </span> doğrulanmış tespit
               </p>
             )}
           </Kart>
 
           {/* Kapsam uyarısı lejandda YAZILI (ana talimat Bölüm 1.3) */}
-          <Kart className="p-4 space-y-3">
+          <Kart className="p-4 space-y-4">
             {durum && <KapsamUyarisi metin={durum.kapsam_uyarisi} />}
             {siniflarHam && siniflarHam.kapsanmayan_gruplar.length > 0 && (
-              <div className="text-xs text-metin-3 border-l-2 border-uyari pl-3 py-1">
-                <p className="text-metin-2 font-medium mb-1">Kapsanmayan malzeme grupları</p>
-                {siniflarHam.kapsanmayan_gruplar.map((g) => (
-                  <p key={g.ad}>
-                    <span className="text-metin-2">{g.ad}</span> — {g.not}
-                  </p>
-                ))}
+              <div className="text-xs border-l-2 border-uyari/60 pl-3 py-1">
+                <p className="text-metin-2 font-medium mb-1.5">
+                  Kapsanmayan malzeme grupları
+                </p>
+                <ul className="space-y-1.5 text-metin-4 leading-relaxed">
+                  {siniflarHam.kapsanmayan_gruplar.map((g) => (
+                    <li key={g.ad}>
+                      <span className="text-metin-3 font-medium">{g.ad}</span>
+                      {' — '}{g.not}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </Kart>

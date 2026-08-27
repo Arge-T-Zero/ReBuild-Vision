@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import {
-  BosDurum, Buton, DogrulamaRozeti, Hata, KapsamUyarisi, Kart, OnTahminEtiketi,
+  Baslik, Bilgi, BosDurum, Buton, DogrulamaRozeti, Hata, KapsamUyarisi, Kart,
+  OnTahminEtiketi, OzetSayi, SinifEtiketi,
 } from '../bilesenler/Temel'
+import { Ikon } from '../bilesenler/Ikon'
 import { CizilemeyenKutuUyarisi, TespitKutulari } from '../bilesenler/TespitKutulari'
 import { MiktarKarti } from '../bilesenler/MiktarKarti'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
@@ -53,40 +55,64 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
   }
 
   const yukleyebilir = YUKLEYEBILIR.has(kullanici?.rol ?? '')
+  const tumTespitler = (goruntuler ?? []).flatMap((g) => g.tespitler)
+  const toplamTespit = tumTespitler.length
+  const dogrulanan = tumTespitler.filter(
+    (t) => t.dogrulama_durumu === 'onaylandi' || t.dogrulama_durumu === 'duzeltildi',
+  ).length
+  const incelemeBekleyen = tumTespitler.filter((t) => t.inceleme_gerekli).length
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <Buton tur="sessiz" onClick={geri} className="mb-4 text-sm">← Alanlara dön</Buton>
+    <div className="max-w-[1400px] mx-auto p-6">
+      <Buton tur="sessiz" boyut="kucuk" onClick={geri} className="mb-4"
+        ikon={<Ikon.Geri boyut={14} />}>
+        Alanlara dön
+      </Buton>
 
-      <div className="flex items-start justify-between gap-4 mb-2">
-        <h2 className="text-xl font-semibold">{alanAdi || 'Enkaz alanı'}</h2>
-        {yukleyebilir && (
+      <Baslik
+        ustBaslik="Enkaz alanı"
+        baslik={alanAdi || 'Enkaz alanı'}
+        sag={yukleyebilir && (
           <div>
             <input ref={dosyaGirdi} type="file" multiple accept="image/*"
               onChange={(e) => yukle(e.target.files)} className="hidden"
               id="goruntu-girdi" />
-            <Buton onClick={() => dosyaGirdi.current?.click()} disabled={yukleniyor}>
+            <Buton onClick={() => dosyaGirdi.current?.click()}
+              disabled={yukleniyor} ikon={<Ikon.Yukle boyut={15} />}>
               {yukleniyor ? 'İşleniyor…' : 'Görüntü yükle'}
             </Buton>
           </div>
         )}
-      </div>
+      />
+
+      {goruntuler !== null && goruntuler.length > 0 && (
+        <Kart className="mb-5 grid grid-cols-2 sm:grid-cols-4 divide-x divide-kenar">
+          <OzetSayi deger={goruntuler.length} etiket="Görüntü" />
+          <OzetSayi deger={toplamTespit} etiket="Tespit" alt="tümü ön tahmin" />
+          <OzetSayi deger={dogrulanan} etiket="Doğrulanmış"
+            ton={dogrulanan > 0 ? 'vurgu' : 'notr'} />
+          <OzetSayi deger={incelemeBekleyen} etiket="Uzman incelemesi gerekli"
+            ton={incelemeBekleyen > 0 ? 'uyari' : 'notr'} />
+        </Kart>
+      )}
 
       {durum && <div className="mb-4"><KapsamUyarisi metin={durum.kapsam_uyarisi} /></div>}
 
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
 
       {sonYukleme && (
-        <p role="status" className="mb-4 text-sm bg-vurgu/10 border border-vurgu/30
-          rounded-md px-3 py-2">
-          Yükleme tamamlandı.{' '}
-          {sonYukleme.kuyruk > 0 ? (
-            <>Düşük güvenli <strong>{sonYukleme.kuyruk}</strong> tespit otomatik
-              olarak uzman inceleme kuyruğuna alındı.</>
-          ) : (
-            <>Uzman incelemesi gerektiren tespit bulunmadı.</>
-          )}
-        </p>
+        <div className="mb-4">
+          <Bilgi>
+            Yükleme tamamlandı.{' '}
+            {sonYukleme.kuyruk > 0 ? (
+              <>Düşük güvenli <strong className="text-metin">
+                {sonYukleme.kuyruk}</strong> tespit otomatik olarak uzman
+                inceleme kuyruğuna alındı.</>
+            ) : (
+              <>Uzman incelemesi gerektiren tespit bulunmadı.</>
+            )}
+          </Bilgi>
+        </div>
       )}
 
       {goruntuler === null ? (
@@ -94,6 +120,7 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
       ) : goruntuler.length === 0 ? (
         <Kart>
           <BosDurum
+            ikon={<Ikon.Yukle boyut={20} />}
             baslik="Bu alana görüntü yükleyerek başlayın"
             aciklama={yukleyebilir
               ? 'Yüklenen görüntüler otomatik olarak sınıflandırılır ve sonuçlar ön tahmin olarak listelenir.'
@@ -189,16 +216,17 @@ function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir, rol }: {
 
   return (
     <div className={`border rounded-md ${acik ? 'border-vurgu' : 'border-kenar'}`}>
-      <button onClick={ac} className="w-full text-left px-3 py-2.5 flex items-start gap-2.5">
-        <span aria-hidden className="mt-1 w-3 h-3 rounded-sm shrink-0"
-          style={{ background: tanim?.renk ?? '#8593a1' }} />
+      <button onClick={ac} className="w-full text-left px-3 py-3 flex items-start gap-2.5">
         <span className="grow min-w-0">
           <span className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium">{tanim?.gorunen_ad ?? gosterilenSinif}</span>
+            <span className="font-medium">
+              <SinifEtiketi renk={tanim?.renk ?? '#6b7280'}
+                ad={tanim?.gorunen_ad ?? gosterilenSinif} />
+            </span>
             {/* Güven skoru sayı olarak, YUVARLANMADAN (Bölüm 9.2) */}
-            <span className="text-sm text-metin-2 tabular-nums">{tespit.guven_skoru}</span>
+            <span className="text-sm sayisal text-metin-2">{tespit.guven_skoru}</span>
             <OnTahminEtiketi />
-            <DogrulamaRozeti durum={tespit.dogrulama_durumu} />
+            <DogrulamaRozeti durum={tespit.dogrulama_durumu} boyut="kucuk" />
           </span>
           {tespit.duzeltilen_sinif && (
             <span className="block text-xs text-metin-3 mt-1">

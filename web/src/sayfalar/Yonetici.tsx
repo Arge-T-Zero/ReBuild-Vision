@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
-import { BosDurum, Buton, Hata, Kart, girdiSinifi } from '../bilesenler/Temel'
+import {
+  Baslik, BosDurum, Buton, Hata, Kart, girdiSinifi,
+} from '../bilesenler/Temel'
+import { Ikon } from '../bilesenler/Ikon'
 import type { Kullanici, Rol } from '../types'
 
 /**
@@ -40,11 +43,11 @@ export function Yonetici() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-xl font-semibold">Rol onayı bekleyen hesaplar</h2>
-      <p className="text-sm text-metin-3 mt-0.5 mb-6">
-        Kullanıcılar kayıt olurken kendi rollerini seçemez. Yetki bu ekrandan
-        verilir; atama işlem geçmişine kaydedilir.
-      </p>
+      <Baslik
+        ustBaslik="Yönetim"
+        baslik="Rol onayı bekleyen hesaplar"
+        aciklama="Kullanıcılar kayıt olurken kendi rollerini seçemez. Yetki bu ekrandan verilir; atama işlem geçmişine kaydedilir."
+      />
 
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
 
@@ -53,6 +56,7 @@ export function Yonetici() {
       ) : bekleyenler.length === 0 ? (
         <Kart>
           <BosDurum
+            ikon={<Ikon.Kullanici boyut={20} />}
             baslik="Onay bekleyen hesap yok"
             aciklama="Yeni bir kullanıcı kayıt olduğunda burada görünecek ve rol atanmayı bekleyecektir."
           />

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
-import { Buton, Kart } from '../bilesenler/Temel'
+import { Baslik, Buton, Kart } from '../bilesenler/Temel'
 
 /**
  * İşlem geçmişi sayfası — Rapor Bölüm 6, dördüncü yenilikçi yön.
@@ -25,11 +25,11 @@ export function Gecmis() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-xl font-semibold">İşlem geçmişi</h2>
-      <p className="text-sm text-metin-3 mt-0.5 mb-5">
-        Sistemdeki her yazma işlemi — kim, ne zaman, neyi değiştirdi —
-        otomatik olarak kaydedilir. Kayıtlar silinemez ve düzenlenemez.
-      </p>
+      <Baslik
+        ustBaslik="İzlenebilirlik"
+        baslik="İşlem geçmişi"
+        aciklama="Sistemdeki her yazma işlemi — kim, ne zaman, neyi değiştirdi — otomatik olarak kaydedilir. Kayıtlar silinemez ve düzenlenemez."
+      />
 
       <div className="flex gap-1.5 flex-wrap mb-5" role="group"
         aria-label="Kayıt türü süzgeci">
