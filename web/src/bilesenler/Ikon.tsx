@@ -109,4 +109,27 @@ export const Ikon = {
       <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
     </Sarmal>
   ),
+  Gunes: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4" />
+    </Sarmal>
+  ),
+  Ay: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+    </Sarmal>
+  ),
+  Foto: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <rect x="3" y="6" width="18" height="14" rx="2" />
+      <circle cx="12" cy="13" r="3.4" />
+      <path d="M8 6l1.5-2h5L16 6" />
+    </Sarmal>
+  ),
+  Grafik: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+    </Sarmal>
+  ),
 }

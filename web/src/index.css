@@ -1,123 +1,214 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* ReBuild Vision tema
- *
- * Saha koşulunda, güneş altında, eldivenli parmakla kullanılacak bir kamu
- * afet yönetimi aracı. Yüksek kontrast, koyu grafit taban, geniş dokunma
- * alanları, veri yoğun ama sakin. Dekorasyon yok.
- *
- * Renk hiçbir zaman TEK BAŞINA anlam taşımaz — her renkli göstergenin
- * yanında metin etiketi vardır (ana talimat Bölüm 9.3).
- */
-@theme {
-  /* Yüzeyler — taban gerçek siyah, üstündeki katmanlar yükseldikçe açılır.
-   * Siyah taban kartların ve panellerin sınırını gözle ayırt edilir kılar;
-   * güneş altında da en yüksek kontrastı verir. */
-  --color-taban:      #000000;
-  --color-yuzey:      #171e28;   /* kart — siyaha göre 1.25:1 */
-  --color-yuzey-2:    #1c242f;   /* iç panel — 1.34:1 */
-  --color-yuzey-3:    #28313d;   /* girinti/etkin — 1.60:1 */
+/* ============================================================================
+   ReBuild Vision — tasarım sistemi
+   ============================================================================
 
-  --color-kenar:      #354052;   /* 2.01:1 — çizgi gözle net seçilir */
-  --color-kenar-net:  #475364;   /* 2.69:1 */
-  --color-kenar-parlak: #5f6c81;
+   Bu bir kamu afet yönetimi aracı. Saha koşulunda, güneş altında, eldivenli
+   parmakla kullanılacak. Yüksek kontrast, geniş dokunma alanları, veri yoğun
+   ama sakin. Dekorasyon yok.
 
-  /* Metin — dört kademe. Her kademe kendi zemininde WCAG AA'yı geçer;
-   * değerler ölçülerek seçilmiştir (bkz. scripts/erisilebilirlik.md). */
-  --color-metin:      #f3f6fa;
-  --color-metin-2:    #c8d2de;
-  --color-metin-3:    #9aa7b8;
-  --color-metin-4:    #8492a4;
+   İKİ TEMA:
+   - Koyu (varsayılan) — kapalı alan, gece, düşük ışık
+   - Açık             — GÜNEŞ ALTINDA. Doğrudan güneşte açık zemin koyu
+                        zeminden okunaklıdır; "sahada kullanılır" iddiasının
+                        gereği budur, süs değil.
 
-  --color-vurgu:      #4d9bff;
-  --color-vurgu-2:    #7ab5ff;
-  --color-vurgu-koyu: #1a5fb4;
+   RENK KURALLARI:
+   1. Renk hiçbir yerde TEK BAŞINA anlam taşımaz — her göstergenin yanında
+      metin etiketi vardır (ana talimat Bölüm 9.3).
+   2. Durum renkleri (onaylandı / uyarı / hata) ayrılmıştır; malzeme sınıfı
+      rengi olarak kullanılmaz.
+   3. Malzeme sınıfı renkleri siniflar.json'dan gelir ve dataviz
+      doğrulayıcısından geçmiştir — HER İKİ temada da. Değiştirilmemeli.
+   ========================================================================= */
 
-  /* Durum renkleri — kategorik paletten AYRI tutulur, seri rengi olarak
-   * kullanılmaz (dataviz: status colors are reserved). */
-  --color-uyari:      #e0a02a;
-  --color-dikkat:     #e8734a;
-  --color-olumlu:     #35a97a;
+/* --- Koyu tema (varsayılan) --------------------------------------------- */
+:root {
+  color-scheme: dark;
 
-  /* Malzeme sınıfı renkleri — siniflar.json ile birebir aynı.
-   * Bu değerler dataviz doğrulayıcısından geçmiştir; sıra dahil
-   * değiştirilmemelidir. */
-  --color-m-ahsap:            #d95926;
-  --color-m-sert_plastik:     #199e70;
-  --color-m-metal:            #3987e5;
-  --color-m-karton:           #c98500;
-  --color-m-tekstil:          #d55181;
-  --color-m-yumusak_plastik:  #008300;
-  --color-m-alcipan:          #e66767;
-  --color-m-beton:            #9085e9;
-  --color-m-dolgu_toprak:     #a06a2c;
-  --color-m-konteyner:        #6b7280;
+  --u-taban:        #000000;
+  --u-yuzey:        #12161d;
+  --u-yuzey-2:      #191e27;
+  --u-yuzey-3:      #232a35;
+  --u-yuzey-ust:    #2c3441;
 
-  --radius-kart: 10px;
+  --u-kenar:        #303845;
+  --u-kenar-net:    #414b5b;
+  --u-kenar-parlak: #5a6675;
+
+  --u-metin:        #f4f7fa;
+  --u-metin-2:      #c7d1dd;
+  --u-metin-3:      #99a5b4;
+  --u-metin-4:      #7b8796;
+
+  /* Marka: Sıfır Atık kimliğiyle örtüşen yeşil. Doğrulama da aynı yeşildir —
+     ürünün işi zaten doğrulamaktır, renk bu hikâyeyi taşır. */
+  --u-marka:        #2fbd82;
+  --u-marka-2:      #55d29c;
+  --u-marka-zemin:  rgba(47, 189, 130, 0.12);
+  --u-marka-kenar:  rgba(47, 189, 130, 0.45);
+
+  --u-olumlu:       #2fbd82;
+  --u-uyari:        #e5a52e;
+  --u-dikkat:       #ef6a4a;
+  --u-bilgi:        #4d9bff;
+
+  --u-golge:         0 1px 3px rgba(0, 0, 0, 0.5);
+  --u-golge-ust:     0 8px 28px rgba(0, 0, 0, 0.6);
+  --u-harita-filtre: invert(1) hue-rotate(180deg) brightness(1.08)
+                     contrast(0.82) saturate(0.45);
 }
 
+/* --- Açık tema ---------------------------------------------------------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Saf beyaz yerine hafif sıcak kırık beyaz: güneşte göz yormaz. */
+  --u-taban:        #f5f6f3;
+  --u-yuzey:        #ffffff;
+  --u-yuzey-2:      #f0f2ee;
+  --u-yuzey-3:      #e5e8e2;
+  --u-yuzey-ust:    #ffffff;
+
+  --u-kenar:        #d9ded5;
+  --u-kenar-net:    #b7bfb2;
+  --u-kenar-parlak: #8b958a;
+
+  --u-metin:        #0e1319;
+  --u-metin-2:      #39434f;
+  --u-metin-3:      #5b6772;
+  --u-metin-4:      #666f7a;
+
+  --u-marka:        #12855a;
+  --u-marka-2:      #0d6b48;
+  --u-marka-zemin:  rgba(18, 133, 90, 0.10);
+  --u-marka-kenar:  rgba(18, 133, 90, 0.40);
+
+  --u-olumlu:       #12855a;
+  --u-uyari:        #96650a;
+  --u-dikkat:       #bc3f26;
+  --u-bilgi:        #1a5fc4;
+
+  --u-golge:         0 1px 2px rgba(16, 24, 32, 0.10);
+  --u-golge-ust:     0 10px 30px rgba(16, 24, 32, 0.16);
+  --u-harita-filtre: none;
+}
+
+/* --- Tailwind token eşlemesi -------------------------------------------- */
+@theme {
+  --color-taban:        var(--u-taban);
+  --color-yuzey:        var(--u-yuzey);
+  --color-yuzey-2:      var(--u-yuzey-2);
+  --color-yuzey-3:      var(--u-yuzey-3);
+  --color-yuzey-ust:    var(--u-yuzey-ust);
+
+  --color-kenar:        var(--u-kenar);
+  --color-kenar-net:    var(--u-kenar-net);
+  --color-kenar-parlak: var(--u-kenar-parlak);
+
+  --color-metin:        var(--u-metin);
+  --color-metin-2:      var(--u-metin-2);
+  --color-metin-3:      var(--u-metin-3);
+  --color-metin-4:      var(--u-metin-4);
+
+  --color-marka:        var(--u-marka);
+  --color-marka-2:      var(--u-marka-2);
+
+  --color-olumlu:       var(--u-olumlu);
+  --color-uyari:        var(--u-uyari);
+  --color-dikkat:       var(--u-dikkat);
+  --color-bilgi:        var(--u-bilgi);
+
+  /* Malzeme sınıfı renkleri — siniflar.json ile birebir aynı. */
+  --color-m-ahsap:           #d95926;
+  --color-m-sert_plastik:    #199e70;
+  --color-m-metal:           #3987e5;
+  --color-m-karton:          #c98500;
+  --color-m-tekstil:         #d55181;
+  --color-m-yumusak_plastik: #008300;
+  --color-m-alcipan:         #e66767;
+  --color-m-beton:           #9085e9;
+  --color-m-dolgu_toprak:    #a06a2c;
+  --color-m-konteyner:       #6b7280;
+
+  --radius-kart: 12px;
+
+  --font-baslik: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-govde:  "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sayi:   "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* --- Temel -------------------------------------------------------------- */
 html, body, #root { height: 100%; }
 
 body {
-  background: var(--color-taban);
-  color: var(--color-metin);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-               "Helvetica Neue", sans-serif;
+  background: var(--u-taban);
+  color: var(--u-metin);
+  font-family: var(--font-govde);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Sayısal değerler her yerde hizalı okunur — güven skorları, miktarlar. */
-.sayisal { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+h1, h2, h3 {
+  font-family: var(--font-baslik);
+  letter-spacing: -0.015em;
+}
 
-/* Odak halkası her zaman görünür — eldivenli/klavye kullanımı için. */
+/* Sayısal değerler hizalı okunur: güven skoru, miktar, koordinat, zaman. */
+.sayisal {
+  font-family: var(--font-sayi);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Odak halkası her zaman görünür — eldivenli ve klavye kullanımı için. */
 :focus-visible {
-  outline: 2px solid var(--color-vurgu);
+  outline: 2px solid var(--u-marka);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* Dokunma hedefi en az 44px (WCAG 2.5.5). */
-button, a[role="button"], input, select, textarea {
-  min-height: 44px;
-}
+button, a[role="button"], input, select, textarea { min-height: 44px; }
 
-/* İnce, ölçülü kaydırma çubuğu — veri yoğun panellerde. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-kenar-net) transparent;
+  scrollbar-color: var(--u-kenar-net) transparent;
 }
 
-.leaflet-container {
-  background: var(--color-yuzey-2);
-  font-family: inherit;
+/* Hareket azaltma tercihi olan kullanıcıda animasyon kapanır. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-/* Leaflet'in açık temalı denetimlerini karanlık temaya uydur. */
+/* --- Leaflet ------------------------------------------------------------ */
+.leaflet-container { background: var(--u-yuzey-2); font-family: inherit; }
+
 .leaflet-control-zoom a {
-  background: var(--color-yuzey-2) !important;
-  color: var(--color-metin) !important;
-  border-color: var(--color-kenar) !important;
+  background: var(--u-yuzey-2) !important;
+  color: var(--u-metin) !important;
+  border-color: var(--u-kenar) !important;
 }
-.leaflet-control-zoom a:hover {
-  background: var(--color-yuzey-3) !important;
-}
+.leaflet-control-zoom a:hover { background: var(--u-yuzey-3) !important; }
+
 .leaflet-control-attribution {
-  background: rgba(11, 14, 19, 0.82) !important;
-  color: var(--color-metin-3) !important;
+  background: color-mix(in srgb, var(--u-taban) 82%, transparent) !important;
+  color: var(--u-metin-3) !important;
 }
-.leaflet-control-attribution a { color: var(--color-metin-2) !important; }
+.leaflet-control-attribution a { color: var(--u-metin-2) !important; }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  background: var(--color-yuzey-2) !important;
-  color: var(--color-metin) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+  background: var(--u-yuzey-ust) !important;
+  color: var(--u-metin) !important;
+  box-shadow: var(--u-golge-ust) !important;
 }
 
-/* Karo görüntülerini koyu temaya yaklaştırır; harita okunur kalır ama
- * arayüzün geri kalanıyla aynı ağırlıkta durur. */
-.harita-koyu .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(1.08) contrast(0.82)
-          saturate(0.45);
-}
+/* Karolar koyu temada karartılır; açık temada olduğu gibi kalır. */
+.harita-koyu .leaflet-tile-pane { filter: var(--u-harita-filtre); }

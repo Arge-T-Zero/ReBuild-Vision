@@ -6,6 +6,8 @@ import {
   OnTahminEtiketi, OzetSayi, SinifEtiketi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
+import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
+import { Sayfa } from '../bilesenler/Duzen'
 import { CizilemeyenKutuUyarisi, TespitKutulari } from '../bilesenler/TespitKutulari'
 import { MiktarKarti } from '../bilesenler/MiktarKarti'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
@@ -63,7 +65,7 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
   const incelemeBekleyen = tumTespitler.filter((t) => t.inceleme_gerekli).length
 
   return (
-    <div className="max-w-[1400px] mx-auto p-6">
+    <Sayfa>
       <Buton tur="sessiz" boyut="kucuk" onClick={geri} className="mb-4"
         ikon={<Ikon.Geri boyut={14} />}>
         Alanlara dön
@@ -142,7 +144,7 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
           ))}
         </div>
       )}
-    </div>
+    </Sayfa>
   )
 }
 
@@ -156,7 +158,7 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
 }) {
   return (
     <Kart className="p-4">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr] items-start">
         <div>
           <TespitKutulari
             gorselUrl={api.gorselUrl(goruntu.dosya_yolu)}
@@ -170,10 +172,14 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
           <CizilemeyenKutuUyarisi tespitler={goruntu.tespitler} />
         </div>
 
-        <div>
-          <h3 className="text-sm font-semibold text-metin-2 mb-3">
-            Tespitler ({goruntu.tespitler.length})
-          </h3>
+        <div className="lg:sticky lg:top-20">
+          <div className="flex items-baseline justify-between mb-3">
+            <h3 className="text-sm font-semibold text-metin-2">Tespitler</h3>
+            <span className="text-xs text-metin-4">
+              <span className="sayisal">{goruntu.tespitler.length}</span> kayıt ·
+              hepsi ön tahmin
+            </span>
+          </div>
           <ul className="space-y-2">
             {goruntu.tespitler.map((t) => (
               <li key={t.id}>
@@ -215,7 +221,7 @@ function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir, rol }: {
   const tanim = siniflar.get(gosterilenSinif)
 
   return (
-    <div className={`border rounded-md ${acik ? 'border-vurgu' : 'border-kenar'}`}>
+    <div className={`border rounded-md ${acik ? 'border-marka' : 'border-kenar'}`}>
       <button onClick={ac} className="w-full text-left px-3 py-3 flex items-start gap-2.5">
         <span className="grow min-w-0">
           <span className="flex items-center gap-2 flex-wrap">
@@ -223,8 +229,9 @@ function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir, rol }: {
               <SinifEtiketi renk={tanim?.renk ?? '#6b7280'}
                 ad={tanim?.gorunen_ad ?? gosterilenSinif} />
             </span>
-            {/* Güven skoru sayı olarak, YUVARLANMADAN (Bölüm 9.2) */}
-            <span className="text-sm sayisal text-metin-2">{tespit.guven_skoru}</span>
+            {/* Güven skoru yüzde olarak, YUVARLANMADAN (Bölüm 9.2) */}
+            <GuvenSkoru skor={tespit.guven_skoru}
+              incelemeGerekli={tespit.inceleme_gerekli} boyut="kucuk" />
             <OnTahminEtiketi />
             <DogrulamaRozeti durum={tespit.dogrulama_durumu} boyut="kucuk" />
           </span>

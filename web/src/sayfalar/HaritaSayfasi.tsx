@@ -7,6 +7,7 @@ import {
 } from '../bilesenler/Temel'
 import { MalzemeDagilimi } from '../bilesenler/MalzemeDagilimi'
 import { Ikon } from '../bilesenler/Ikon'
+import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani } from '../types'
 import L from 'leaflet'
 
@@ -82,7 +83,7 @@ export function HaritaSayfasi() {
   const toplam = (dagilim ?? []).reduce((t, d) => t + d.adet, 0)
 
   return (
-    <div className="max-w-[1400px] mx-auto p-6">
+    <Sayfa>
       <Baslik
         ustBaslik="Doğrulanmış kayıtlar"
         baslik="Malzeme Kaynak Haritası"
@@ -164,6 +165,6 @@ export function HaritaSayfasi() {
           </Kart>
         </div>
       </div>
-    </div>
+    </Sayfa>
   )
 }
