@@ -84,7 +84,7 @@ konuşulur · *veri* = kod değil içerik.
 
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |
 |---|---|---|---|---|
-| opencv-python-headless | 4.x | Apache-2.0 | kütüphane (`maskele.py`) | https://github.com/opencv/opencv-python |
+| opencv-python-headless | **4.10.0.84** | Apache-2.0 | kütüphane (`maskele.py`) | https://github.com/opencv/opencv-python |
 
 ### 2.6. Veri kaynakları (kod değil)
 

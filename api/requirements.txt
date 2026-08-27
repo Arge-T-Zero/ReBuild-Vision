@@ -25,3 +25,5 @@ pydantic==2.10.4
 pydantic-settings==2.7.0
 httpx==0.28.1
 pillow==11.1.0
+
+# Yardımcı betikler (scripts/maskele.py) — ayrıca scripts/requirements.txt

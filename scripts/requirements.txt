@@ -1,0 +1,7 @@
+# Yardımcı betikler için bağımlılıklar.
+#
+# OpenCV 4.x'e SABİTLENMİŞTİR: OpenCV 5.0 Haar cascade sınıflandırıcılarını
+# (cv2.CascadeClassifier) kaldırdı. scripts/maskele.py bunları kullanır.
+# İleride YuNet (cv2.FaceDetectorYN) tabanlı sezime geçilebilir — daha
+# başarılı, ancak ayrı bir model dosyası gerektirir.
+opencv-python-headless==4.10.0.84  # Apache-2.0
