@@ -67,3 +67,20 @@ def test_gecerli_jeton_rol_tasir():
     assert yuk is not None
     assert yuk["sub"] == "7"
     assert yuk["rol"] == "uzman"
+
+
+def test_ortam_degiskenlerindeki_bosluk_kirpilir():
+    """Panele yapıştırırken sona karışan satır sonu ayarı bozmamalı.
+
+    Render'a yapıştırılan bağlantı dizesinin sonuna bir '\\n' karışmıştı;
+    asyncpg 'database "postgres\\n" does not exist' diyerek reddetti. Dize
+    doğruydu, görünmez karakter yüzünden başarısız oldu.
+    """
+    a = Ayarlar(
+        veritabani_url="postgresql+asyncpg://localhost:5433/rebuild_vision\n",
+        model_service_url="  http://localhost:8090  ",
+        jwt_gizli_anahtar="x" * 48,
+    )
+    assert a.veritabani_url.endswith("rebuild_vision")
+    assert "\n" not in a.veritabani_url
+    assert a.model_service_url == "http://localhost:8090"
