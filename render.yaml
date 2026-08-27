@@ -1,0 +1,66 @@
+# ReBuild Vision — Render dağıtım tanımı (Blueprint)
+#
+# Veri tabanı burada TANIMLANMAZ: PostGIS gerektiği için Supabase kullanılır
+# ve bağlantı dizesi ortam değişkeni olarak verilir.
+#
+# ⚠️ Bu ortamda YALNIZCA SENTETİK DEMO VERİSİ bulunur.
+# Bakanlık tarafından sağlanan veri ve maskelenmemiş saha fotoğrafı buraya
+# ASLA yüklenmez (şartname Madde 9.1 ve 10.5).
+
+services:
+  # --- Model servisi (şu an sahte) ---------------------------------------
+  # Gerçek YOLO11 servisi hazır olduğunda bu servis değiştirilecek ve
+  # api'nin MODEL_SERVICE_URL değeri ona çevrilecektir. AGPL sınırı gereği
+  # model her zaman AYRI bir serviste kalır (docs/lisans-analizi.md 3.4).
+  - type: web
+    name: rebuild-vision-model
+    runtime: docker
+    dockerfilePath: ./docker/model-mock.Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    # Render dinlenecek portu PORT değişkeniyle verir; Dockerfile'daki
+    # sabit port yerine onu kullanmak gerekir.
+    dockerCommand: >
+      sh -c "uvicorn app:app --app-dir model-mock --host 0.0.0.0 --port $PORT" 
+
+  # --- API ---------------------------------------------------------------
+  - type: web
+    name: rebuild-vision-api
+    runtime: docker
+    dockerfilePath: ./docker/api.Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    healthCheckPath: /
+    # Şema göçü her açılışta uygulanır; ayrıca komut çalıştırmak gerekmez.
+    dockerCommand: >
+      sh -c "alembic -c api/alembic.ini upgrade head &&
+             python scripts/demo_veri.py &&
+             uvicorn api.app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      # ORTAM=uretim iken varsayılan JWT anahtarıyla uygulama BAŞLAMAZ.
+      # Bu bilinçli bir korumadır: o anahtar depoda açıkça yazılıdır.
+      - key: ORTAM
+        value: uretim
+
+      # Render bunu kendisi üretir; kimse görmez, kopyalanmaz.
+      - key: JWT_GIZLI_ANAHTAR
+        generateValue: true
+
+      # Supabase bağlantı dizesi — Render panelinden ELLE girilir.
+      # Biçim (Session pooler, IPv4):
+      #   postgresql+asyncpg://postgres.<REF>:<PAROLA>@aws-0-<BOLGE>.pooler.supabase.com:5432/postgres
+      - key: VERITABANI_URL
+        sync: false
+
+      # fromService/hostport şemasız (host:port) döner; istemci tam URL
+      # bekliyor. Ücretsiz katmanda özel ağ da yok, bu yüzden servisin
+      # genel adresi doğrudan yazılır.
+      - key: MODEL_SERVICE_URL
+        value: https://rebuild-vision-model.onrender.com
+
+      # Arayüz Vercel'de; /api istekleri oradan vekillenir.
+      - key: IZIN_VERILEN_KAYNAKLAR
+        value: https://re-build-vision.vercel.app
