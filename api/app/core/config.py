@@ -9,6 +9,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEPO_KOKU = Path(__file__).resolve().parents[3]
 
+# Bu değer depoda açıkça yazılıdır ve herkese açıktır. Üretimde kullanılması
+# engellenir (bkz. Ayarlar.model_post_init).
+GUVENSIZ_VARSAYILAN_ANAHTAR = "gelistirme-icin-guvensiz-anahtar-DEGISTIRIN"
+
 
 class Ayarlar(BaseSettings):
     model_config = SettingsConfigDict(
@@ -19,10 +23,41 @@ class Ayarlar(BaseSettings):
         "postgresql+asyncpg://localhost:5433/rebuild_vision"
     )
     model_service_url: str = "http://localhost:8090"
-    jwt_gizli_anahtar: str = "gelistirme-icin-guvensiz-anahtar-DEGISTIRIN"
+    jwt_gizli_anahtar: str = GUVENSIZ_VARSAYILAN_ANAHTAR
     jwt_gecerlilik_dakika: int = 480
     yukleme_klasoru: str = "api/yuklenenler"
     izin_verilen_kaynaklar: str = "http://localhost:5173"
+
+    # 'gelistirme' | 'uretim'. Üretimde güvensiz varsayılanlar reddedilir.
+    ortam: str = "gelistirme"
+
+    def model_post_init(self, __context) -> None:
+        """Güvensiz varsayılan anahtarla ÜRETİME ÇIKILAMAZ.
+
+        Depo herkese açık olduğunda bu anahtarın değeri de herkese açıktır;
+        onunla imzalanan jetonlar taklit edilebilir ve herhangi biri kendine
+        yönetici jetonu üretebilir. Bu yüzden hata bir uyarı değil, açılışı
+        durduran bir hatadır.
+        """
+        if self.jwt_gizli_anahtar != GUVENSIZ_VARSAYILAN_ANAHTAR:
+            return
+
+        if self.ortam == "gelistirme":
+            print(
+                "\n  UYARI: JWT_GIZLI_ANAHTAR varsayılan (güvensiz) değerde.\n"
+                "  Bu değer depoda açıkça yazılıdır. Yalnızca yerel geliştirme\n"
+                "  için kabul edilir; yayına almadan önce mutlaka değiştirin:\n"
+                "    python3 -c \"import secrets; print(secrets.token_urlsafe(48))\"\n",
+                flush=True,
+            )
+            return
+
+        raise RuntimeError(
+            "JWT_GIZLI_ANAHTAR varsayılan (güvensiz) değerde ve ORTAM='uretim'. "
+            "Bu anahtar depoda açıkça yazılıdır; onunla imzalanan jetonlar "
+            "taklit edilebilir. Yeni bir anahtar üretip ortam değişkeni olarak "
+            "verin:  python3 -c \"import secrets; print(secrets.token_urlsafe(48))\""
+        )
 
     @property
     def kaynak_listesi(self) -> list[str]:
