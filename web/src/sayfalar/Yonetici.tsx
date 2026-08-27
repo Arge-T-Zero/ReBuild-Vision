@@ -4,6 +4,7 @@ import {
   Baslik, BosDurum, Buton, Hata, Kart, girdiSinifi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
+import { Sayfa } from '../bilesenler/Duzen'
 import type { Kullanici, Rol } from '../types'
 
 /**
@@ -42,7 +43,7 @@ export function Yonetici() {
   useEffect(() => { yenile() }, [yenile])
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <Sayfa dar>
       <Baslik
         ustBaslik="Yönetim"
         baslik="Rol onayı bekleyen hesaplar"
@@ -70,7 +71,7 @@ export function Yonetici() {
           ))}
         </ul>
       )}
-    </div>
+    </Sayfa>
   )
 }
 

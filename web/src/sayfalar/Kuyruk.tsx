@@ -6,6 +6,8 @@ import {
   girdiSinifi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
+import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
+import { Sayfa } from '../bilesenler/Duzen'
 import type { Tespit } from '../types'
 
 /**
@@ -27,7 +29,7 @@ export function Kuyruk() {
   useEffect(() => { yenile() }, [yenile])
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <Sayfa dar>
       <Baslik
         ustBaslik="Doğrulama"
         baslik="Uzman inceleme kuyruğu"
@@ -66,7 +68,7 @@ export function Kuyruk() {
           ))}
         </ul>
       )}
-    </div>
+    </Sayfa>
   )
 }
 
@@ -107,15 +109,9 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-xs text-metin-4 uppercase tracking-wide">
-              Güven
+              Model güveni
             </span>
-            <span className="h-1.5 w-24 rounded-full bg-yuzey-3 overflow-hidden">
-              <span className="block h-full rounded-full bg-uyari"
-                style={{ width: `${tespit.guven_skoru * 100}%` }} />
-            </span>
-            <span className="text-sm sayisal text-metin-2">
-              {tespit.guven_skoru}
-            </span>
+            <GuvenSkoru skor={tespit.guven_skoru} incelemeGerekli />
           </div>
           <p className="flex items-center gap-1.5 text-xs text-uyari mt-2">
             <Ikon.Uyari boyut={13} /> Uzman incelemesi gerekli

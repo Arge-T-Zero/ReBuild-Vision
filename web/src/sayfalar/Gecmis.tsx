@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
 import { Baslik, Buton, Kart } from '../bilesenler/Temel'
+import { Sayfa } from '../bilesenler/Duzen'
 
 /**
  * İşlem geçmişi sayfası — Rapor Bölüm 6, dördüncü yenilikçi yön.
@@ -24,7 +25,7 @@ export function Gecmis() {
   const [suzgec, setSuzgec] = useState<string | undefined>(undefined)
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <Sayfa dar>
       <Baslik
         ustBaslik="İzlenebilirlik"
         baslik="İşlem geçmişi"
@@ -57,6 +58,6 @@ export function Gecmis() {
       <p className="text-xs text-metin-3 mt-4 border-l-2 border-kenar-net pl-3 py-1">
         Parola özetleri ve konum geometrileri bu kayıtlara yazılmaz.
       </p>
-    </div>
+    </Sayfa>
   )
 }

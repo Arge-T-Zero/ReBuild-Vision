@@ -11,7 +11,7 @@ export function Buton({
 }) {
   const stiller = {
     birincil:
-      'bg-vurgu text-taban font-semibold hover:bg-vurgu-2 ' +
+      'bg-marka text-taban font-semibold hover:bg-marka-2 ' +
       'shadow-[0_1px_2px_rgba(0,0,0,0.4)]',
     ikincil:
       'bg-yuzey-3 text-metin border border-kenar-net hover:border-kenar-parlak ' +
@@ -59,7 +59,7 @@ export function Alan({ etiket, ipucu, children }: {
 
 export const girdiSinifi =
   'w-full px-3 py-2.5 rounded-md bg-taban border border-kenar text-metin ' +
-  'placeholder:text-metin-4 focus:border-vurgu focus:bg-yuzey ' +
+  'placeholder:text-metin-4 focus:border-marka focus:bg-yuzey ' +
   'transition-colors text-sm'
 
 export function Kart({ children, className = '', vurgulu = false }: {
@@ -67,7 +67,7 @@ export function Kart({ children, className = '', vurgulu = false }: {
 }) {
   return (
     <div className={`bg-yuzey rounded-kart border transition-colors
-      ${vurgulu ? 'border-vurgu/60' : 'border-kenar'}
+      ${vurgulu ? 'border-marka/60' : 'border-kenar'}
       shadow-[0_1px_3px_rgba(0,0,0,0.35)] ${className}`}>
       {children}
     </div>
@@ -110,7 +110,7 @@ export function OzetSayi({ deger, etiket, alt, ton = 'notr' }: {
 }) {
   const renk = {
     notr: 'text-metin',
-    vurgu: 'text-vurgu',
+    vurgu: 'text-marka',
     uyari: 'text-uyari',
   }[ton]
   return (
@@ -160,7 +160,7 @@ export function Hata({ mesaj }: { mesaj: string }) {
 
 export function Bilgi({ children }: { children: ReactNode }) {
   return (
-    <p role="status" className="text-sm bg-vurgu/10 border border-vurgu/30
+    <p role="status" className="text-sm bg-marka/10 border border-marka/30
       rounded-md px-3 py-2.5 text-metin-2">
       {children}
     </p>
@@ -190,7 +190,7 @@ export function DogrulamaRozeti({ durum, boyut = 'normal' }: {
     },
     duzeltildi: {
       metin: 'Düzeltildi',
-      sinif: 'border-solid border-vurgu/60 text-vurgu bg-vurgu/10',
+      sinif: 'border-solid border-marka/60 text-marka bg-marka/10',
       ikon: <Ikon.Duzelt boyut={12} />,
     },
     belirsiz: {

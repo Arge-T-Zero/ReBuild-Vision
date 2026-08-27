@@ -59,8 +59,8 @@ export function Giris() {
       <div className="hidden lg:flex flex-col justify-between p-12 border-r
         border-kenar bg-yuzey">
         <span className="flex items-center gap-3">
-          <span aria-hidden className="w-9 h-9 rounded-lg bg-vurgu/15
-            border border-vurgu/40 grid place-items-center text-vurgu">
+          <span aria-hidden className="w-9 h-9 rounded-lg bg-marka/15
+            border border-marka/40 grid place-items-center text-marka">
             <Ikon.Alan boyut={19} />
           </span>
           <span className="font-semibold text-lg tracking-tight">ReBuild Vision</span>
@@ -96,8 +96,8 @@ export function Giris() {
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8">
             <span className="flex items-center gap-2.5">
-              <span aria-hidden className="w-8 h-8 rounded-md bg-vurgu/15
-                border border-vurgu/40 grid place-items-center text-vurgu">
+              <span aria-hidden className="w-8 h-8 rounded-md bg-marka/15
+                border border-marka/40 grid place-items-center text-marka">
                 <Ikon.Alan boyut={17} />
               </span>
               <span className="font-semibold tracking-tight">ReBuild Vision</span>

@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Türkçe karakterleri (ğ ş ı İ ç ö ü) tam destekleyen üç aile:
+         Manrope başlık, Inter gövde, IBM Plex Mono sayısal değerler. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tema, React yüklenmeden uygulanır: sayfa açılırken yanıp sönme olmaz. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('rebuild_vision_tema');
+          if (t === 'light' || t === 'dark') {
+            document.documentElement.setAttribute('data-theme', t);
+          }
+        } catch (e) { /* depolama kapalıysa koyu temada kalır */ }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ReBuild Vision</title>
     <meta name="description" content="Afet sonrası enkaz malzemelerinin görüntü tabanlı ön sınıflandırması" />

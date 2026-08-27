@@ -6,6 +6,7 @@ import {
   Alan, Baslik, BosDurum, Buton, Hata, Kart, OzetSayi, girdiSinifi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
+import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani, Nokta } from '../types'
 import L from 'leaflet'
 
@@ -30,7 +31,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
   ).length
 
   return (
-    <div className="max-w-[1400px] mx-auto p-6">
+    <Sayfa>
       <Baslik
         ustBaslik="Saha yönetimi"
         baslik="Enkaz alanları"
@@ -127,7 +128,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
           ))}
         </ul>
       )}
-    </div>
+    </Sayfa>
   )
 }
 
