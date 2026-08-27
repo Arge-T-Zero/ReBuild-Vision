@@ -5,6 +5,50 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 27.08.2026 — P0 tamamlandı
+
+**Eklendi**
+- `api/` uç noktaları: `/auth` `/enkaz-alani` `/goruntu` `/tespit`
+  `/olcum` `/miktar` `/harita` `/gecmis` `/sistem/*`
+- Alembic şeması — sekiz tablo, PostGIS geometrileriyle
+- `scripts/demo_veri.py` — sekiz sentetik demo hesabı (Madde 10.7)
+- `scripts/gelistirme.sh` — tek komutla yerel çalıştırma
+- `scripts/maskele.py` — yüz ve plaka maskeleme (Rapor Bölüm 6)
+- `web/` React arayüzü: giriş/kayıt, enkaz alanı tanımlama (harita
+  üzerinde konum + sınır çizimi), sonuç ekranı, uzman inceleme kuyruğu,
+  Malzeme Kaynak Haritası
+- Teslim dokümanları (Madde 10.3): `kurulum.md` `kullanici-kilavuzu.md`
+  `mimari.md` `veri-modeli.md` `veri-politikasi.md` `demo-video.md`
+- `katsayilar.json` — dönüşüm katsayıları (kaynak bekliyor)
+
+**Düzeltildi**
+- Uzman düzeltmesi harita ve miktar hesabına yansımıyordu. Geçerli sınıf
+  artık `COALESCE(duzeltilen_sinif, sinif)` — insan kararı model
+  tahminini geçersiz kılar
+- `islem_gecmisi` oluşturma kayıtlarında `kayit_id` boş kalıyordu;
+  dinleyici `before_flush` yerine `after_flush` kullanıyor
+- `.gitignore` Bakanlık verisi klasörünü tümüyle dışlıyor ve `UYARI.md`
+  depoya giremiyordu; içerik bazlı dışlamaya geçildi
+- Alembic, GeoAlchemy2'nin oluşturduğu uzamsal indeksleri ikinci kez
+  oluşturmaya çalışıyordu
+
+**Doğrulandı (fiilen denendi)**
+- `'guvenli'` tehlikeli durumu SQL seviyesinde reddediliyor
+- `bbox_format` boş geçilemiyor
+- Tek değerli miktar (`alt = ust`) CHECK kısıtıyla reddediliyor
+- Ölçüm yoksa `miktar_hesabi` satırı yazılmıyor, API sayı döndürmüyor
+- Kayıtta rol yükseltme denemesi yok sayılıyor
+- `'reddet'` doğrulama şeması tarafından reddediliyor
+- Parola özeti işlem geçmişine sızmıyor
+- Bakanlık verisi ve saha fotoğrafları `git status`'ta görünmüyor
+
+**Bilinen boşluklar**
+- 🔴 Docker paketi hâlâ yok — Madde 10.3 karşılanmıyor (K-009)
+- 🟡 `katsayilar.json` boş: hacim→ağırlık dönüşümü için doğrulanmış
+  kaynak gerekiyor. Dayanaksız katsayıyla miktar hesaplanmaz
+- 🟡 Uzmana/yıkım firmasına saha atama akışı yok
+- ⏳ Mobil uygulama (P2) başlamadı
+
 ### 27.08.2026 — Proje iskeleti
 
 **Eklendi**
