@@ -192,3 +192,20 @@ yapıp rol atayın ya da `scripts/demo_veri.py` çalıştırın.
 **Port 5432 çakışması**
 Bu proje 5433 kullanır. `.env` içindeki `VERITABANI_URL` değerinin portu
 doğru olmalıdır.
+
+**Arayüz giriş yapamıyor / `/api` istekleri HTML döndürüyor**
+Vite geliştirme sunucusu `vite.config.ts` değişikliğinden sonra "server
+restarted" yazsa bile vekil (proxy) ayarını bazen yeniden yüklemez ve
+`/api/*` isteklerine SPA'nın `index.html`'ini döndürür. Belirti: giriş
+formu hata vermeden başarısız olur.
+
+Kontrol — **durum koduna değil, gövdeye bakın**, ikisi de 200 döner:
+
+```bash
+curl -s localhost:5173/api/sistem/durum | head -c 60
+# Beklenen: {"model_servisi":{...
+# Sorunlu : <!doctype html>
+```
+
+Çözüm: geliştirme sunucusunu tamamen durdurup yeniden başlatın
+(`Ctrl+C`, sonra `npm run dev`).
