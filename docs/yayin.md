@@ -63,7 +63,38 @@ yapıp görüntü yükleyebilir. Bu bilinçli kabul edilmiş bir risktir
 > Parolada `@ : / ? # [ ] %` gibi karakterler varsa bağlantı dizesinde
 > sorun çıkarır. Yalnızca harf ve rakam kullanmak en pratiği.
 
-### 1.2. PostGIS'i etkinleştir
+### 1.2. Data API ayarları — Data API'yi KAPATIN
+
+Proje oluştururken (ya da sonradan **Settings → API** altında) üç seçenek
+çıkar:
+
+| Seçenek | Durum | Gerekçe |
+|---|---|---|
+| Enable Data API | ❌ **KAPALI** | Kullanmıyoruz; açık bırakmak gereksiz saldırı yüzeyi açar |
+| Automatically expose new tables | ❌ **KAPALI** | Supabase'in kendi önerisi de bu |
+| Enable automatic RLS | ✅ **AÇIK** | Bedava savunma katmanı |
+
+**Data API neden kapalı:** Supabase, açıkken `public` şemadaki tüm tablolar
+için herkese açık bir REST uç noktası üretir. Bizim tablolarımız arasında
+`kullanici` (parola özeti, e-posta, roller), `tespit` ve `islem_gecmisi`
+var. Depo herkese açık olduğu için tablo ve sütun adları da
+`docs/veri-modeli.md` üzerinden okunabilir durumda — tahmin gerekmiyor.
+
+Sistem Supabase'i **yalnızca PostgreSQL olarak** kullanır: `supabase-js`
+yok, Supabase Auth yok (kimlik doğrulama kendi JWT'mizde — K-005), Data API
+yok. Kullanılmayan bir kapıyı hiç açmamak, açıp kilitlemeye çalışmaktan
+güvenlidir.
+
+**RLS neden açık bırakılabilir:** FastAPI tabloların sahibi olan `postgres`
+rolüyle bağlanır ve tablo sahibi RLS'i baypas eder; sorgular normal çalışır.
+İleride biri Data API'yi açarsa tablolar yine korunmuş olur.
+
+> ⚠️ **Tek belirti:** API hata vermiyor ama sorgular **boş sonuç** dönüyorsa
+> (alan listesi boş, tespit görünmüyor) sebebi RLS olabilir. Çözüm için
+> Bölüm 5'teki komuta bakın.
+
+
+### 1.3. PostGIS'i etkinleştir
 
 Sistem coğrafi geometri kullanır; PostGIS olmadan şema göçü **başarısız
 olur**.
@@ -82,7 +113,7 @@ SELECT PostGIS_Version();
 
 Sürüm numarası dönmelidir. Dönmüyorsa devam etmeyin.
 
-### 1.3. Bağlantı dizesini al
+### 1.4. Bağlantı dizesini al
 
 Sol menü → **Connect** (üst barda) → **Connection String** →
 **Session pooler** sekmesi.
@@ -101,7 +132,7 @@ Dize şuna benzer:
 postgresql://postgres.abcdefghijklm:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
 ```
 
-### 1.4. Dizeyi uygulamanın beklediği biçime çevir
+### 1.5. Dizeyi uygulamanın beklediği biçime çevir
 
 İki değişiklik gerekir:
 
@@ -135,7 +166,7 @@ etmeyin, sohbete yapıştırmayın.**
 Render kurulum sırasında `VERITABANI_URL` değerini soracak (dosyada
 `sync: false` işaretli, yani depoya yazılmaz).
 
-Adım 1.4'te hazırladığınız dizeyi yapıştırın.
+Adım 1.5'te hazırladığınız dizeyi yapıştırın.
 
 Diğer değişkenler otomatik gelir:
 
@@ -238,12 +269,29 @@ Bu bilinçli bir korumadır: `ORTAM=uretim` iken varsayılan anahtarla
 başlamaz. Render'da `JWT_GIZLI_ANAHTAR` değerinin üretildiğini doğrulayın.
 
 **`alembic upgrade head` → `type "geometry" does not exist`**
-Supabase'de PostGIS etkin değildir. Adım 1.2'yi çalıştırın, sonra Render'da
+Supabase'de PostGIS etkin değildir. Adım 1.3'ü çalıştırın, sonra Render'da
 servisi **Manual Deploy → Clear build cache & deploy** ile yeniden başlatın.
 
 **Bağlantı kopuyor / `prepared statement ... already exists`**
 Transaction pooler (port 6543) kullanılmıştır. **Session pooler** (port
-5432) dizesine geçin — gerekçe adım 1.3'te.
+5432) dizesine geçin — gerekçe adım 1.4'te.
+
+**API çalışıyor ama sorgular boş sonuç dönüyor**
+Otomatik RLS tabloları kilitlemiş olabilir. Supabase **SQL Editor**'de:
+
+```sql
+ALTER TABLE kullanici        DISABLE ROW LEVEL SECURITY;
+ALTER TABLE enkaz_alani      DISABLE ROW LEVEL SECURITY;
+ALTER TABLE goruntu          DISABLE ROW LEVEL SECURITY;
+ALTER TABLE tespit           DISABLE ROW LEVEL SECURITY;
+ALTER TABLE olcum            DISABLE ROW LEVEL SECURITY;
+ALTER TABLE miktar_hesabi    DISABLE ROW LEVEL SECURITY;
+ALTER TABLE tehlikeli_kayit  DISABLE ROW LEVEL SECURITY;
+ALTER TABLE islem_gecmisi    DISABLE ROW LEVEL SECURITY;
+```
+
+Bu güvenli bir işlemdir: Data API kapalı olduğu için tablolara yalnızca
+kendi backend'imiz erişir.
 
 **İlk istek çok yavaş (~50 sn)**
 Render ücretsiz katmanı servisi uyutmuştur. Normaldir; sunum öncesi
