@@ -29,6 +29,13 @@ export interface EnkazAlani {
   olusturan_id: number
   olusturma_tarihi: string
   goruntu_sayisi: number
+
+  /** Kart özeti — sahayı açmadan durumu görmek için. */
+  tespit_sayisi: number
+  dogrulanan_sayisi: number
+  inceleme_bekleyen: number
+  /** Yalnızca DOĞRULANMIŞ kayıtlardan; haritayla aynı kural (Bölüm 1.4). */
+  malzeme_dagilimi: { sinif: string; adet: number }[]
 }
 
 export interface BBox { x: number; y: number; w: number; h: number }

@@ -90,6 +90,11 @@ class EnkazAlaniIstek(Model):
     inceleme_tarihi: datetime | None = None
 
 
+class MalzemePayi(Model):
+    sinif: str
+    adet: int
+
+
 class EnkazAlaniCikti(Model):
     id: int
     ad: str
@@ -101,6 +106,13 @@ class EnkazAlaniCikti(Model):
     olusturan_id: int
     olusturma_tarihi: datetime
     goruntu_sayisi: int = 0
+
+    # Kart özeti — sahayı açmadan durumu görebilmek için.
+    tespit_sayisi: int = 0
+    dogrulanan_sayisi: int = 0
+    inceleme_bekleyen: int = 0
+    # Yalnızca DOĞRULANMIŞ kayıtlardan; haritayla aynı kural (Bölüm 1.4).
+    malzeme_dagilimi: list[MalzemePayi] = []
 
 
 # --- Görüntü ve tespit ------------------------------------------------------

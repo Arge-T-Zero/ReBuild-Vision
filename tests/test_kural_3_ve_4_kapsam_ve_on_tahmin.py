@@ -141,3 +141,69 @@ async def test_gecersiz_sinifa_duzeltilemez(istemci, jeton, tespit_kur):
     y = await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                            json={"durum": "duzeltildi", "duzeltilen_sinif": "altin"})
     assert y.status_code == 400
+
+
+# --- Saha kartı özeti --------------------------------------------------------
+
+async def test_saha_ozeti_yalnizca_dogrulanmis_malzeme_gosterir(
+    istemci, jeton, tespit_kur
+):
+    """Kart özeti de haritayla aynı kuralı uygular (Bölüm 1.4).
+
+    Kartta görünen malzeme dağılımı doğrulanmamış ön tahminleri içermez;
+    aksi halde saha listesi, haritanın bilinçli olarak göstermediği
+    sayıları arka kapıdan göstermiş olurdu.
+    """
+    tid = await tespit_kur("metal")
+    baslik = await jeton("belediye")
+
+    alanlar = (await istemci.get("/enkaz-alani", headers=baslik)).json()
+    a = alanlar[0]
+    assert a["tespit_sayisi"] == 1
+    assert a["dogrulanan_sayisi"] == 0
+    assert a["malzeme_dagilimi"] == [], (
+        "Doğrulanmamış tespit kart özetinde malzeme olarak görünmemeli"
+    )
+
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "onaylandi"})
+
+    a = (await istemci.get("/enkaz-alani", headers=baslik)).json()[0]
+    assert a["dogrulanan_sayisi"] == 1
+    assert a["malzeme_dagilimi"] == [{"sinif": "metal", "adet": 1}]
+
+
+async def test_saha_ozeti_uzman_duzeltmesini_yansitir(
+    istemci, jeton, tespit_kur
+):
+    tid = await tespit_kur("sert_plastik")
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
+
+    a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
+    assert a["malzeme_dagilimi"] == [{"sinif": "metal", "adet": 1}]
+
+
+async def test_saha_ozeti_inceleme_bekleyeni_sayar(istemci, jeton, tespit_kur):
+    await tespit_kur("beton", guven=0.3, inceleme=True)
+    a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
+    assert a["inceleme_bekleyen"] == 1
+
+
+async def test_saha_ozetinde_konteyner_malzeme_sayilmaz(
+    istemci, jeton, tespit_kur
+):
+    """K-007: konteyner atık malzeme değildir, dağılıma girmez.
+
+    Harita bu filtreyi uyguluyordu ama kart özeti atlıyordu; sistem aynı
+    soruya iki farklı cevap veriyordu.
+    """
+    tid = await tespit_kur("konteyner")
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "onaylandi"})
+
+    a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
+    assert a["dogrulanan_sayisi"] == 1, "sayaç doğrulanmış kaydı görmeli"
+    assert a["malzeme_dagilimi"] == [], (
+        "konteyner malzeme dağılımında görünmemeli"
+    )
