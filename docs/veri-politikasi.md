@@ -115,9 +115,35 @@ Bu, raporda verilmiş somut bir taahhüttür.
   türetilen anahtar ile şifrelenmiş veri tabanı).
 - Eşitleme başarıyla tamamlandığında yerel kopya **silinir.**
 
-**Durum:** ⏳ Mobil uygulama (P2) henüz geliştirilmemiştir. Kullanılan
-kütüphane ve yöntem, geliştirme tamamlandığında bu bölüme yazılacaktır.
-Yöntem belirlenmeden "şifreli" iddiası yapılmayacaktır.
+**Durum:** ✅ Uygulandı (29.08.2026).
+
+Kullanılan yöntem — `flutter_secure_storage` 11.0, platformun kendi
+güvenli deposu:
+
+| Platform | Yöntem |
+|---|---|
+| Android | Veri **AES/GCM/NoPadding**; şifreleme anahtarı Android Keystore içinde **RSA-OAEP** (SHA-256 + MGF1) ile sarmalanır |
+| iOS | **Keychain**, `first_unlock` erişilebilirliğiyle — cihaz kilitliyken okunamaz |
+
+Anahtar hiçbir zaman uygulamanın içinde tutulmaz; işletim sistemi yönetir
+ve uygulama kaldırılınca anahtar da gider. Oturum jetonu da aynı depoda
+saklanır.
+
+Eşitleme başarıyla tamamlanan kayıt kuyruktan **silinir**; yalnızca
+başarısız olanlar cihazda kalır.
+
+### ⚠️ Şifrelemenin sınırı — dürüst beyan
+
+Şifreli tutulan **ölçüm kayıtları ve oturum jetonudur.**
+
+**Fotoğraflar şifreli değildir.** Cihazın normal dosya sisteminde
+dururlar; güvenli depo büyük ikili dosyalar için tasarlanmamıştır.
+Fotoğrafların da şifrelenmesi ayrı bir çözüm gerektirir (dosya düzeyinde
+şifreleme + anahtar yönetimi) ve bu sürümde yapılmamıştır.
+
+Rapordaki taahhüt "mobil kayıtlar" diyor; ölçüm kayıtları bu koşulu
+karşılar. Fotoğraf tarafındaki eksik burada kayda geçirilmiştir —
+`results/bilinen-sinirlar.md` ile aynı tutumla.
 
 ---
 

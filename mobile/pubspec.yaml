@@ -1,0 +1,29 @@
+name: rebuild_vision_mobil
+description: "ReBuild Vision saha uygulaması — çevrimdışı çalışabilen görüntü yükleme ve ölçüm girişi."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Lisanslar kaynak LICENSE dosyalarından doğrulanmıştır (29.08.2026).
+  # Hepsi izin vericidir; Madde 5.5 devrini kirletmez.
+  # Ayrıntı: docs/lisans-analizi.md
+
+  http: ^1.6.0                    # BSD-3-Clause — API çağrıları
+  flutter_secure_storage: ^11.0.0 # BSD-3-Clause — şifreli yerel depolama
+  image_picker: ^1.2.3            # BSD-3-Clause — kamera ve galeri
+  geolocator: ^14.0.3             # MIT          — konum
+  connectivity_plus: ^7.3.1       # BSD-3-Clause — bağlantı durumu
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

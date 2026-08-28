@@ -1,0 +1,101 @@
+# mobile — ReBuild Vision saha uygulaması
+
+Flutter. Saha personelinin görüntü yükleyip ölçüm girdiği, **çevrimdışı
+çalışabilen** uygulama.
+
+## Neden çevrimdışı
+
+Saha personeli çoğu zaman bağlantısız çalışır. Rapor Bölüm 12 bunu somut
+bir taahhüt olarak yazmıştır:
+
+> "Mobil kayıtların cihazda **şifreli olarak** geçici biçimde saklanması
+> ve bağlantı sağlandığında eşitlenmesi."
+
+## Şifreleme nasıl sağlanıyor
+
+`flutter_secure_storage` platformun kendi güvenli deposunu kullanır:
+
+| Platform | Yöntem |
+|---|---|
+| Android | Veri **AES/GCM/NoPadding**; anahtar Android Keystore içinde **RSA-OAEP** (SHA-256 + MGF1) ile sarmalanır |
+| iOS | **Keychain**, `first_unlock` erişilebilirliğiyle — cihaz kilitliyken okunamaz |
+
+Anahtar hiçbir zaman uygulamanın içinde tutulmaz; işletim sistemi yönetir
+ve uygulama kaldırılınca anahtar da gider.
+
+Oturum jetonu da aynı depoda tutulur — `SharedPreferences` düz metindir,
+jeton orada durmamalıdır.
+
+### ⚠️ Sınır — dürüst beyan
+
+Şifreli tutulan **ölçüm kayıtları ve oturum jetonudur.** Fotoğraflar
+cihazın normal dosya sisteminde durur; güvenli depo büyük ikili dosyalar
+için tasarlanmamıştır. Fotoğrafların da şifrelenmesi ayrı bir çözüm
+gerektirir ve bu sürümde yapılmamıştır.
+
+## Yinelenen kayıt nasıl engelleniyor
+
+Her ölçüm cihazda üretilen bir `yerel_kimlik` taşır ve sunucuda bu alan
+benzersizdir.
+
+Ağ koptuğunda istemci isteği tekrarlar ama sonucu bilemez. Bu koruma
+olmadan **tek bir zayıf bağlantı ölçümleri ikiye katlar** ve miktar
+hesabını bozardı.
+
+Sunucu satır satır sonuç döner (`yazildi` / `yinelenen` / `hata`);
+uygulama yalnızca `hata` alanları kuyrukta tutar.
+
+## Çalıştırma
+
+```bash
+cd mobile
+flutter pub get
+flutter run -d chrome        # web
+flutter run                  # bağlı cihaz
+```
+
+Sunucu adresi derleme sırasında değiştirilebilir:
+
+```bash
+flutter run --dart-define=API_TABAN=http://localhost:8000
+```
+
+Varsayılan: `https://rebuild-vision-api.onrender.com`
+
+## Yapı
+
+| Dosya | İşi |
+|---|---|
+| `lib/main.dart` | Uygulama girişi, oturum kontrolü |
+| `lib/api.dart` | Sunucu istemcisi ve veri sınıfları |
+| `lib/kuyruk.dart` | Şifreli çevrimdışı kuyruk |
+| `lib/tema.dart` | Renkler — web arayüzüyle birebir aynı |
+| `lib/ekran/giris.dart` | Giriş |
+| `lib/ekran/kabuk.dart` | Alt gezinme, bağlantı durumu, eşitleme |
+| `lib/ekran/yukle.dart` | Fotoğraf çekme/seçme + konum |
+| `lib/ekran/olcum.dart` | Ölçüm girişi + kuyruk listesi |
+
+## Arayüzde korunan kurallar
+
+Web arayüzündekilerle aynıdır:
+
+1. Her model çıktısında **"ÖN TAHMİN"** etiketi
+2. Güven skoru **yuvarlanmaz**
+3. Malzeme renkleri `siniflar.json` ile birebir aynı — doğrulayıcıdan
+   geçmiş palet
+4. Kapsam uyarısı ekranda yazılı
+5. Dokunma hedefleri en az 52px — eldivenli kullanım
+
+**Çevrimdışı olmak bir hata değildir**, sahada beklenen durumdur. Bu
+yüzden kırmızı hata değil, nötr/uyarı tonunda gösterilir.
+
+## Derleme durumu
+
+| Hedef | Durum |
+|---|---|
+| Web | ✅ çalışır |
+| Android APK | ⏳ Android SDK cmdline-tools kurulu değil |
+| iOS | ⏳ Xcode kurulu değil |
+
+Kaynak kod tamamdır; APK üretimi yalnızca araç zinciri kurulumu
+gerektirir (`flutter doctor`).
