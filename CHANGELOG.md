@@ -63,7 +63,7 @@ GG.AA.YYYY.
 ### 27.08.2026 — Kalite kapısı, izlenebilirlik arayüzü ve tehlikeli madde akışı
 
 **Eklendi**
-- **89 test** (`tests/`): Bölüm 1'deki dört ihlal edilemez kural,
+- **118 test** (`tests/`): Bölüm 1'deki dört ihlal edilemez kural,
   yedi rolün yetkileri, izlenebilirlik ve `bbox_format` regresyon testleri.
   Test veri tabanı ayrı; şema gerçek Alembic göçüyle kuruluyor
 - İşlem geçmişi **arayüzü** — Bölüm 4.2 "arayüzde de görünür olmalı"
