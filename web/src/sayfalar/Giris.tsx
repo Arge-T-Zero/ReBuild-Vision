@@ -61,14 +61,17 @@ export function Giris() {
             değildir (Madde 10.7 ile uyumlu, telif sorunu yok). */}
         <img
           src="/gorseller/giris-hero.webp" alt="" aria-hidden
-          className="absolute inset-0 w-full h-full object-cover opacity-25"
+          className="absolute inset-0 w-full h-full object-cover opacity-90"
           fetchPriority="high"
         />
         {/* Metnin okunabilirliği için koyudan açığa geçiş katmanı */}
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-br
-          from-taban/95 via-taban/80 to-taban/95" />
+        {/* Metnin oturduğu sol tarafı koyultan yönlü geçiş; sağ taraf
+            açık kalır, böylece görsel gerçekten görünür. */}
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-r
+          from-taban via-taban/70 to-transparent" />
+        {/* Alt ve üst kenarda içeriği taşıyan hafif koyultma */}
         <div aria-hidden className="absolute inset-0
-          bg-gradient-to-t from-taban via-transparent to-transparent" />
+          bg-gradient-to-t from-taban/80 via-transparent to-taban/30" />
         <span className="flex items-center gap-3 relative">
           <span aria-hidden className="w-9 h-9 rounded-lg bg-marka/15
             border border-marka/40 grid place-items-center text-marka">
