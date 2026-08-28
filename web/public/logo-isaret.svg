@@ -1,0 +1,26 @@
+<!--
+  ReBuild Vision — geçici marka işareti.
+
+  ⚠️ BU GEÇİCİ BİR ÇÖZÜMDÜR. Takımın gerçek logosu hazır olduğunda bu dosya
+  değiştirilecektir. Mevcut takım logosu koyu temada kayboluyordu
+  (piksellerin yalnızca %17'si siyah zeminde görünür parlaklıkta) ve
+  1.84:1 yatay oranıyla kare alana sığmıyordu.
+
+  Tasarım: üst üste binen üç malzeme katmanı, ortada bir doğrulama
+  işareti. Katmanlar enkazın ayrıştırılmasını, işaret ise projenin asıl
+  iddiasını (insan denetimli doğrulama) anlatır.
+
+  `currentColor` kullanır: hangi temada olursa olsun metin rengini alır,
+  ayrı açık/koyu sürüm gerekmez. 24 pikselde de okunur.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+     fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round"
+     role="img" aria-label="ReBuild Vision">
+  <!-- Alt katman -->
+  <path d="M4 22.5 L16 28 L28 22.5" opacity="0.45" />
+  <!-- Orta katman -->
+  <path d="M4 16 L16 21.5 L28 16" opacity="0.7" />
+  <!-- Üst katman — kapalı dörtgen -->
+  <path d="M4 9.5 L16 4 L28 9.5 L16 15 Z" />
+</svg>

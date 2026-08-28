@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import { Alan, Buton, Hata, girdiSinifi } from '../bilesenler/Temel'
-import { Ikon } from '../bilesenler/Ikon'
 
 const OZELLIKLER = [
   {
@@ -73,7 +72,7 @@ export function Giris() {
         <span className="flex items-center gap-3 relative">
           <span aria-hidden className="w-9 h-9 rounded-lg bg-marka/15
             border border-marka/40 grid place-items-center text-marka">
-            <Ikon.Alan boyut={19} />
+            <img src="/logo-isaret.svg" alt="" aria-hidden width={20} height={20} />
           </span>
           <span className="font-semibold text-lg tracking-tight">ReBuild Vision</span>
         </span>
@@ -110,7 +109,7 @@ export function Giris() {
             <span className="flex items-center gap-2.5">
               <span aria-hidden className="w-8 h-8 rounded-md bg-marka/15
                 border border-marka/40 grid place-items-center text-marka">
-                <Ikon.Alan boyut={17} />
+                <img src="/logo-isaret.svg" alt="" aria-hidden width={18} height={18} />
               </span>
               <span className="font-semibold tracking-tight">ReBuild Vision</span>
             </span>
