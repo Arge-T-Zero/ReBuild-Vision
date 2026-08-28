@@ -80,6 +80,30 @@ konuşulur · *veri* = kod değil içerik.
 | @vitejs/plugin-react | 5.x | MIT | derleme aracı | https://github.com/vitejs/vite-plugin-react |
 | oxlint | 1.x | MIT | geliştirme aracı (lint) | https://github.com/oxc-project/oxc |
 
+### 2.4.1. Yazı tipleri — kendi sunucumuzdan
+
+Üçü de **SIL Open Font License 1.1** ile lisanslıdır; gömme, değiştirme ve
+yeniden dağıtım serbesttir. Madde 5.5 devrini kirletmezler.
+
+| Aile | Lisans | Kullanım | Kaynak |
+|---|---|---|---|
+| Manrope | OFL 1.1 | başlıklar | https://github.com/sharanda/manrope |
+| Inter | OFL 1.1 | gövde metni | https://github.com/rsms/inter |
+| IBM Plex Mono | OFL 1.1 | sayısal değerler | https://github.com/IBM/plex |
+
+Dosyalar `web/public/yazitipi/` altında **kendi sunucumuzdan** servis edilir,
+Google Fonts'tan çekilmez. İki gerekçe:
+
+1. **Gizlilik.** Google Fonts'tan çekmek her ziyaretçinin IP adresini
+   üçüncü bir tarafa gönderir. Kamu afet yönetimi aracında bu gereksiz bir
+   veri akışıdır ve Madde 10.5'in ruhuyla bağdaşmaz.
+2. **Performans.** Stil dosyası sayfa render'ını 2.480 ms bloke ediyordu
+   (`results/lighthouse.md`).
+
+Yalnızca `latin` ve `latin-ext` alt kümeleri indirilmiştir; Türkçe
+karakterler (ğ ş ı İ ç ö ü) `latin-ext` içindedir. Kiril, Yunan ve
+Vietnamca alt kümeleri alınmamıştır.
+
 ### 2.5. Yardımcı betikler (`scripts/`)
 
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |

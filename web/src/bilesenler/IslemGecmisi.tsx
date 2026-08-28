@@ -103,8 +103,9 @@ export function IslemGecmisiListesi({
   if (kayitlar.length === 0) {
     return kompakt
       ? <p className="text-xs text-metin-3">Bu kayıtta henüz değişiklik yok.</p>
-      : <BosDurum baslik="Henüz işlem kaydı yok"
-          aciklama="Sistemdeki her yazma işlemi burada görünür." />
+      : <BosDurum
+          baslik="Henüz işlem kaydı yok"
+          aciklama="Bir alan tanımlandığında, görüntü yüklendiğinde, tespit doğrulandığında ya da ölçüm girildiğinde kayıt buraya otomatik düşer. Kayıtlar silinemez ve düzenlenemez." />
   }
 
   return (

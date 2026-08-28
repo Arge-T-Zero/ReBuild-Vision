@@ -1,16 +1,21 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { DurumSaglayici, useDurum } from './durum'
 import { TemaSaglayici, useTema } from './tema'
+import { GezinmeSaglayici } from './gezinme'
 import { Buton } from './bilesenler/Temel'
 import { Ikon } from './bilesenler/Ikon'
 import { SAYFA_ETIKETI, rolTanimi } from './roller'
 import type { SayfaAdi } from './roller'
 import { Giris } from './sayfalar/Giris'
 import { Yukle } from './sayfalar/Yukle'
-import { Alanlar } from './sayfalar/Alanlar'
+const Alanlar = lazy(() =>
+  import('./sayfalar/Alanlar').then((m) => ({ default: m.Alanlar })))
 import { AlanDetay } from './sayfalar/AlanDetay'
 import { Kuyruk } from './sayfalar/Kuyruk'
-import { HaritaSayfasi } from './sayfalar/HaritaSayfasi'
+// Harita sayfaları Leaflet'i yükler (~150 KB). Giriş ekranında ve
+// çoğu sayfada gerekmediği için ayrı parçaya alındı.
+const HaritaSayfasi = lazy(() =>
+  import('./sayfalar/HaritaSayfasi').then((m) => ({ default: m.HaritaSayfasi })))
 import { Gecmis } from './sayfalar/Gecmis'
 import { Yonetici } from './sayfalar/Yonetici'
 
@@ -67,7 +72,15 @@ function Kabuk() {
   const aktif = (ad: string) =>
     konum.ad === ad || (ad === 'alanlar' && konum.ad === 'alan')
 
+  const gezinme = {
+    git: (s: Exclude<SayfaAdi, 'alan'>) => setKonum({ ad: s }),
+    alanaGit: (id: number) => setKonum({ ad: 'alan', id }),
+    // Menüsünde olmayan bir sayfaya yönlendirmek anlamsız olurdu.
+    erisilebilir: (s: Exclude<SayfaAdi, 'alan'>) => tanim.menu.includes(s),
+  }
+
   return (
+    <GezinmeSaglayici deger={gezinme}>
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-kenar bg-yuzey sticky top-0 z-20">
         <div className="max-w-[1240px] mx-auto px-5 sm:px-6 h-14
@@ -115,9 +128,10 @@ function Kabuk() {
       </header>
 
       <main className="grow">
-        {konum.ad === 'yukle' && (
-          <Yukle alanaGit={(id) => setKonum({ ad: 'alan', id })} />
-        )}
+        <Suspense fallback={
+          <div className="p-10 text-center text-metin-3 text-sm">Yükleniyor…</div>
+        }>
+        {konum.ad === 'yukle' && <Yukle />}
         {konum.ad === 'alanlar' && (
           <Alanlar acildi={(id) => setKonum({ ad: 'alan', id })} />
         )}
@@ -129,6 +143,7 @@ function Kabuk() {
         {konum.ad === 'harita' && <HaritaSayfasi />}
         {konum.ad === 'gecmis' && <Gecmis />}
         {konum.ad === 'yonetici' && <Yonetici />}
+        </Suspense>
       </main>
 
       <footer className="border-t border-kenar mt-10">
@@ -143,6 +158,7 @@ function Kabuk() {
         </div>
       </footer>
     </div>
+    </GezinmeSaglayici>
   )
 }
 

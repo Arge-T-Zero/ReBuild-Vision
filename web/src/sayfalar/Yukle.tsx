@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
+import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
 import {
   Baslik, Bilgi, BosDurum, Buton, Hata, KapsamUyarisi, Kart, SinifEtiketi,
@@ -17,8 +18,9 @@ import type { EnkazAlani, YuklemeSonucu } from '../types'
  * giriş yapınca boş bir alan listesiyle karşılaşıyor, ne yapacağını
  * anlamıyordu. Artık doğrudan çalışma ekranına düşüyor.
  */
-export function Yukle({ alanaGit }: { alanaGit: (id: number) => void }) {
+export function Yukle() {
   const { durum, siniflar } = useDurum()
+  const { alanaGit, git, erisilebilir } = useGezinme()
   const [alanlar, setAlanlar] = useState<EnkazAlani[] | null>(null)
   const [seciliAlan, setSeciliAlan] = useState<number | ''>('')
   const [dosyalar, setDosyalar] = useState<File[]>([])
@@ -80,7 +82,13 @@ export function Yukle({ alanaGit }: { alanaGit: (id: number) => void }) {
           <BosDurum
             ikon={<Ikon.Alan boyut={20} />}
             baslik="Size atanmış bir saha bulunmuyor"
-            aciklama="Görüntü yükleyebilmek için önce bir enkaz alanına bağlı olmanız gerekir. Belediye ya da AFAD yetkilisi alanı tanımladıktan sonra burada görünecektir. Bu arada malzeme haritasından mevcut kayıtları inceleyebilirsiniz."
+            aciklama="Görüntü yükleyebilmek için önce bir enkaz alanına bağlı olmanız gerekir. Belediye ya da AFAD yetkilisi alanı tanımladıktan sonra burada görünecektir."
+            aksiyon={erisilebilir('harita') && (
+              <Buton tur="ikincil" onClick={() => git('harita')}
+                ikon={<Ikon.Harita boyut={15} />}>
+                Malzeme haritasına bak
+              </Buton>
+            )}
           />
         </Kart>
       ) : (

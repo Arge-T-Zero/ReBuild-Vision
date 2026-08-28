@@ -156,6 +156,10 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
   olcebilir: boolean
   rol: string
 }) {
+  // Listede üzerine gelinen tespitin kutusu görüntüde öne çıkar; ters yönde
+  // de çalışır. İki panel arasındaki bağı gözle kurmak zordu.
+  const [vurgulu, setVurgulu] = useState<number | null>(null)
+
   return (
     <Kart className="p-4">
       <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr] items-start">
@@ -168,6 +172,8 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
             siniflar={siniflar as never}
             secili={secili}
             secildi={secildi}
+            vurgulu={vurgulu}
+            vurgulandi={setVurgulu}
           />
           <CizilemeyenKutuUyarisi tespitler={goruntu.tespitler} />
         </div>
@@ -189,6 +195,8 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
                   ac={() => secildi(t.id)}
                   olcebilir={olcebilir}
                   rol={rol}
+                  vurgulu={vurgulu === t.id}
+                  vurgulandi={setVurgulu}
                 />
               </li>
             ))}
@@ -199,13 +207,17 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
   )
 }
 
-function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir, rol }: {
+function TespitSatiri({
+  tespit, siniflar, acik, ac, olcebilir, rol, vurgulu, vurgulandi,
+}: {
   tespit: Tespit
   siniflar: Map<string, { renk: string; gorunen_ad: string; malzeme_mi: boolean }>
   acik: boolean
   ac: () => void
   olcebilir: boolean
   rol: string
+  vurgulu: boolean
+  vurgulandi: (id: number | null) => void
 }) {
   const [miktar, setMiktar] = useState<Miktar | null>(null)
   const [olcumler, setOlcumler] = useState<Olcum[]>([])
@@ -221,8 +233,17 @@ function TespitSatiri({ tespit, siniflar, acik, ac, olcebilir, rol }: {
   const tanim = siniflar.get(gosterilenSinif)
 
   return (
-    <div className={`border rounded-md ${acik ? 'border-marka' : 'border-kenar'}`}>
-      <button onClick={ac} className="w-full text-left px-3 py-3 flex items-start gap-2.5">
+    <div
+      onMouseEnter={() => vurgulandi(tespit.id)}
+      onMouseLeave={() => vurgulandi(null)}
+      className={`border rounded-md transition-colors
+        ${acik ? 'border-marka' : vurgulu ? 'border-kenar-parlak bg-yuzey-2'
+                                          : 'border-kenar'}`}
+    >
+      <button onClick={ac}
+        onFocus={() => vurgulandi(tespit.id)}
+        onBlur={() => vurgulandi(null)}
+        className="w-full text-left px-3 py-3 flex items-start gap-2.5">
         <span className="grow min-w-0">
           <span className="flex items-center gap-2 flex-wrap">
             <span className="font-medium">
