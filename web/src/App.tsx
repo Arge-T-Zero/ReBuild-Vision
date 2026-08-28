@@ -88,7 +88,7 @@ function Kabuk() {
           <span className="flex items-center gap-2.5 shrink-0">
             <span aria-hidden className="w-7 h-7 rounded-md bg-marka/15
               border border-marka/40 grid place-items-center text-marka">
-              <Ikon.Alan boyut={15} />
+              <img src="/logo-isaret.svg" alt="" aria-hidden width={16} height={16} />
             </span>
             <span className="font-semibold tracking-tight hidden sm:inline">
               ReBuild Vision
