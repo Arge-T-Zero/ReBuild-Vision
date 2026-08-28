@@ -114,8 +114,21 @@ Tam gerekçe: `docs/karar-kaydi.md` **K-004**.
 | `yontem` | varchar(200) | **Zorunlu** — izlenebilirlik için |
 | `giren_id` | FK → `kullanici` | |
 | `tarih` | timestamptz | |
+| `yerel_kimlik` | varchar(64), **benzersiz** | Çevrimdışı eşitleme anahtarı |
 
 > Bu tabloda kayıt olması, miktar hesabının **tek ön koşuludur.**
+
+#### `yerel_kimlik` neden var
+
+Saha personeli çoğu zaman bağlantısız çalışır; kayıtlar cihazda şifreli
+bir kuyrukta birikir ve bağlantı gelince toplu gönderilir (Rapor Bölüm 12).
+
+Ağ koptuğunda istemci isteği tekrarlar ama sonucu bilemez. Bu alan
+cihazda üretilir ve **benzersizdir**: aynı ölçüm iki kez gönderilse bile
+bir kez yazılır. Bu koruma olmasa tek bir zayıf bağlantı ölçümleri ikiye
+katlar ve miktar hesabını bozardı.
+
+Sunucudan girilen ölçümlerde alan `NULL` kalır.
 
 ---
 
