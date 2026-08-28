@@ -186,6 +186,36 @@ class OlcumIstek(Model):
     yontem: str
 
 
+class EsitlemeSatiri(Model):
+    """Çevrimdışı kuyruktan gelen tek ölçüm."""
+    # Cihazda üretilir (UUID). Yinelenen yazımı engelleyen anahtar budur.
+    yerel_kimlik: Annotated[str, StringConstraints(min_length=8, max_length=64)]
+    tespit_id: int
+    tur: OlcumTuru
+    deger: float = Field(gt=0)
+    birim: str
+    yontem: str
+
+
+class EsitlemeIstek(Model):
+    kayitlar: list[EsitlemeSatiri] = Field(min_length=1, max_length=200)
+
+
+class EsitlemeSatirSonucu(Model):
+    yerel_kimlik: str
+    # yazildi | yinelenen | hata
+    durum: str
+    aciklama: str | None = None
+
+
+class EsitlemeSonucu(Model):
+    """Kısmi başarı normaldir; istemci yalnızca hatalıları kuyrukta tutar."""
+    yazilan: int
+    yinelenen: int
+    hatali: int
+    satirlar: list[EsitlemeSatirSonucu]
+
+
 class OlcumCikti(Model):
     id: int
     tespit_id: int

@@ -220,6 +220,13 @@ class Olcum(Temel):
     giren_id: Mapped[int] = mapped_column(ForeignKey("kullanici.id"))
     tarih: Mapped[datetime] = _simdi()
 
+    # Çevrimdışı eşitleme: mobil cihazda üretilen kimlik. Ağ koptuğunda
+    # istemci isteği tekrarlar ama sonucu bilemez; benzersizlik kısıtı
+    # aynı ölçümün iki kez yazılmasını engeller.
+    yerel_kimlik: Mapped[str | None] = mapped_column(
+        String(64), unique=True, nullable=True, index=True
+    )
+
     tespit: Mapped["Tespit"] = relationship(back_populates="olcumler")
 
     __table_args__ = (
