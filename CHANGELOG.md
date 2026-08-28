@@ -5,6 +5,29 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 29.08.2026 — Mobil uygulama, rapor indirme ve çevrimdışı eşitleme
+
+**Eklendi**
+- **`mobile/` — Flutter saha uygulaması (P2)**. Çevrimdışı çalışır;
+  ölçümler cihazda **şifreli** kuyrukta birikir, bağlantı gelince
+  kendiliğinden gönderilir (Rapor Bölüm 12)
+- `POST /esitleme/olcum` — çevrimdışı kuyruğun sunucu tarafı. Yinelenen
+  yazım `yerel_kimlik` ile engellenir; kısmi başarı normaldir
+- **Rapor indirme (P3)**: JSON, GeoJSON ve CSV. Dosyadaki kurallar
+  ekrandakiyle aynı — doğrulanmamış kayıt dışa aktarılmaz, hesaplanmamış
+  miktar boş kalır
+- OG kapağı bestelendi; geçici marka işareti ve favicon
+
+**Ölçüldü**
+- Lighthouse: **Erişilebilirlik 100 · En İyi Uygulamalar 100 · SEO 100**,
+  Performans 81 (`results/lighthouse.md`)
+
+**Kayda geçen sınırlar**
+- Mobilde **fotoğraflar şifreli değil** — güvenli depo büyük ikili
+  dosyalar için tasarlanmamış (`docs/veri-politikasi.md`)
+- Android APK ve iOS derlemesi araç zinciri kurulumu bekliyor; kaynak kod
+  tamam
+
 ### 28.08.2026 — Canlı demo ortamı yayında
 
 **Eklendi**
