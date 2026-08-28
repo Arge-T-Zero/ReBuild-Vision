@@ -104,6 +104,24 @@ Yalnızca `latin` ve `latin-ext` alt kümeleri indirilmiştir; Türkçe
 karakterler (ğ ş ı İ ç ö ü) `latin-ext` içindedir. Kiril, Yunan ve
 Vietnamca alt kümeleri alınmamıştır.
 
+### 2.4.2. Mobil uygulama (`mobile/`)
+
+Flutter ve Dart **BSD-3-Clause** lisanslıdır.
+
+Lisanslar `pub.dev` sayfasından değil, **paketlerin kendi `LICENSE`
+dosyalarından** doğrulanmıştır (29.08.2026). Bu ayrım önemli: pub.dev
+üzerinden okunan değerler yanlış çıktı (hepsine MIT diyordu).
+
+| Paket | Sürüm | Lisans | Kullanım |
+|---|---|---|---|
+| flutter_secure_storage | 11.0 | BSD-3-Clause | Şifreli yerel depolama |
+| http | 1.6 | BSD-3-Clause | API çağrıları |
+| image_picker | 1.2 | BSD-3-Clause | Kamera ve galeri |
+| geolocator | 14.0 | MIT | Konum |
+| connectivity_plus | 7.3 | BSD-3-Clause | Bağlantı durumu |
+
+Hepsi izin vericidir; Madde 5.5 devrini kirletmez.
+
 ### 2.5. Yardımcı betikler (`scripts/`)
 
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |

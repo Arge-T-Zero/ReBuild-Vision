@@ -1,0 +1,272 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+import 'kuyruk.dart';
+
+/// Sunucu istemcisi.
+///
+/// Oturum jetonu güvenli depoda tutulur — `SharedPreferences` düz metindir,
+/// jeton orada durmamalıdır.
+class Api {
+  /// Sunucu adresi. Derleme sırasında değiştirilebilir:
+  ///   flutter run --dart-define=API_TABAN=https://...
+  static const taban = String.fromEnvironment(
+    'API_TABAN',
+    defaultValue: 'https://rebuild-vision-api.onrender.com',
+  );
+
+  static const _jetonAnahtari = 'rebuild_vision_jeton';
+
+  final http.Client _istemci;
+  final FlutterSecureStorage _depo;
+
+  Api({http.Client? istemci, FlutterSecureStorage? depo})
+      : _istemci = istemci ?? http.Client(),
+        _depo = depo ??
+            const FlutterSecureStorage(
+              aOptions: AndroidOptions(),
+              iOptions: IOSOptions(
+                accessibility: KeychainAccessibility.first_unlock,
+              ),
+            );
+
+  Future<String?> jeton() => _depo.read(key: _jetonAnahtari);
+  Future<void> jetonSil() => _depo.delete(key: _jetonAnahtari);
+
+  Future<Map<String, String>> _basliklar({bool govdeVar = false}) async {
+    final j = await jeton();
+    return {
+      if (j != null) 'Authorization': 'Bearer $j',
+      if (govdeVar) 'Content-Type': 'application/json',
+    };
+  }
+
+  Never _hata(http.Response y) {
+    String mesaj = 'İstek başarısız (${y.statusCode})';
+    try {
+      final g = jsonDecode(utf8.decode(y.bodyBytes));
+      if (g is Map && g['detail'] is String) mesaj = g['detail'] as String;
+    } catch (_) {/* gövde JSON değilse varsayılan mesaj kalır */}
+    throw ApiHatasi(y.statusCode, mesaj);
+  }
+
+  dynamic _coz(http.Response y) {
+    if (y.statusCode < 200 || y.statusCode >= 300) _hata(y);
+    return jsonDecode(utf8.decode(y.bodyBytes));
+  }
+
+  // --- Kimlik ---------------------------------------------------------
+
+  Future<Kullanici> giris(String eposta, String parola) async {
+    final y = await _istemci.post(
+      Uri.parse('$taban/auth/giris'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'eposta': eposta, 'parola': parola}),
+    );
+    final d = _coz(y) as Map<String, dynamic>;
+    await _depo.write(key: _jetonAnahtari, value: d['jeton'] as String);
+    return Kullanici.jsondan(d['kullanici'] as Map<String, dynamic>);
+  }
+
+  Future<Kullanici?> ben() async {
+    if (await jeton() == null) return null;
+    final y = await _istemci.get(
+      Uri.parse('$taban/auth/ben'),
+      headers: await _basliklar(),
+    );
+    if (y.statusCode == 401 || y.statusCode == 403) {
+      await jetonSil();
+      return null;
+    }
+    return Kullanici.jsondan(_coz(y) as Map<String, dynamic>);
+  }
+
+  // --- Saha ve görüntü -------------------------------------------------
+
+  Future<List<EnkazAlani>> alanlar() async {
+    final y = await _istemci.get(
+      Uri.parse('$taban/enkaz-alani'),
+      headers: await _basliklar(),
+    );
+    return (_coz(y) as List)
+        .map((e) => EnkazAlani.jsondan(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Görüntü yükler. Konum verilirse sorgu dizesine eklenir.
+  Future<Map<String, dynamic>> goruntuYukle(
+    int alanId,
+    List<File> dosyalar, {
+    double? enlem,
+    double? boylam,
+  }) async {
+    final adres = Uri.parse('$taban/goruntu/yukle/$alanId').replace(
+      queryParameters: {
+        if (enlem != null) 'enlem': '$enlem',
+        if (boylam != null) 'boylam': '$boylam',
+      },
+    );
+    final istek = http.MultipartRequest('POST', adres)
+      ..headers.addAll(await _basliklar());
+    for (final d in dosyalar) {
+      istek.files.add(await http.MultipartFile.fromPath('dosyalar', d.path));
+    }
+    final y = await http.Response.fromStream(await istek.send());
+    return _coz(y) as Map<String, dynamic>;
+  }
+
+  Future<List<Tespit>> alanTespitleri(int alanId) async {
+    final y = await _istemci.get(
+      Uri.parse('$taban/goruntu/alan/$alanId'),
+      headers: await _basliklar(),
+    );
+    return (_coz(y) as List)
+        .expand((g) => (g['tespitler'] as List))
+        .map((e) => Tespit.jsondan(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  // --- Çevrimdışı eşitleme ---------------------------------------------
+
+  /// Kuyruğu sunucuya gönderir ve satır sonuçlarını döner.
+  ///
+  /// Kısmi başarı normaldir: yirmi kayıttan üçü geçersizse diğerleri
+  /// yazılır. Çağıran taraf yalnızca `hata` olanları kuyrukta tutmalıdır.
+  Future<EsitlemeSonucu> esitle(List<KuyrukKaydi> kayitlar) async {
+    final y = await _istemci.post(
+      Uri.parse('$taban/esitleme/olcum'),
+      headers: await _basliklar(govdeVar: true),
+      body: jsonEncode({
+        'kayitlar': kayitlar.map((k) => k.esitlemeIcin()).toList(),
+      }),
+    );
+    return EsitlemeSonucu.jsondan(_coz(y) as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> siniflar() async {
+    final y = await _istemci.get(Uri.parse('$taban/sistem/siniflar'));
+    return _coz(y) as Map<String, dynamic>;
+  }
+}
+
+class ApiHatasi implements Exception {
+  final int durum;
+  final String mesaj;
+  ApiHatasi(this.durum, this.mesaj);
+  @override
+  String toString() => mesaj;
+}
+
+// --- Veri sınıfları ---------------------------------------------------
+
+class Kullanici {
+  final int id;
+  final String ad;
+  final String eposta;
+  final String? rol;
+
+  Kullanici({
+    required this.id,
+    required this.ad,
+    required this.eposta,
+    this.rol,
+  });
+
+  factory Kullanici.jsondan(Map<String, dynamic> j) => Kullanici(
+        id: j['id'] as int,
+        ad: j['ad'] as String,
+        eposta: j['eposta'] as String,
+        rol: j['rol'] as String?,
+      );
+}
+
+class EnkazAlani {
+  final int id;
+  final String ad;
+  final int goruntuSayisi;
+  final int tespitSayisi;
+  final int incelemeBekleyen;
+
+  EnkazAlani({
+    required this.id,
+    required this.ad,
+    required this.goruntuSayisi,
+    required this.tespitSayisi,
+    required this.incelemeBekleyen,
+  });
+
+  factory EnkazAlani.jsondan(Map<String, dynamic> j) => EnkazAlani(
+        id: j['id'] as int,
+        ad: j['ad'] as String,
+        goruntuSayisi: (j['goruntu_sayisi'] ?? 0) as int,
+        tespitSayisi: (j['tespit_sayisi'] ?? 0) as int,
+        incelemeBekleyen: (j['inceleme_bekleyen'] ?? 0) as int,
+      );
+}
+
+class Tespit {
+  final int id;
+  final String sinif;
+  final String? duzeltilenSinif;
+  final double guvenSkoru;
+  final String dogrulamaDurumu;
+  final bool incelemeGerekli;
+
+  /// Her model çıktısı "ön tahmin"dir, istisnasız (ana talimat Bölüm 1.4).
+  final String etiket;
+
+  Tespit({
+    required this.id,
+    required this.sinif,
+    this.duzeltilenSinif,
+    required this.guvenSkoru,
+    required this.dogrulamaDurumu,
+    required this.incelemeGerekli,
+    required this.etiket,
+  });
+
+  /// Uzman düzelttiyse geçerli sınıf odur — insan kararı modeli geçersiz kılar.
+  String get gecerliSinif => duzeltilenSinif ?? sinif;
+
+  factory Tespit.jsondan(Map<String, dynamic> j) => Tespit(
+        id: j['id'] as int,
+        sinif: j['sinif'] as String,
+        duzeltilenSinif: j['duzeltilen_sinif'] as String?,
+        guvenSkoru: (j['guven_skoru'] as num).toDouble(),
+        dogrulamaDurumu: j['dogrulama_durumu'] as String,
+        incelemeGerekli: (j['inceleme_gerekli'] ?? false) as bool,
+        etiket: (j['etiket'] ?? 'ön tahmin') as String,
+      );
+}
+
+class EsitlemeSonucu {
+  final int yazilan;
+  final int yinelenen;
+  final int hatali;
+
+  /// Kuyruktan silinecek kayıtlar: yazılan + yinelenen.
+  /// Yinelenen de silinir çünkü sunucuda zaten vardır.
+  final Set<String> silinecek;
+
+  EsitlemeSonucu({
+    required this.yazilan,
+    required this.yinelenen,
+    required this.hatali,
+    required this.silinecek,
+  });
+
+  factory EsitlemeSonucu.jsondan(Map<String, dynamic> j) {
+    final satirlar = (j['satirlar'] as List).cast<Map<String, dynamic>>();
+    return EsitlemeSonucu(
+      yazilan: j['yazilan'] as int,
+      yinelenen: j['yinelenen'] as int,
+      hatali: j['hatali'] as int,
+      silinecek: satirlar
+          .where((s) => s['durum'] == 'yazildi' || s['durum'] == 'yinelenen')
+          .map((s) => s['yerel_kimlik'] as String)
+          .toSet(),
+    );
+  }
+}
