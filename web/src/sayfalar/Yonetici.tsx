@@ -59,7 +59,7 @@ export function Yonetici() {
           <BosDurum
             ikon={<Ikon.Kullanici boyut={20} />}
             baslik="Onay bekleyen hesap yok"
-            aciklama="Yeni bir kullanıcı kayıt olduğunda burada görünecek ve rol atanmayı bekleyecektir."
+            aciklama="Tüm başvurular karara bağlanmış. Yeni bir kullanıcı kayıt olduğunda burada görünür ve rol atanana kadar giriş yapamaz."
           />
         </Kart>
       ) : (

@@ -1,0 +1,9 @@
+# ReBuild Vision — demo ortamı
+#
+# Bu bir kamu afet yönetimi aracının gösterim sürümüdür ve sentetik
+# demo verisi içerir. Arama motorlarında dizinlenmesi amaçlanmamıştır.
+
+User-agent: *
+Disallow:
+
+Sitemap: https://re-build-vision.vercel.app/sitemap.xml

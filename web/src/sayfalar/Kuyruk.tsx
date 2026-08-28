@@ -6,6 +6,7 @@ import {
   girdiSinifi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
+import { useGezinme } from '../gezinme'
 import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { Tespit } from '../types'
@@ -19,6 +20,7 @@ import type { Tespit } from '../types'
  */
 export function Kuyruk() {
   const { siniflar, siniflarHam } = useDurum()
+  const { git, erisilebilir } = useGezinme()
   const [kayitlar, setKayitlar] = useState<Tespit[] | null>(null)
   const [hata, setHata] = useState('')
 
@@ -51,8 +53,14 @@ export function Kuyruk() {
         <Kart>
           <BosDurum
             ikon={<Ikon.Onayla boyut={20} />}
-            baslik="İnceleme bekleyen tespit yok"
-            aciklama="Düşük güvenli bir tespit oluştuğunda burada otomatik olarak görünecektir."
+            baslik="Kuyruk temiz — bekleyen inceleme yok"
+            aciklama="Model güveni düşük bir tespit oluştuğunda buraya kendiliğinden düşer; ayrıca bir şey yapmanız gerekmez."
+            aksiyon={erisilebilir('alanlar') && (
+              <Buton tur="ikincil" onClick={() => git('alanlar')}
+                ikon={<Ikon.Alan boyut={15} />}>
+                Enkaz alanlarını incele
+              </Buton>
+            )}
           />
         </Kart>
       ) : (

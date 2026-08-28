@@ -103,8 +103,8 @@ export function Giris() {
         </p>
       </div>
 
-      {/* Sağ: form */}
-      <div className="flex items-center justify-center p-6 sm:p-10">
+      {/* Sağ: form — sayfanın ana içeriği */}
+      <main className="flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8">
             <span className="flex items-center gap-2.5">
@@ -179,7 +179,7 @@ export function Giris() {
             </button>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

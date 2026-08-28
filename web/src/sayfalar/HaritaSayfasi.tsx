@@ -3,10 +3,11 @@ import { api } from '../api'
 import { useDurum } from '../durum'
 import { Harita, isaretciIkonu } from '../lib/leaflet/Harita'
 import {
-  Baslik, BosDurum, Hata, KapsamUyarisi, Kart, OzetSayi,
+  Baslik, BosDurum, Buton, Hata, KapsamUyarisi, Kart, OzetSayi,
 } from '../bilesenler/Temel'
 import { MalzemeDagilimi } from '../bilesenler/MalzemeDagilimi'
 import { Ikon } from '../bilesenler/Ikon'
+import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani } from '../types'
 import L from 'leaflet'
@@ -20,6 +21,7 @@ import L from 'leaflet'
  */
 export function HaritaSayfasi() {
   const { durum, siniflar, siniflarHam } = useDurum()
+  const { git, erisilebilir } = useGezinme()
   const [alanlar, setAlanlar] = useState<EnkazAlani[]>([])
   const [dagilim, setDagilim] = useState<{ sinif: string; adet: number }[] | null>(null)
   const [not, setNot] = useState('')
@@ -126,7 +128,20 @@ export function HaritaSayfasi() {
               <BosDurum
                 ikon={<Ikon.Harita boyut={20} />}
                 baslik="Doğrulanmış kayıt yok"
-                aciklama="Haritada yalnızca uzman tarafından doğrulanmış tespitler gösterilir. Önce inceleme kuyruğundaki kayıtları doğrulayın."
+                aciklama="Harita yalnızca uzman tarafından doğrulanmış tespitleri gösterir; doğrulanmamış ön tahminler buraya girmez. Bu boşluk veri olmadığı anlamına gelmez — kayıtlar henüz incelenmemiş olabilir."
+                aksiyon={erisilebilir('kuyruk')
+                  ? (
+                    <Buton tur="ikincil" onClick={() => git('kuyruk')}
+                      ikon={<Ikon.Kuyruk boyut={15} />}>
+                      İnceleme kuyruğuna git
+                    </Buton>
+                  )
+                  : erisilebilir('alanlar') && (
+                    <Buton tur="ikincil" onClick={() => git('alanlar')}
+                      ikon={<Ikon.Alan boyut={15} />}>
+                      Enkaz alanlarına bak
+                    </Buton>
+                  )}
               />
             ) : (
               <MalzemeDagilimi

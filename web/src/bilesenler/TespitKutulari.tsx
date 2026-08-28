@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SinifTanimi, Tespit } from '../types'
+import { yuzdeMetni } from './GuvenSkoru'
 
 /**
  * Görüntü üzerinde tespit kutuları.
@@ -11,7 +12,8 @@ import type { SinifTanimi, Tespit } from '../types'
  * göstermektense hiç göstermemek doğrudur.
  */
 export function TespitKutulari({
-  gorselUrl, tespitler, goruntuGenislik, goruntuYukseklik, siniflar, secili, secildi,
+  gorselUrl, tespitler, goruntuGenislik, goruntuYukseklik, siniflar,
+  secili, secildi, vurgulu, vurgulandi,
 }: {
   gorselUrl: string
   tespitler: Tespit[]
@@ -20,6 +22,9 @@ export function TespitKutulari({
   siniflar: Map<string, SinifTanimi>
   secili?: number | null
   secildi?: (id: number) => void
+  /** Listede üzerine gelinen tespit — kutusu öne çıkar. */
+  vurgulu?: number | null
+  vurgulandi?: (id: number | null) => void
 }) {
   const gorselRef = useRef<HTMLImageElement>(null)
   const [olcu, setOlcu] = useState({ g: 0, y: 0 })
@@ -52,20 +57,33 @@ export function TespitKutulari({
         const oran = olcu.g / kaynakG
         const renk = siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.renk ?? '#8593a1'
         const aktif = secili === t.id
+        const one = vurgulu === t.id
+        // Başka bir kutu vurgulanmışken bu kutu geri çekilir; göz doğrudan
+        // listede üzerine gelinen kayda gider.
+        const soluk = vurgulu != null && !one && !aktif
+
         return (
           <button
             key={t.id}
             onClick={() => secildi?.(t.id)}
-            aria-label={`${t.sinif} tespiti, güven ${t.guven_skoru}`}
-            className="absolute p-0 min-h-0 focus-visible:z-10"
+            onMouseEnter={() => vurgulandi?.(t.id)}
+            onMouseLeave={() => vurgulandi?.(null)}
+            onFocus={() => vurgulandi?.(t.id)}
+            onBlur={() => vurgulandi?.(null)}
+            aria-label={`${t.sinif} tespiti, model güveni yüzde ${yuzdeMetni(t.guven_skoru)}`}
+            className="absolute p-0 min-h-0 focus-visible:z-20 transition-opacity"
             style={{
               left: t.bbox.x * oran,
               top: t.bbox.y * oran,
               width: t.bbox.w * oran,
               height: t.bbox.h * oran,
-              border: `${aktif ? 3 : 2}px ${t.inceleme_gerekli ? 'dashed' : 'solid'} ${renk}`,
-              background: aktif ? `${renk}22` : 'transparent',
+              border: `${aktif || one ? 3 : 2}px ${
+                t.inceleme_gerekli ? 'dashed' : 'solid'} ${renk}`,
+              background: aktif || one ? `${renk}2e` : 'transparent',
               borderRadius: 3,
+              opacity: soluk ? 0.35 : 1,
+              zIndex: one ? 10 : aktif ? 5 : 1,
+              boxShadow: one ? `0 0 0 2px ${renk}55` : undefined,
             }}
           >
             <span
@@ -74,7 +92,7 @@ export function TespitKutulari({
               style={{ background: renk, color: '#0e1116' }}
             >
               {siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.gorunen_ad ?? t.sinif}
-              {' · '}{t.guven_skoru}
+              {' · %'}{yuzdeMetni(t.guven_skoru)}
             </span>
           </button>
         )

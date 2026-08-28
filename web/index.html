@@ -4,14 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Türkçe karakterleri (ğ ş ı İ ç ö ü) tam destekleyen üç aile:
-         Manrope başlık, Inter gövde, IBM Plex Mono sayısal değerler. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Giriş ekranının arka planı; en büyük görsel öğe olduğu için
+         önceden yüklenir (LCP). -->
+    <link rel="preload" as="image" href="/gorseller/giris-hero.webp"
+      fetchpriority="high" />
 
     <!-- Tema, React yüklenmeden uygulanır: sayfa açılırken yanıp sönme olmaz. -->
     <script>
