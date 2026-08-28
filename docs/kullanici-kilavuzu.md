@@ -3,7 +3,7 @@
 **ReBuild Vision** — enkaz malzemelerinin görüntü tabanlı ön
 sınıflandırması ve doğrulanabilir kaynak haritası.
 
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 29.08.2026
 
 ---
 
@@ -37,6 +37,33 @@ uyarısı alıyorsanız, yöneticinin rol ataması beklenmektedir.
 
 ---
 
+## 1.5. Giriş yaptığınızda ne görürsünüz
+
+Sistem sizi **rolünüzün asıl işine** açar; herkes aynı ekranla
+karşılaşmaz.
+
+| Rolünüz | Açılan ekran | Neden |
+|---|---|---|
+| Saha personeli | **Görüntü yükle** | Sahadaki işiniz bu |
+| Doğrulayıcı uzman | **İnceleme kuyruğu** | Bekleyen işiniz orada |
+| Belediye yetkilisi | Enkaz alanları | Sahaları siz tanımlıyorsunuz |
+| AFAD yetkilisi | Malzeme haritası | Çok sahalı görünüm |
+| Yıkım firması | Enkaz alanları | Salt okunur |
+| Tesis operatörü | Malzeme haritası | Salt okunur |
+
+Üst menüde yalnızca **yetkiniz olan** sayfalar görünür.
+
+### Açık ve koyu tema
+
+Sağ üstteki güneş/ay simgesiyle tema değiştirilir. Tercihiniz tarayıcıda
+saklanır.
+
+**Güneş altında çalışıyorsanız açık temayı kullanın** — doğrudan güneş
+ışığında açık zemin koyu zeminden okunaklıdır. Kapalı alanda ve gece koyu
+tema göz yormaz.
+
+---
+
 ## 2. Roller ve yetkiler
 
 | Rol | Görebildiği | Yapabildiği |
@@ -52,6 +79,23 @@ uyarısı alıyorsanız, yöneticinin rol ataması beklenmektedir.
 Yetkiniz olmayan bir işlemi denerseniz sistem izin vermez. Bu kontrol
 sunucu tarafında yapılır; arayüzde bir düğmeyi görmemeniz tek engel
 değildir.
+
+---
+
+## 2.5. Enkaz alanı kartlarını okuma
+
+Alan listesindeki her kart, sahayı açmadan durumu özetler:
+
+| Gösterge | Anlamı |
+|---|---|
+| Küçük kroki | Sahanın gerçek sınır poligonu |
+| Görüntü / Tespit | Sayılar |
+| **Uzman doğrulaması** çubuğu | Kaç tespit doğrulandı (örn. `5/10 · %50`) |
+| Sarı uyarı satırı | Kaç tespit uzman incelemesi bekliyor |
+| Renkli şerit | Doğrulanmış malzemelerin dağılımı |
+
+> Malzeme şeridi **yalnızca doğrulanmış** kayıtları gösterir. Haritayla
+> aynı kuraldır: doğrulanmamış ön tahminler sayılmaz.
 
 ---
 
@@ -76,10 +120,20 @@ değildir.
 
 *(Saha personeli, belediye yetkilisi veya yönetici)*
 
-1. Alanı açın, **"Görüntü yükle"**ye tıklayın.
-2. Bir veya birden çok görüntü seçin (JPEG, PNG veya WebP).
-3. Yükleme tamamlandığında sistem görüntüleri otomatik olarak
-   sınıflandırır.
+Saha personeliyseniz giriş yapınca doğrudan bu ekrana düşersiniz.
+
+1. **Enkaz alanını** seçin. Tek alanınız varsa kendiliğinden seçilir.
+2. Görüntüleri **sürükleyip bırakın** ya da **"Dosya seç"** ile seçin
+   (JPEG, PNG veya WebP). Seçtiklerinizin küçük önizlemesi görünür;
+   yanlış seçtiyseniz **"Listeyi temizle"** ile baştan başlayın.
+3. **"… görüntüyü yükle ve sınıflandır"** düğmesine basın.
+
+Yükleme bitince ekranda ne olduğu özetlenir: kaç görüntü işlendi, kaç
+tespit bulundu, kaçı uzman incelemesine gitti. Bulunan tespitler sınıf
+adı ve güven yüzdesiyle listelenir.
+
+Yan panelde **"Yükledikten sonra ne olur"** başlığı altında sürecin dört
+adımı yazılıdır — ilk kullanımda ne bekleyeceğinizi bilirsiniz.
 
 Yükleme sonrasında bir bilgi satırı görürsünüz:
 
@@ -102,6 +156,9 @@ listesi bulunur.
 - **Kesikli çizgili kutu** = model bu tespitten emin değil, uzman
   incelemesi gerekiyor.
 - Kutuya tıklayınca sağdaki listede ilgili tespit açılır.
+- **Listede bir kaydın üzerine gelince** ilgili kutu görüntüde öne çıkar,
+  diğerleri geri çekilir. Ters yönde de çalışır: kutunun üzerine gelince
+  listedeki satır belirginleşir.
 
 Bazı tespitlerin kutusu çizilemeyebilir. Bu durumda ekranda şu uyarı
 çıkar: *"koordinat biçimi tanınmıyor… Yanlış konumda kutu göstermemek
@@ -115,7 +172,7 @@ Her satırda:
 | Öğe | Anlamı |
 |---|---|
 | Renkli kare + malzeme adı | Sınıf |
-| Sayı (örn. `0.83`) | Model güven skoru — **yuvarlanmaz** |
+| Yüzde (örn. `%83`) + çubuk | Model güveni — **yuvarlanmaz**, modelin verdiği hassasiyet korunur |
 | `ÖN TAHMİN` | Bu bir model çıktısıdır, kesin bilgi değildir |
 | Durum rozeti | Doğrulama durumu (aşağı bkz.) |
 | *Uzman incelemesi gerekli* | Güven düşük |
