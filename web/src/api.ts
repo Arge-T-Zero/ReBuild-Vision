@@ -110,4 +110,29 @@ export const api = {
   },
 
   gorselUrl: (dosyaYolu: string) => `${TABAN}/dosya/${dosyaYolu}`,
+
+  /**
+   * Rapor indirir.
+   *
+   * Jeton `Authorization` başlığında gittiği için düz bir bağlantı
+   * kullanılamaz; dosya getirilip tarayıcıya indirtiliyor.
+   */
+  raporIndir: async (bicim: 'json' | 'geojson' | 'csv', alanId?: number) => {
+    const q = alanId != null ? `?alan_id=${alanId}` : ''
+    const yanit = await fetch(`${TABAN}/rapor/${bicim}${q}`, {
+      headers: { Authorization: `Bearer ${jetonAl()}` },
+    })
+    if (!yanit.ok) {
+      throw new ApiHatasi(yanit.status, 'Rapor indirilemedi')
+    }
+    const veri = await yanit.blob()
+    const adres = URL.createObjectURL(veri)
+    const a = document.createElement('a')
+    a.href = adres
+    a.download = `rebuild-vision-rapor.${bicim}`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(adres)
+  },
 }

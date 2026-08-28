@@ -7,8 +7,8 @@ from fastapi.staticfiles import StaticFiles
 
 from .core.config import ayarlar
 from .routers import (
-    alanlar, auth, dogrulama, esitleme, goruntuler, olcumler, sistem,
-    tehlikeli,
+    alanlar, auth, dogrulama, esitleme, goruntuler, olcumler, rapor,
+    sistem, tehlikeli,
 )
 from .services import denetim  # noqa: F401 — olay dinleyicisini kaydeder
 
@@ -37,6 +37,7 @@ app.include_router(dogrulama.router)
 app.include_router(olcumler.router)
 app.include_router(esitleme.router)
 app.include_router(tehlikeli.router)
+app.include_router(rapor.router)
 app.include_router(sistem.router)
 
 app.mount(
