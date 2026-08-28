@@ -9,18 +9,65 @@ from ..core.permissions import SAHA_OLUSTURABILIR
 from ..db import oturum
 from ..deps import aktif_kullanici, rol_gerekli
 from ..geo import nokta, nokta_oku, poligon, poligon_oku
-from ..models import EnkazAlani, Goruntu, Kullanici
-from ..schemas import EnkazAlaniCikti, EnkazAlaniIstek
-from ..services.queries import gorulebilir_alanlar
+from ..models import DogrulamaDurumu, EnkazAlani, Goruntu, Kullanici, Tespit
+from ..schemas import EnkazAlaniCikti, EnkazAlaniIstek, MalzemePayi
+from ..services.queries import (
+    DOGRULANMIS, gecerli_sinif, gorulebilir_alanlar, sadece_malzeme,
+)
 
 router = APIRouter(prefix="/enkaz-alani", tags=["enkaz alanı"])
 
 
 async def _ciktiya_cevir(db: AsyncSession, a: EnkazAlani) -> EnkazAlaniCikti:
+    """Sahayı arayüzün gösterdiği özetle birlikte döner.
+
+    Kart üzerinde "kaç tespit var, kaçı doğrulandı, hangi malzemeler"
+    bilgisi gösterilir; bu sayılar olmadan kart boş bir koordinat
+    listesinden ibaret kalıyordu.
+    """
     sayi = await db.scalar(
         select(func.count(Goruntu.id)).where(Goruntu.enkaz_alani_id == a.id)
     )
+
+    # Sahanın tespit sayaçları — tek sorguda.
+    sayaclar = (await db.execute(
+        select(
+            func.count(Tespit.id),
+            func.count(Tespit.id).filter(
+                Tespit.dogrulama_durumu.in_(DOGRULANMIS)),
+            func.count(Tespit.id).filter(Tespit.inceleme_gerekli.is_(True)),
+        )
+        .select_from(Tespit)
+        .join(Goruntu, Tespit.goruntu_id == Goruntu.id)
+        .where(Goruntu.enkaz_alani_id == a.id)
+    )).one()
+
+    # Malzeme dağılımı YALNIZCA doğrulanmış kayıtlardan gelir; kart da
+    # haritayla aynı kuralı uygular (ana talimat Bölüm 1.4).
+    # `sadece_malzeme` şart: konteyner (skip bin) bir atık malzeme değildir
+    # ve dağılıma girmez (docs/karar-kaydi.md K-007). Harita bu filtreyi
+    # zaten uyguluyordu; kart özeti onu atlarsa sistem aynı soruya iki
+    # farklı cevap verir.
+    sinif = gecerli_sinif().label("sinif")
+    dagilim = (await db.execute(
+        sadece_malzeme(
+            select(sinif, func.count(Tespit.id))
+            .join(Goruntu, Tespit.goruntu_id == Goruntu.id)
+            .where(Goruntu.enkaz_alani_id == a.id)
+            .where(Tespit.dogrulama_durumu.in_(DOGRULANMIS))
+        )
+        .group_by(sinif)
+        .order_by(func.count(Tespit.id).desc())
+        .limit(5)
+    )).all()
+
     return EnkazAlaniCikti(
+        tespit_sayisi=sayaclar[0] or 0,
+        dogrulanan_sayisi=sayaclar[1] or 0,
+        inceleme_bekleyen=sayaclar[2] or 0,
+        malzeme_dagilimi=[
+            MalzemePayi(sinif=x, adet=n) for x, n in dagilim
+        ],
         id=a.id,
         ad=a.ad,
         konum=await nokta_oku(db, EnkazAlani.konum, EnkazAlani.id == a.id),

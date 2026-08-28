@@ -6,6 +6,7 @@ import {
   Alan, Baslik, BosDurum, Buton, Hata, Kart, OzetSayi, girdiSinifi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
+import { SahaKarti } from '../bilesenler/SahaKarti'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani, Nokta } from '../types'
 import L from 'leaflet'
@@ -13,7 +14,7 @@ import L from 'leaflet'
 const OLUSTURABILIR = new Set(['yonetici', 'belediye', 'afad'])
 
 export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
-  const { kullanici } = useDurum()
+  const { kullanici, siniflar } = useDurum()
   const [alanlar, setAlanlar] = useState<EnkazAlani[] | null>(null)
   const [formAcik, setFormAcik] = useState(false)
   const [hata, setHata] = useState('')
@@ -83,66 +84,12 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {alanlar.map((a) => (
             <li key={a.id}>
-              <Kart className="p-5 h-full flex flex-col">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-medium leading-snug">{a.ad}</h3>
-                  <ErisimRozeti durum={a.erisim_durumu} />
-                </div>
-
-                <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 grow">
-                  <div>
-                    <dt className="text-xs uppercase tracking-wide text-metin-4">
-                      Görüntü
-                    </dt>
-                    <dd className="text-lg font-medium sayisal">
-                      {a.goruntu_sayisi}
-                    </dd>
-                  </div>
-                  <div className="min-w-0">
-                    <dt className="text-xs uppercase tracking-wide text-metin-4">
-                      Sorumlu
-                    </dt>
-                    <dd className="text-sm text-metin-2 truncate">
-                      {a.sorumlu || '—'}
-                    </dd>
-                  </div>
-                  {a.konum && (
-                    <div className="col-span-2">
-                      <dt className="text-xs uppercase tracking-wide text-metin-4">
-                        Konum
-                      </dt>
-                      <dd className="text-xs text-metin-3 sayisal">
-                        {a.konum.enlem.toFixed(4)}, {a.konum.boylam.toFixed(4)}
-                        {a.sinir && ` · ${a.sinir.length - 1} köşeli sınır`}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-
-                <Buton tur="ikincil" className="mt-4 w-full"
-                  onClick={() => acildi(a.id)}>
-                  Alanı aç
-                </Buton>
-              </Kart>
+              <SahaKarti alan={a} siniflar={siniflar} acildi={acildi} />
             </li>
           ))}
         </ul>
       )}
     </Sayfa>
-  )
-}
-
-function ErisimRozeti({ durum }: { durum: EnkazAlani['erisim_durumu'] }) {
-  const t = {
-    acik: { m: 'Erişim açık', s: 'border-olumlu/50 text-olumlu bg-olumlu/10' },
-    kisitli: { m: 'Kısıtlı', s: 'border-uyari/50 text-uyari bg-uyari/10' },
-    kapali: { m: 'Kapalı', s: 'border-dikkat/50 text-dikkat bg-dikkat/10' },
-  }[durum]
-  return (
-    <span className={`shrink-0 px-2 py-0.5 rounded border text-xs
-      font-medium whitespace-nowrap ${t.s}`}>
-      {t.m}
-    </span>
   )
 }
 
