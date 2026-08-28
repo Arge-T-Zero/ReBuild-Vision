@@ -7,6 +7,7 @@ import {
 } from '../bilesenler/Temel'
 import { MalzemeDagilimi } from '../bilesenler/MalzemeDagilimi'
 import { Ikon } from '../bilesenler/Ikon'
+import { RaporIndir } from '../bilesenler/RaporIndir'
 import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani } from '../types'
@@ -19,8 +20,11 @@ import L from 'leaflet'
  * (ana talimat Bölüm 1.4). Lejandda kapsam uyarısı YAZILI olarak bulunur
  * (Bölüm 1.3).
  */
+// api/app/core/permissions.py RAPOR_ALABILIR ile aynı küme.
+const RAPOR_ALABILIR = new Set(['yonetici', 'belediye', 'afad'])
+
 export function HaritaSayfasi() {
-  const { durum, siniflar, siniflarHam } = useDurum()
+  const { durum, siniflar, siniflarHam, kullanici } = useDurum()
   const { git, erisilebilir } = useGezinme()
   const [alanlar, setAlanlar] = useState<EnkazAlani[]>([])
   const [dagilim, setDagilim] = useState<{ sinif: string; adet: number }[] | null>(null)
@@ -160,6 +164,12 @@ export function HaritaSayfasi() {
           </Kart>
 
           {/* Kapsam uyarısı lejandda YAZILI (ana talimat Bölüm 1.3) */}
+          {RAPOR_ALABILIR.has(kullanici?.rol ?? '') && (
+            <Kart className="p-4">
+              <RaporIndir />
+            </Kart>
+          )}
+
           <Kart className="p-4 space-y-4">
             {durum && <KapsamUyarisi metin={durum.kapsam_uyarisi} />}
             {siniflarHam && siniflarHam.kapsanmayan_gruplar.length > 0 && (
