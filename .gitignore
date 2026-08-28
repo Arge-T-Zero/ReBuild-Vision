@@ -48,3 +48,10 @@ tests/__pycache__/
 
 # --- İşletim sistemi ---
 .DS_Store
+
+# --- Görsel kaynakları (büyük PNG'ler) ---
+# Web sürümleri web/public/gorseller/ altında WebP olarak durur.
+/giris-hero.png
+/ornek-enkaz-1.png
+/ornek-enkaz-2.png
+/ornek-enkaz-3.png

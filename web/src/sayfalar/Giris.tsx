@@ -55,10 +55,22 @@ export function Giris() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.1fr_minmax(0,460px)]">
-      {/* Sol: kimlik ve iddia */}
+      {/* Sol: kimlik ve iddia — arkada saha görüntüsü */}
       <div className="hidden lg:flex flex-col justify-between p-12 border-r
-        border-kenar bg-yuzey">
-        <span className="flex items-center gap-3">
+        border-kenar bg-yuzey relative overflow-hidden">
+        {/* Görsel yapay zekâ ile üretilmiştir; gerçek bir afet fotoğrafı
+            değildir (Madde 10.7 ile uyumlu, telif sorunu yok). */}
+        <img
+          src="/gorseller/giris-hero.webp" alt="" aria-hidden
+          className="absolute inset-0 w-full h-full object-cover opacity-25"
+          fetchPriority="high"
+        />
+        {/* Metnin okunabilirliği için koyudan açığa geçiş katmanı */}
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-br
+          from-taban/95 via-taban/80 to-taban/95" />
+        <div aria-hidden className="absolute inset-0
+          bg-gradient-to-t from-taban via-transparent to-transparent" />
+        <span className="flex items-center gap-3 relative">
           <span aria-hidden className="w-9 h-9 rounded-lg bg-marka/15
             border border-marka/40 grid place-items-center text-marka">
             <Ikon.Alan boyut={19} />
@@ -66,7 +78,7 @@ export function Giris() {
           <span className="font-semibold text-lg tracking-tight">ReBuild Vision</span>
         </span>
 
-        <div className="max-w-lg">
+        <div className="max-w-lg relative">
           <h1 className="text-3xl font-semibold tracking-tight leading-tight">
             Enkaz malzemelerinin görüntü tabanlı ön sınıflandırması ve
             doğrulanabilir kaynak haritası
@@ -84,7 +96,7 @@ export function Giris() {
           </ul>
         </div>
 
-        <p className="text-xs text-metin-4 max-w-lg leading-relaxed">
+        <p className="text-xs text-metin-4 max-w-lg leading-relaxed relative">
           TEKNOFEST 2026 Sıfır Atık ve Döngüsel Ekonomi Yarışması ·
           Takım Arge-T Zero. Sistem yalnızca görünür yüzeye ilişkin ön
           değerlendirme yapar ve tehlikeli madde teşhisi yapmaz.
