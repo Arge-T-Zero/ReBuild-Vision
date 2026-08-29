@@ -47,6 +47,15 @@ function balon(alan: EnkazAlani): HTMLElement {
   alt.textContent = `${alan.goruntu_sayisi} görüntü · ${alan.tespit_sayisi} tespit`
   kok.appendChild(alt)
 
+  // Doğrulanmış malzemeler — haritanın gösterdiği tek şey bu.
+  if (alan.malzeme_dagilimi.length > 0) {
+    const m = document.createElement('div')
+    m.style.marginTop = '4px'
+    m.textContent = alan.malzeme_dagilimi
+      .map((d) => `${d.sinif} (${d.adet})`).join(', ')
+    kok.appendChild(m)
+  }
+
   return kok
 }
 
@@ -77,7 +86,16 @@ export function HaritaSayfasi() {
   useEffect(() => {
     katman.clearLayers()
     const noktalar: [number, number][] = []
-    alanlar.forEach((a) => {
+    // Malzeme filtresi HARİTAYA da uygulanır. Önceden yalnızca yan
+    // paneldeki sayıyı değiştiriyordu; kullanıcı "Metal"e basıp haritanın
+    // aynı kaldığını görünce filtrenin çalışmadığını sanıyordu.
+    // Seçili malzemelerden en az birini içermeyen saha haritadan düşer.
+    const gorunenAlanlar = seciliSiniflar.size === 0
+      ? alanlar
+      : alanlar.filter((a) => a.malzeme_dagilimi.some(
+        (d) => seciliSiniflar.has(d.sinif),
+      ))
+    gorunenAlanlar.forEach((a) => {
       if (a.sinir && a.sinir.length >= 3) {
         L.polygon(a.sinir.map((n) => [n.enlem, n.boylam] as [number, number]), {
           color: '#4da3ff', weight: 2, fillOpacity: 0.08,
@@ -99,7 +117,7 @@ export function HaritaSayfasi() {
         harita.fitBounds(L.latLngBounds(noktalar).pad(0.3), { maxZoom: 15 })
       }
     }
-  }, [alanlar, katman, harita])
+  }, [alanlar, katman, harita, seciliSiniflar])
 
   const gorunen = (dagilim ?? []).filter(
     (d) => seciliSiniflar.size === 0 || seciliSiniflar.has(d.sinif),
@@ -115,6 +133,12 @@ export function HaritaSayfasi() {
 
   const toplam = (dagilim ?? []).reduce((t, d) => t + d.adet, 0)
 
+  const haritadakiAlanSayisi = seciliSiniflar.size === 0
+    ? alanlar.length
+    : alanlar.filter((a) => a.malzeme_dagilimi.some(
+      (d) => seciliSiniflar.has(d.sinif),
+    )).length
+
   return (
     <Sayfa>
       <Baslik
@@ -126,7 +150,7 @@ export function HaritaSayfasi() {
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
 
       {dagilim !== null && dagilim.length > 0 && (
-        <Kart className="mb-5 grid grid-cols-2 sm:grid-cols-3 divide-x divide-kenar">
+        <Kart className="mb-5 grid grid-cols-3 divide-x divide-kenar">
           <OzetSayi deger={toplam} etiket="Doğrulanmış tespit" />
           <OzetSayi deger={dagilim.length} etiket="Farklı malzeme türü" />
           <OzetSayi deger={alanlar.length} etiket="Enkaz alanı" />
@@ -186,6 +210,11 @@ export function HaritaSayfasi() {
                 Gösterilen: <span className="sayisal text-metin-3">
                   {gorunen.reduce((t, d) => t + d.adet, 0)}
                 </span> doğrulanmış tespit
+                {seciliSiniflar.size > 0 && (
+                  <> · haritada <span className="sayisal text-metin-3">
+                    {haritadakiAlanSayisi}
+                  </span> saha</>
+                )}
               </p>
             )}
           </Kart>

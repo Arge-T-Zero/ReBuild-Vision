@@ -2,14 +2,17 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import siniflar as sinif_tanimlari
 from ..db import oturum
 from ..core.permissions import GECMIS_GORUR
 from ..deps import aktif_kullanici
-from ..models import EnkazAlani, Goruntu, IslemGecmisi, Kullanici, Tespit
+from ..models import (
+    EnkazAlani, Goruntu, IslemGecmisi, Kullanici, MiktarHesabi, Olcum,
+    TehlikeliKayit, Tespit,
+)
 from ..schemas import IslemGecmisiCikti
 from ..services import model_client
 from ..services.queries import (
@@ -103,6 +106,7 @@ async def harita(
 async def gecmis(
     kayit_tipi: str | None = None,
     kayit_id: int | None = None,
+    tespit_id: int | None = None,
     limit: int = 50,
     k: Kullanici = Depends(aktif_kullanici),
     db: AsyncSession = Depends(oturum),
@@ -114,7 +118,15 @@ async def gecmis(
 
     YETKİ İKİ KADEMELİDİR:
 
-    - **Tek bir kaydın geçmişi** (`kayit_tipi` + `kayit_id` verilmiş):
+    `tespit_id` verilirse, o tespitin BÜTÜN hikâyesi döner: tespitin
+    kendi kaydı artı ona bağlı ölçüm, miktar hesabı ve tehlikeli madde
+    kayıtları. Yalnızca `kayit_tipi=tespit` ile süzmek yetmiyordu —
+    ölçüm girildikten sonra "Bu tespitin geçmişi" paneli hâlâ sadece
+    "tespit oluşturuldu" satırını gösteriyor, izlenebilirlik iddiası
+    ekranda yarım kalıyordu.
+
+    - **Tek bir kaydın geçmişi** (`kayit_tipi` + `kayit_id`, ya da
+      `tespit_id` verilmiş):
       giriş yapmış herkes okuyabilir. Tespit detayındaki "Bu tespitin
       geçmişi" paneli buradan beslenir; ölçüm girebilen saha personelinin
       kendi girdiği kaydın izini görememesi izlenebilirlik iddiasıyla
@@ -127,7 +139,7 @@ async def gecmis(
     Yetki API katmanında zorlanır: arayüzde sekmeyi gizlemek yetmez,
     uç nokta doğrudan çağrılabilir.
     """
-    if kayit_id is None and k.rol not in GECMIS_GORUR:
+    if kayit_id is None and tespit_id is None and k.rol not in GECMIS_GORUR:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "Sistem geneli işlem geçmişini görme yetkiniz yok. "
@@ -141,10 +153,32 @@ async def gecmis(
         .order_by(IslemGecmisi.id.desc())
         .limit(min(limit, 200))
     )
-    if kayit_tipi:
-        sorgu = sorgu.where(IslemGecmisi.kayit_tipi == kayit_tipi)
-    if kayit_id is not None:
-        sorgu = sorgu.where(IslemGecmisi.kayit_id == kayit_id)
+    if tespit_id is not None:
+        # Tespite BAĞLI kayıtların kimlikleri. Denetim tablosunda
+        # "hangi tespite ait" diye bir sütun yok; ilişki, kaydın kendi
+        # tablosundan türetilir.
+        bagli = [
+            (Olcum, "olcum"),
+            (MiktarHesabi, "miktar_hesabi"),
+            (TehlikeliKayit, "tehlikeli_kayit"),
+        ]
+        kosullar = [
+            (IslemGecmisi.kayit_tipi == "tespit")
+            & (IslemGecmisi.kayit_id == tespit_id)
+        ]
+        for model, tip in bagli:
+            kosullar.append(
+                (IslemGecmisi.kayit_tipi == tip)
+                & IslemGecmisi.kayit_id.in_(
+                    select(model.id).where(model.tespit_id == tespit_id)
+                )
+            )
+        sorgu = sorgu.where(or_(*kosullar))
+    else:
+        if kayit_tipi:
+            sorgu = sorgu.where(IslemGecmisi.kayit_tipi == kayit_tipi)
+        if kayit_id is not None:
+            sorgu = sorgu.where(IslemGecmisi.kayit_id == kayit_id)
     y = await db.execute(sorgu)
     return [
         IslemGecmisiCikti.model_validate(k).model_copy(update={"kullanici_ad": ad})

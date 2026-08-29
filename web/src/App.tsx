@@ -120,9 +120,14 @@ function Kabuk() {
 
           <div className="flex items-center gap-2 shrink-0">
             <TemaDugmesi />
-            <span className="text-right leading-tight hidden md:block">
-              <span className="block text-sm text-metin-2">{kullanici.ad}</span>
-              <span className="block text-xs text-metin-4">{tanim.ad}</span>
+            {/* Menü mobilde alttaki çubuğa taşındığı için üst çubukta yer
+                açıldı: kullanıcı artık hangi hesapla ve hangi rolle
+                bağlı olduğunu her ekran boyutunda görüyor. */}
+            <span className="text-right leading-tight">
+              <span className="block text-sm text-metin-2 truncate max-w-[9rem]
+                sm:max-w-none">{kullanici.ad}</span>
+              <span className="block text-xs text-metin-4 truncate max-w-[9rem]
+                sm:max-w-none">{tanim.ad}</span>
             </span>
             <Buton tur="sessiz" boyut="kucuk" onClick={cikisYap}
               ikon={<Ikon.Cikis boyut={14} />}>

@@ -43,6 +43,74 @@ export function TespitKutulari({
   const kaynakY = goruntuYukseklik ?? 0
   const olceklenebilir = kaynakG > 0 && kaynakY > 0 && olcu.g > 0
 
+  /**
+   * Etiketlerin nereye konacağını çakışmadan hesaplar.
+   *
+   * Birbirine yakın iki kutunun etiketi üst üste biniyordu; ekranda
+   * "Dolgu toprak · %76" ile "Beton · %32" iç içe geçiyordu. Sabit bir
+   * kural (hep üstte, ya da sıra numarasına göre değiştir) yetmiyor:
+   * aynı tarafa düşen iki komşu kutu yine çakışıyor.
+   *
+   * Burada her etiket için dört aday yer denenir (üst-sol, üst-sağ,
+   * alt-sol, alt-sağ) ve önceden yerleştirilmiş etiketlerle KESİŞMEYEN
+   * ilk aday seçilir. Hiçbiri uymazsa ilk aday kullanılır — o zaman da
+   * vurgulanan etiket zIndex ile öne gelir.
+   *
+   * Genişlik ölçülmez, TAHMİN EDİLİR: etiket ölçülene kadar çizilemez,
+   * çizildikten sonra ölçmek ise düzeni bir kare boyunca titretirdi.
+   * Tahmin bilinçli olarak cömerttir; fazladan boşluk bırakmak, çakışan
+   * etiketten iyidir.
+   */
+  const yerlesim = (() => {
+    const sonuc = new Map<number, { altta: boolean; sagaYasli: boolean }>()
+    if (!olceklenebilir) return sonuc
+    const oran = olcu.g / kaynakG
+    // Sabitler tarayıcıda ÖLÇÜLEREK kalibre edildi: gerçek etiket
+    // genişlikleri 153/154/180/188/189 px çıktı; sınıf adı uzunluğuna
+    // göre regresyon ≈ 7 px/karakter + 118 px sabit (yüzde metni,
+    // "ÖN TAHMİN" rozeti, boşluklar ve iç kenar payı).
+    const KARAKTER = 7
+    const SABIT = 118
+    const PAY = 8             // çakışmaya karşı emniyet payı
+    const YUKSEKLIK = 22
+
+    const yerlesenler: { x: number; y: number; g: number; y2: number }[] = []
+    const kesisiyor = (a: typeof yerlesenler[0]) => yerlesenler.some(
+      (v) => a.x < v.x + v.g && v.x < a.x + a.g
+        && a.y < v.y2 && v.y < a.y2,
+    )
+
+    for (const t of tespitler) {
+      if (t.bbox_format !== 'pixel_absolute_original' || !t.bbox) continue
+      const ad = siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.gorunen_ad ?? t.sinif
+      const g = ad.length * KARAKTER + SABIT + PAY
+      const kx = t.bbox.x * oran
+      const ky = t.bbox.y * oran
+      const kg = t.bbox.w * oran
+      const kyuk = t.bbox.h * oran
+
+      const adaylar = [
+        { altta: false, sagaYasli: false },
+        { altta: false, sagaYasli: true },
+        { altta: true, sagaYasli: false },
+        { altta: true, sagaYasli: true },
+      ].filter((a) => !(!a.altta && ky < YUKSEKLIK + 6))  // üstte yer yoksa ele
+
+      const uygun = adaylar.length > 0 ? adaylar : [{ altta: true, sagaYasli: false }]
+      let secim = uygun[0]
+      for (const a of uygun) {
+        const x = a.sagaYasli ? kx + kg - g : kx
+        const y = a.altta ? ky + kyuk + 3 : ky - YUKSEKLIK - 3
+        if (!kesisiyor({ x, y, g, y2: y + YUKSEKLIK })) { secim = a; break }
+      }
+      const x = secim.sagaYasli ? kx + kg - g : kx
+      const y = secim.altta ? ky + kyuk + 3 : ky - YUKSEKLIK - 3
+      yerlesenler.push({ x, y, g, y2: y + YUKSEKLIK })
+      sonuc.set(t.id, secim)
+    }
+    return sonuc
+  })()
+
   return (
     <div className="relative inline-block max-w-full">
       <img
@@ -61,6 +129,10 @@ export function TespitKutulari({
         // Başka bir kutu vurgulanmışken bu kutu geri çekilir; göz doğrudan
         // listede üzerine gelinen kayda gider.
         const soluk = vurgulu != null && !one && !aktif
+
+        // Yerleşim yukarıda, çakışma kontrolüyle birlikte hesaplandı.
+        const { altta, sagaYasli } = yerlesim.get(t.id)
+          ?? { altta: false, sagaYasli: false }
 
         return (
           <button
@@ -86,13 +158,30 @@ export function TespitKutulari({
               boxShadow: one ? `0 0 0 2px ${renk}55` : undefined,
             }}
           >
+            {/* Yer seçimi `yerlesim` içinde çakışma kontrolüyle yapıldı.
+                Vurgulanan etiket zIndex ile öne gelir. */}
             <span
-              className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-xs
-                font-semibold whitespace-nowrap"
-              style={{ background: renk, color: '#0e1116' }}
+              className="absolute px-1.5 py-0.5 rounded text-xs font-semibold
+                whitespace-nowrap flex items-center gap-1"
+              style={{
+                background: renk,
+                color: '#0e1116',
+                [altta ? 'top' : 'bottom']: 'calc(100% + 3px)',
+                [sagaYasli ? 'right' : 'left']: 0,
+                zIndex: one ? 12 : aktif ? 6 : 2,
+              }}
             >
               {siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.gorunen_ad ?? t.sinif}
               {' · %'}{yuzdeMetni(t.guven_skoru)}
+              {/* Her kutuda "ön tahmin", istisnasız (ana talimat Bölüm 1.4).
+                  Kutunun kendisi tek başına bakıldığında kesinlik iddia
+                  etmemelidir; listedeki rozet burada da bulunmalıdır. */}
+              <span
+                className="px-1 rounded-[2px] font-medium tracking-wide"
+                style={{ background: '#0e1116', color: renk, fontSize: 9 }}
+              >
+                ÖN TAHMİN
+              </span>
             </span>
           </button>
         )

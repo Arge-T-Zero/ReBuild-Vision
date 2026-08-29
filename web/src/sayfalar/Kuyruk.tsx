@@ -105,35 +105,67 @@ function Kanit({ tespit }: { tespit: Tespit }) {
   if (!yol) return null
 
   const kirpilabilir = !!bbox && bicim === 'pixel_absolute_original'
-    && !!gen && !!yuk
-  // Kutunun merkezi yüzde olarak — object-position bunu bekler.
-  const mx = kirpilabilir ? ((bbox!.x + bbox!.w / 2) / gen!) * 100 : 50
-  const my = kirpilabilir ? ((bbox!.y + bbox!.h / 2) / yuk!) * 100 : 50
+    && !!gen && !!yuk && bbox.w > 0 && bbox.h > 0
+
+  if (!kirpilabilir) {
+    // Kutu ölçeklenemiyorsa görüntünün tamamı gösterilir ve bu AÇIKÇA
+    // yazılır. Yanlış yeri kırpıp doğruymuş gibi sunmak, uzmanı hatalı
+    // karara sürükler.
+    return (
+      <div className="shrink-0">
+        <div className="w-28 h-28 rounded-md overflow-hidden border border-kenar
+          bg-yuzey-3">
+          <img src={api.gorselUrl(yol)} loading="lazy"
+            alt="Tespitin alındığı görüntü"
+            className="w-full h-full object-cover" />
+        </div>
+        <p className="text-[10px] text-metin-4 mt-1 w-28 leading-tight">
+          Kutu konumu ölçeklenemedi — görüntünün tamamı
+        </p>
+      </div>
+    )
+  }
+
+  // Kutuyu önizlemeye SIĞDIRACAK ölçek. 1.6 çarpanı kutunun çevresinden
+  // bir miktar bağlam bırakır: uzman malzemeyi tek başına değil,
+  // bulunduğu yerle birlikte görmelidir.
+  const P = 112
+  const k = P / (Math.max(bbox!.w, bbox!.h) * 1.6)
+  const merkezX = (bbox!.x + bbox!.w / 2) * k
+  const merkezY = (bbox!.y + bbox!.h / 2) * k
 
   return (
     <div className="shrink-0">
-      <div className="w-24 h-24 rounded-md overflow-hidden border border-kenar
-        bg-yuzey-3">
-        <img
-          src={api.gorselUrl(yol)}
-          alt={kirpilabilir
-            ? 'Tespitin görüntü üzerindeki kırpılmış önizlemesi'
-            : 'Tespitin alındığı görüntü'}
-          loading="lazy"
-          className="w-full h-full object-cover"
+      <div
+        role="img"
+        aria-label={`Tespitin görüntü üzerindeki konumu — ${tespit.sinif} ön tahmini`}
+        className="rounded-md border border-kenar bg-yuzey-3 relative
+          overflow-hidden"
+        style={{
+          width: P, height: P,
+          backgroundImage: `url(${api.gorselUrl(yol)})`,
+          backgroundSize: `${gen! * k}px ${yuk! * k}px`,
+          backgroundPosition: `${P / 2 - merkezX}px ${P / 2 - merkezY}px`,
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Kutunun kendisi de çizilir: uzman modelin TAM olarak nereyi
+            işaretlediğini görmeli, yalnızca çevresini değil. */}
+        <span
+          aria-hidden
+          className="absolute border-2 border-uyari/90 rounded-[3px]
+            pointer-events-none"
           style={{
-            objectPosition: `${mx}% ${my}%`,
-            // Kutunun çevresini de göstermek için hafif büyütme; uzman
-            // malzemeyi bağlamıyla birlikte görmeli.
-            transform: kirpilabilir ? 'scale(1.6)' : undefined,
+            left: P / 2 - (bbox!.w * k) / 2,
+            top: P / 2 - (bbox!.h * k) / 2,
+            width: bbox!.w * k,
+            height: bbox!.h * k,
           }}
         />
       </div>
-      {!kirpilabilir && (
-        <p className="text-[10px] text-metin-4 mt-1 w-24 leading-tight">
-          Kutu konumu ölçeklenemedi
-        </p>
-      )}
+      <p className="text-[10px] text-metin-4 mt-1 w-28 leading-tight">
+        Model kutusu
+      </p>
     </div>
   )
 }

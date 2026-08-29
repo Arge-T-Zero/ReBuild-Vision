@@ -158,10 +158,15 @@ export const api = {
     malzeme_dagilimi: { sinif: string; adet: number }[]
   }>('/harita'),
 
-  gecmis: (p: { kayit_tipi?: string; kayit_id?: number; limit?: number } = {}) => {
+  gecmis: (p: {
+    kayit_tipi?: string; kayit_id?: number; tespit_id?: number; limit?: number
+  } = {}) => {
     const q = new URLSearchParams()
     if (p.kayit_tipi) q.set('kayit_tipi', p.kayit_tipi)
     if (p.kayit_id != null) q.set('kayit_id', String(p.kayit_id))
+    // `tespit_id` tespitin BÜTÜN hikâyesini getirir: kendi kaydı artı
+    // ölçüm, miktar ve tehlikeli madde kayıtları.
+    if (p.tespit_id != null) q.set('tespit_id', String(p.tespit_id))
     if (p.limit) q.set('limit', String(p.limit))
     return istek<IslemGecmisi[]>(`/gecmis?${q}`)
   },

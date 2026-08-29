@@ -111,23 +111,33 @@ function degerBicimle(
 }
 
 export function IslemGecmisiListesi({
-  kayitTipi, kayitId, baslik = 'İşlem geçmişi', limit = 20, kompakt = false,
+  kayitTipi, kayitId, tespitId, baslik = 'İşlem geçmişi', limit = 20,
+  kompakt = false, yenilemeAnahtari = 0,
 }: {
   kayitTipi?: string
   kayitId?: number
+  /** Tespitin bütün hikâyesi: ölçüm ve tehlikeli madde kayıtları dahil. */
+  tespitId?: number
   baslik?: string
   limit?: number
   kompakt?: boolean
+  /** Değeri değişince liste yeniden çekilir (ölçüm eklendikten sonra). */
+  yenilemeAnahtari?: number
 }) {
   const { siniflar } = useDurum()
   const [kayitlar, setKayitlar] = useState<Kayit[] | null>(null)
   const [hata, setHata] = useState('')
 
   const yenile = useCallback(() => {
-    api.gecmis({ kayit_tipi: kayitTipi, kayit_id: kayitId, limit })
+    setHata('')
+    api.gecmis({
+      kayit_tipi: kayitTipi, kayit_id: kayitId, tespit_id: tespitId, limit,
+    })
       .then(setKayitlar)
-      .catch((h) => setHata(h.message))
-  }, [kayitTipi, kayitId, limit])
+      .catch((h) => { setHata(h.message); setKayitlar([]) })
+    // `yenilemeAnahtari` bilinçli bağımlılık: ölçüm ya da tehlikeli madde
+    // kaydı eklendikten sonra panel kendiliğinden tazelensin.
+  }, [kayitTipi, kayitId, tespitId, limit, yenilemeAnahtari])
 
   useEffect(() => { yenile() }, [yenile])
 
