@@ -148,7 +148,7 @@ Durum**.
 
 ---
 
-## K-009 · Docker bu aşamada ertelendi ⚠️ AÇIK RİSK
+## K-009 · Docker bu aşamada ertelendi ✅ KAPANDI (29.08.2026, bkz. K-019)
 
 - **Tarih:** 27.08.2026
 - **Karar:** İlk iskelet aşamasında Docker kurulmadı; sistem yerel süreçlerle
@@ -179,10 +179,10 @@ bu adım atılamadı.
 
 Doğrulama kontrol listesi: `docker/README.md`.
 
-- **Kalan iş:** Docker kurulup `docker compose -f docker/compose.yaml up
-  --build` çalıştırılacak. **En geç 03.09'daki "teslim paketi kontrolü"
-  gününe kadar.** Takvimdeki tek günlük tampon buraya harcanmamalıdır.
-- **Durum:** 🟠 **KISMEN AÇIK** — kod hazır, doğrulama bekliyor.
+- **Durum:** ✅ **KAPANDI — 29.08.2026.** Colima kuruldu, dört servis
+  ayağa kalktı, uçtan uca doğrulandı. Doğrulama sırasında Apple
+  Silicon'da sistemin hiç açılmasını engelleyen bir hata bulundu ve
+  düzeltildi. Ayrıntı: **K-019**.
 
 ---
 
@@ -432,6 +432,84 @@ HTTP 500 ile düşüyordu. Uzunluk sınırı yüzünden gerekçeyi kısaltmak,
 izlenebilirliği veri modeline feda etmek olurdu. Bir katsayının dayanağı
 üretilen tonajın **tek gerekçesidir**; kırpılamaz. Göç:
 `20260829_1557_miktar_hesabi_katsayi_kaynagi_text.py`.
+
+---
+
+## K-019 · Madde 10.3 doğrulandı — ve arm64 taşınabilirlik hatası bulundu
+
+- **Tarih:** 29.08.2026
+- **Ortam:** Colima 0.9 (`--cpu 2 --memory 4 --disk 20`) + Docker Engine
+  29.7.2 + Docker Compose 5.5.0, macOS 26.5.1, **Apple Silicon (arm64)**
+- **Karar:** Docker çalıştırıcısı olarak **Colima** seçildi. Gerekçe:
+  Docker Desktop ~4–5 GB yer kaplıyor, makinede yeterli boş alan yoktu;
+  Colima arayüzsüz ve belirgin biçimde hafif.
+
+### 🔴 Bulunan hata — sistem Apple Silicon'da hiç açılmıyordu
+
+`docker compose up` şu hatayla düştü:
+
+```
+no matching manifest for linux/arm64/v8 in the manifest list entries
+```
+
+Manifest denetlendi:
+
+| İmaj | Yayımlanan mimariler |
+|---|---|
+| `postgis/postgis:17-3.5` (resmî) | **yalnızca** linux/amd64 |
+| `imresamu/postgis:17-3.5` (topluluk) | linux/amd64 + linux/arm64 |
+
+**Resmî PostGIS imajının arm64 sürümü yayımlanmıyor.** Bu, yazılan
+dosyalara bakarak fark edilemeyecek bir hataydı; ancak fiilen
+çalıştırınca ortaya çıktı. Jüri üyesi M serisi bir Mac kullansaydı
+sistem **hiç açılmayacaktı** — yani Madde 10.3 dosyalar doğru olduğu
+hâlde karşılanmamış olacaktı.
+
+> Bu, K-009'da yazılan cümlenin kanıtıdır: *"Madde 10.3, dosyalar
+> yazıldığı için değil, çalıştığı doğrulandığı için karşılanır."*
+
+### Düzeltme
+
+`compose.yaml` içindeki `veritabani` servisine `platform: linux/amd64`
+eklendi. amd64 imajı arm64 makinede emülasyonla çalışır.
+
+**Neden çok mimarili topluluk imajı seçilmedi:** `imresamu/postgis`
+emülasyon gerektirmez ve daha hızlıdır, ancak topluluk derlemesidir.
+Kamu kurumuna devredilecek bir üründe resmî tedarik zinciri tercih
+edildi. Emülasyonun bedeli yalnızca açılış süresidir (~40 sn); resmî
+imajdan vazgeçmenin bedeli ise tedarik zinciri denetlenebilirliğidir.
+Seçenek `compose.yaml` içinde yorumla kayıtlıdır.
+
+### Doğrulanan adımlar
+
+| Adım | Sonuç |
+|---|---|
+| Üç imajın derlenmesi (`api`, `web`, `model-mock`) | ✅ |
+| Dört servisin ayağa kalkması | ✅ `veritabani` ve `model-mock` **healthy** |
+| Alembic göçü | ✅ 12 tablo oluştu |
+| PostGIS | ✅ `3.5 USE_GEOS=1 USE_PROJ=1 USE_STATS=1` |
+| `scripts/demo_veri.py` konteyner içinde | ✅ hesaplar oluştu |
+| Arayüz `http://localhost:8080` | ✅ HTTP 200 |
+| nginx `/api` vekili | ✅ HTTP 200 |
+| Giriş (`uzman@demo.local`) | ✅ |
+| Yetki kuralı: `yikim` → `/gecmis` | ✅ **403** |
+| Ölçüm sınırı: 10⁹ ton | ✅ **422** |
+
+Yani düzeltilen kurallar konteyner ortamında da geçerli — yalnızca
+geliştirme makinesinde değil.
+
+### Yan bulgu
+
+`nginx:1.27-alpine` çekilirken bir kez ağ hatası (`EOF`) alındı;
+tekrar denemede sorunsuz indi. Kalıcı bir sorun değil, ancak jüri
+zayıf bağlantıdaysa `docker compose build` bir kez başarısız olabilir —
+`docker/README.md`'ye not düşüldü.
+
+### Not
+
+Doğrulama sonrası imajlar ve birimler temizlendi
+(`docker compose down -v` + `docker system prune -af --volumes`),
+Colima durduruldu. Depoda kalıcı bir iz yok.
 
 ---
 

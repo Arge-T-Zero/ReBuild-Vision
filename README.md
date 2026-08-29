@@ -89,6 +89,27 @@ Yayın mimarisi ve kurulum adımları: [`docs/yayin.md`](docs/yayin.md).
 
 Ayrıntılı adımlar: [`docs/kurulum.md`](docs/kurulum.md)
 
+### Docker ile (önerilen — başka bir şey kurmanız gerekmez)
+
+```bash
+docker compose -f docker/compose.yaml up --build
+# Tek adres: http://localhost:8080
+```
+
+Şema göçü ve demo verisi açılışta otomatik çalışır. Giriş:
+`uzman@demo.local` / `demo1234`.
+
+29.08.2026'da uçtan uca doğrulandı (Colima + Docker 29.7.2, macOS /
+Apple Silicon): dört servis ayağa kalktı, göç çalıştı, PostGIS 3.5
+doğrulandı, arayüzden giriş yapıldı. Ayrıntı:
+[`docker/README.md`](docker/README.md), karar
+[`docs/karar-kaydi.md`](docs/karar-kaydi.md) K-019.
+
+> **Apple Silicon:** `compose.yaml` içindeki `platform: linux/amd64`
+> satırını silmeyin — resmî PostGIS imajının arm64 sürümü yayımlanmıyor.
+
+### Yerel kurulum (geliştirme için)
+
 ```bash
 cp .env.example .env
 scripts/gelistirme.sh
@@ -100,11 +121,6 @@ scripts/gelistirme.sh
 | API | http://localhost:8000 (dokümantasyon: `/docs`) |
 | Sahte model servisi | http://localhost:8090 |
 | PostgreSQL + PostGIS | localhost:5433 |
-
-> ⚠️ **Docker paketi henüz hazır değildir.** Şartname Madde 10.3 tek komutla
-> bağımsız ortamda çalıştırma istiyor; bu boşluk bilinçli olarak kayda
-> geçmiştir ve 03.09'a kadar kapatılacaktır. Bkz.
-> [`docs/karar-kaydi.md`](docs/karar-kaydi.md) K-009.
 
 ---
 
