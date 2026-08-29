@@ -5,6 +5,39 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 29.08.2026 — Madde 10.3 karşılandı (Docker doğrulandı)
+
+**Doğrulandı**
+- `docker compose up` **uçtan uca çalıştırıldı**: Colima + Docker Engine
+  29.7.2 + Compose 5.5.0, macOS / Apple Silicon. Dört servis ayağa kalktı,
+  Alembic göçü çalıştı (12 tablo), PostGIS 3.5 doğrulandı, demo verisi
+  konteyner içinde yüklendi, `http://localhost:8080` üzerinden giriş
+  yapıldı.
+- Düzeltilen kurallar konteynerde de sınandı: `yikim` → `/gecmis` **403**,
+  10⁹ ton ölçüm **422**.
+- Şartnamenin karşılanmayan tek maddesi buydu; **kapandı** (K-009 → K-019).
+
+**🔴 Düzeltildi — Apple Silicon'da sistem hiç açılmıyordu**
+- `postgis/postgis:17-3.5` resmî imajının **arm64 sürümü yayımlanmıyor**;
+  manifest yalnızca `linux/amd64` içeriyor. `docker compose up`
+  `no matching manifest for linux/arm64/v8` hatasıyla düşüyordu.
+- Jüri üyesi M serisi bir Mac kullansaydı sistem açılmayacaktı — dosyalar
+  doğru olduğu hâlde Madde 10.3 karşılanmamış olacaktı.
+- `veritabani` servisine `platform: linux/amd64` eklendi; imaj
+  emülasyonla çalışıyor, sağlık kontrolünden geçtiği doğrulandı.
+- Çok mimarili `imresamu/postgis` alternatifi topluluk derlemesi olduğu
+  için seçilmedi; gerekçe `compose.yaml` içinde ve K-019'da kayıtlı.
+
+**Bu, yalnızca çalıştırınca bulunabilecek bir hataydı.** Dosyalara
+bakarak fark edilemezdi — K-009'daki "Madde 10.3, dosyalar yazıldığı için
+değil, çalıştığı doğrulandığı için karşılanır" cümlesinin kanıtı.
+
+**Güncellendi**
+- `README.md`, `docs/kurulum.md`, `docker/README.md`: Docker artık
+  önerilen yol; eski "henüz doğrulanmadı" uyarıları kaldırıldı
+
+Karar: K-019
+
 ### 29.08.2026 — Dönüşüm katsayıları kaynaklandı (hacim → tonaj açıldı)
 
 **Eklendi**

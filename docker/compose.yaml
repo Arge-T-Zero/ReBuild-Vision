@@ -5,10 +5,11 @@
 #
 #   docker compose -f docker/compose.yaml up
 #
-# ⚠️ DURUM: Bu dosya yazılmıştır ancak HENÜZ TEMİZ BİR ORTAMDA
-# DOĞRULANMAMIŞTIR — geliştirme makinesinde Docker kurulu değildi.
-# Doğrulanmadan Madde 10.3 karşılanmış sayılmaz.
-# Bkz. docs/karar-kaydi.md K-009 ve docker/README.md.
+# ✅ DURUM: 29.08.2026'da Colima + Docker 29.7.2 üzerinde uçtan uca
+# DOĞRULANDI (macOS, Apple Silicon / arm64). Dört servis ayağa kalktı,
+# göç çalıştı, PostGIS 3.5 doğrulandı, demo verisi yüklendi ve
+# http://localhost:8080 üzerinden giriş yapıldı.
+# Bkz. docs/karar-kaydi.md K-019 ve docker/README.md.
 
 name: rebuild-vision
 
@@ -17,6 +18,24 @@ services:
     # PostGIS resmi imajı — PostgreSQL 17 + PostGIS 3.5
     # PostGIS GPL-2.0 lisanslıdır (docs/lisans-analizi.md Bölüm 4).
     image: postgis/postgis:17-3.5
+    # ⚠️ PLATFORM SABİTLEMESİ ZORUNLU — silmeyin.
+    #
+    # `postgis/postgis` resmî imajının **arm64 sürümü yayımlanmıyor**;
+    # manifest yalnızca linux/amd64 içeriyor. Bu satır olmadan Apple
+    # Silicon'lu bir makinede `docker compose up` şu hatayla düşer:
+    #
+    #   no matching manifest for linux/arm64/v8 in the manifest list
+    #
+    # Yani jüri üyesi M serisi bir Mac kullanıyorsa sistem HİÇ açılmazdı.
+    # Bu satırla amd64 imajı emülasyonla çalışır: 29.08.2026'da Apple
+    # Silicon üzerinde denendi, sağlık kontrolünden geçti (healthy),
+    # PostGIS 3.5 USE_GEOS=1 USE_PROJ=1 doğrulandı. Emülasyon açılışı
+    # yavaşlatır (~40 sn), demo için sorun değildir.
+    #
+    # Alternatif: `imresamu/postgis:17-3.5` çok mimarili (amd64 + arm64)
+    # ve emülasyon gerektirmez; ancak topluluk derlemesidir. Resmî
+    # tedarik zinciri tercih edildiği için seçilmedi (K-019).
+    platform: linux/amd64
     environment:
       POSTGRES_DB: rebuild_vision
       POSTGRES_USER: rebuild

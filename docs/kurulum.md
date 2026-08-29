@@ -7,22 +7,42 @@ tarafından bağımsız bir ortamda kurulabilir ve çalıştırılabilir olmalı
 
 ## İki kurulum yolu
 
-### A. Docker — yazıldı, henüz DOĞRULANMADI ⚠️
+### A. Docker — ÖNERİLEN, doğrulanmıştır ✅
 
 ```bash
 docker compose -f docker/compose.yaml up --build
 # Tek adres: http://localhost:8080
 ```
 
-Dockerfile'lar ve `compose.yaml` hazırdır; şema göçü ve demo verisi
-açılışta otomatik çalışır. Ancak **temiz bir ortamda fiilen
-çalıştırılmamıştır** — geliştirme makinesinde Docker kurulu değildi.
+Başka hiçbir şey kurmanız gerekmez: PostgreSQL, PostGIS, API, sahte model
+servisi ve arayüz konteynerlerden gelir. Şema göçü ve demo verisi açılışta
+otomatik çalışır.
 
-**Madde 10.3, dosyalar yazıldığı için değil, çalıştığı doğrulandığı için
-karşılanır.** Ayrıntı ve doğrulama kontrol listesi: `docker/README.md`,
-karar kaydı: `docs/karar-kaydi.md` **K-009**.
+İlk açılış imajların derlenmesi ve indirilmesiyle birkaç dakika sürer.
+Dört servis de ayağa kalkınca `http://localhost:8080` adresinden
+`uzman@demo.local` / `demo1234` ile giriş yapabilirsiniz (bütün demo
+hesapları: `docs/kullanici-kilavuzu.md`).
+
+**29.08.2026'da uçtan uca doğrulandı:** Colima + Docker Engine 29.7.2,
+macOS / Apple Silicon. Dört servis ayağa kalktı, göç çalıştı (12 tablo),
+PostGIS 3.5 doğrulandı, demo verisi yüklendi, arayüzden giriş yapıldı.
+Karar kaydı: `docs/karar-kaydi.md` **K-019**.
+
+> **Apple Silicon (M serisi Mac) notu**
+> `compose.yaml` içindeki `platform: linux/amd64` satırını **silmeyin**.
+> Resmî `postgis/postgis` imajının arm64 sürümü yayımlanmıyor; o satır
+> olmadan `docker compose up` şu hatayla düşer:
+> `no matching manifest for linux/arm64/v8`. Satır sayesinde imaj
+> emülasyonla çalışır (açılış ~40 sn sürer).
+
+> **Zayıf bağlantı notu**
+> `docker compose build` sırasında imaj indirmesi ağ hatasıyla
+> kesilebilir (`EOF`). Komutu tekrar çalıştırmak yeterlidir; indirme
+> kaldığı yerden sürer.
 
 ### B. Yerel kurulum — doğrulanmıştır ✅
+
+Docker kullanmak istemiyorsanız ya da geliştirme yapacaksanız.
 
 Aşağıdaki adımlar geliştirme makinesinde uçtan uca çalıştırılmıştır.
 

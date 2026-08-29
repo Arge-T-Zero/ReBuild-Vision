@@ -1,4 +1,4 @@
-# docker/ — yazıldı, henüz DOĞRULANMADI ⚠️
+# docker/ — doğrulandı ✅
 
 ## Durum
 
@@ -7,18 +7,55 @@
 > "Teslim edilen proje, jüri veya teknik komite tarafından **bağımsız bir
 > ortamda kurulabilir ve çalıştırılabilir olmalıdır.**"
 
-| | Durum |
+**29.08.2026'da uçtan uca doğrulandı.** Ortam: Colima + Docker Engine
+29.7.2 + Compose 5.5.0, macOS 26.5.1, Apple Silicon (arm64).
+
+| Adım | Sonuç |
 |---|---|
-| Dockerfile'lar ve `compose.yaml` yazıldı | ✅ |
-| YAML geçerliliği ve kopyalanan yolların varlığı sınandı | ✅ |
-| **Temiz bir ortamda `docker compose up` ile çalıştırıldı** | ❌ **HENÜZ DEĞİL** |
+| Üç imajın derlenmesi (`api`, `web`, `model-mock`) | ✅ |
+| Dört servisin ayağa kalkması | ✅ `veritabani`, `model-mock` **healthy** |
+| Alembic göçü | ✅ 12 tablo |
+| PostGIS | ✅ `3.5 USE_GEOS=1 USE_PROJ=1 USE_STATS=1` |
+| `scripts/demo_veri.py` konteyner içinde | ✅ |
+| Arayüz `http://localhost:8080` | ✅ HTTP 200 |
+| nginx `/api` vekili | ✅ HTTP 200 |
+| Giriş (`uzman@demo.local`) | ✅ |
+| Yetki kuralı: `yikim` → `/gecmis` | ✅ **403** |
+| Ölçüm sınırı: 10⁹ ton reddi | ✅ **422** |
 
-**Madde 10.3 son satır doğrulanmadan karşılanmış sayılmaz.** Geliştirme
-makinesinde Docker kurulu olmadığı için bu adım atılamadı.
+Karar kaydı: `docs/karar-kaydi.md` **K-019** (K-009 bu doğrulamayla kapandı).
 
-- Karar ve gerekçe: `docs/karar-kaydi.md` **K-009**
-- Hedef tarih: **03.09.2026** (teslim paketi kontrol günü)
-- Çalışan alternatif: `docs/kurulum.md` — yerel kurulum yolu doğrulanmıştır
+---
+
+## ⚠️ Apple Silicon (M serisi Mac) — `platform` satırını silmeyin
+
+`compose.yaml` içindeki `veritabani` servisinde şu satır vardır:
+
+```yaml
+    platform: linux/amd64
+```
+
+**Resmî `postgis/postgis` imajının arm64 sürümü yayımlanmıyor** —
+manifest yalnızca `linux/amd64` içeriyor. Bu satır olmadan Apple
+Silicon'lu bir makinede sistem hiç açılmaz:
+
+```
+no matching manifest for linux/arm64/v8 in the manifest list entries
+```
+
+Satır sayesinde imaj emülasyonla çalışır; açılış ~40 saniye sürer.
+Doğrulama sırasında sağlık kontrolünden geçtiği görüldü.
+
+Alternatif `imresamu/postgis:17-3.5` çok mimarilidir ve emülasyon
+gerektirmez, ancak topluluk derlemesidir; resmî tedarik zinciri tercih
+edildiği için seçilmedi (K-019).
+
+## ⚠️ Zayıf bağlantı
+
+İmaj indirmesi ağ hatasıyla kesilebilir (`failed to copy: ... EOF`).
+Doğrulama sırasında `nginx:1.27-alpine` bir kez böyle düştü, komutun
+tekrarında sorunsuz indi. Kalıcı bir sorun değildir; `docker compose
+build` komutunu tekrar çalıştırmak yeterlidir.
 
 ---
 
