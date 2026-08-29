@@ -201,3 +201,71 @@ async def test_olcum_birimi_turune_uymazsa_reddedilir(
         "birim": "m3", "yontem": "Kantar",
     })
     assert y.status_code == 422
+
+
+async def test_kaynakli_katsayi_hacimden_miktar_uretir(
+    istemci, jeton, tespit_kur
+):
+    """K-018 — kaynağı olan katsayı ile hacim ölçümü miktara dönüşür.
+
+    `ahsap` için EPA tablosunda GERÇEK bir alt–üst aralığı var
+    (169–268 lb/yd³); bu yüzden bu sınıfta hesap açıktır.
+    """
+    tid = await tespit_kur("ahsap", dogrulama="onaylandi")
+    await istemci.post("/olcum", headers=await jeton("saha"), json={
+        "tespit_id": tid, "tur": "hacim", "deger": 40.0,
+        "birim": "m3", "yontem": "Şerit metre ile kaba hacim",
+    })
+    d = (await istemci.get(f"/miktar/{tid}", headers=await jeton("belediye"))).json()
+
+    assert d["hesaplandi"] is True
+    assert d["deger_alt"] < d["deger_ust"], "Tek kesin değer değil, aralık"
+    assert d["birim"] == "ton"
+    # Kaynak atfı KIRPILMADAN dönmeli — sütun Text'e çevrildi.
+    assert "EPA" in d["katsayi_kaynagi"]
+    assert d["katsayi_kaynagi"].endswith("."), "Atıf ortadan kesilmiş"
+    assert len(d["katsayi_kaynagi"]) > 300, (
+        "Bu atıf 300 karakterden uzun; kırpılmadığını sınayan asıl nokta bu"
+    )
+
+
+async def test_kaynaksiz_katsayi_hala_reddediyor(istemci, jeton, tespit_kur):
+    """Bölüm 14 — dayanağı olmayan katsayı ile sayı üretilmez.
+
+    `beton` için EPA yalnızca TEK bir nokta değer veriyor (860 lb/yd³),
+    aralık vermiyor. Aralık uydurulmadığı için bu sınıf kapalıdır ve
+    kapalı KALMALIDIR — en kritik malzeme olması bunu değiştirmez.
+    """
+    tid = await tespit_kur("beton", dogrulama="onaylandi")
+    await istemci.post("/olcum", headers=await jeton("saha"), json={
+        "tespit_id": tid, "tur": "hacim", "deger": 25.0,
+        "birim": "m3", "yontem": "Şerit metre",
+    })
+    d = (await istemci.get(f"/miktar/{tid}", headers=await jeton("belediye"))).json()
+    assert d["hesaplandi"] is False
+    assert d["deger_alt"] is None
+    assert "katsayı" in d["aciklama"].lower()
+
+
+def test_katsayi_dosyasi_tutarli():
+    """Açık bir katsayının kaynağı ve aralığı ZORUNLU."""
+    import json
+    from api.app.core.config import DEPO_KOKU
+
+    ham = json.loads((DEPO_KOKU / "katsayilar.json").read_text(encoding="utf-8"))
+    for k in ham["katsayilar"]:
+        if k["dogrulandi"]:
+            assert k["alt"] is not None and k["ust"] is not None, (
+                f"{k['sinif']}: doğrulandı ama aralık yok"
+            )
+            assert k["alt"] < k["ust"], (
+                f"{k['sinif']}: tek kesin değer — belirsizlik aralığı olmalı"
+            )
+            assert k["kaynak"], f"{k['sinif']}: doğrulandı ama kaynak boş"
+        else:
+            # Kapalı satır sayı TAŞIMAMALI: yanlışlıkla açılırsa
+            # dayanaksız bir katsayı devreye girerdi.
+            assert k["alt"] is None and k["ust"] is None, (
+                f"{k['sinif']}: doğrulanmamış ama sayı taşıyor"
+            )
+            assert k["not_"], f"{k['sinif']}: neden kapalı olduğu yazılmamış"

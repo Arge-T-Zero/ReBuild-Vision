@@ -5,6 +5,36 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 29.08.2026 — Dönüşüm katsayıları kaynaklandı (hacim → tonaj açıldı)
+
+**Eklendi**
+- `katsayilar.json` **0.1 → 0.2**. Dokuz katsayının tamamı kaynaksızdı;
+  bu yüzden **hacim ölçümü hiçbir zaman miktar üretmiyordu** — yalnızca
+  doğrudan tartım çalışıyordu.
+- Kaynak: **U.S. EPA, "Volume-to-Weight Conversion Factors", Nisan 2016**
+  (C&D tablosu; EPA'nın gösterdiği birincil kaynak CIWMB 2006). Belge
+  indirilip metni çıkarıldı, değerler **tablodan okundu**.
+- **4 sınıf açıldı** — aralıkları kaynağın kendisinden geliyor:
+  `ahsap` 0,1003–0,1590 · `metal` 0,0279–0,1335 ·
+  `tekstil` 0,0742–0,1038 · `karton` 0,0442–0,0629 ton/m³
+- Ölçüldü: 40 m³ ahşap → **4,012 – 6,360 ton**, tam atıfla birlikte
+
+**Bilinçli olarak kapalı bırakıldı**
+- `beton`, `dolgu_toprak`, `alcipan`: EPA **tek nokta değer** veriyor,
+  aralık vermiyor. Miktar tek kesin değer olamayacağı için aralık zorunlu;
+  **uydurulmadı**. ⚠️ Beton en kritik sınıf — ikinci kaynak öncelikli
+- `sert_plastik`, `yumusak_plastik`: EPA'nın C&D bölümünde plastik kalemi
+  yok. Tablodaki plastik satırları ambalaj geri dönüşümüne ait; bir PVC
+  borunun yoğunluğu şişe yoğunluğu değildir, bu eşleme yapılmadı
+
+**Düzeltildi**
+- `miktar_hesabi.katsayi_kaynagi` `varchar(300)` → **`Text`**. Tam atıf
+  sığmıyordu ve miktar hesabı HTTP 500 ile düşüyordu. Uzunluk sınırı
+  yüzünden gerekçeyi kısaltmak izlenebilirliği veri modeline feda etmek
+  olurdu
+
+Karar: K-018 · Testler: 127 → **130**
+
 ### 29.08.2026 — Arayüz denetimi: güvenlik açığı, kural ihlali ve 15 hata
 
 Arayüz otomatik testten geçirildi (8 hesap, 7 sayfa, 12 senaryo, koyu +

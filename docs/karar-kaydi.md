@@ -368,6 +368,73 @@ Doğrulama kontrol listesi: `docker/README.md`.
 
 ---
 
+## K-018 · Dönüşüm katsayıları kaynaklandı — 9 sınıftan 4'ü açıldı
+
+- **Tarih:** 29.08.2026
+- **Durum:** `katsayilar.json` sürüm 0.2 · **kısmen** kaynaklandı
+- **Sorun:** Dosyadaki dokuz katsayının tamamı `dogrulandi: false` ve
+  değerleri `null` idi. Sonuç: **hacim ölçümü hiçbir zaman miktar
+  üretmiyordu**; yalnızca doğrudan tartım çalışıyordu. Projenin miktar
+  iddiası fiilen tek bir yola bağlıydı.
+
+### Kullanılan kaynak
+
+> U.S. EPA, Office of Resource Conservation and Recovery,
+> *"Volume-to-Weight Conversion Factors"*, Nisan 2016 — C&D tablosu.
+
+EPA'nın bu satırlar için gösterdiği birincil kaynak (dipnot 18):
+California Integrated Waste Management Board, *"Targeted Statewide Waste
+Characterization Study: Detailed Characterization of Construction and
+Demolition Waste"*, Haziran 2006.
+
+Belge indirilip metni çıkarıldı; değerler **tablodan okundu**, arama
+sonucu özetinden alınmadı. Birim çevrimi: `1 lb = 0,45359237 kg`,
+`1 yd³ = 0,764554857984 m³` → çarpan `0,000593276`.
+
+### Açılan sınıflar (4)
+
+| Sınıf | Aralık (ton/m³) | Aralık nereden geliyor |
+|---|---|---|
+| `ahsap` | 0,1003 – 0,1590 | EPA'nın kendi alt satırları: kereste 169, mühendislik ürünü ahşap 268 lb/yd³ |
+| `metal` | 0,0279 – 0,1335 | Hava kanalı 47 … demir/demir dışı hurda 225 lb/yd³ |
+| `tekstil` | 0,0742 – 0,1038 | Aralık EPA tablosunda **basılı**: 125–175 lb/yd³ |
+| `karton` | 0,0442 – 0,0629 | OCC+mukavva sıkıştırılmamış 74,54; OCC yassı 106 lb/yd³ |
+
+`metal` aralığı 4,7 kat geniştir. Daraltılmadı: kaynakta olmayan bir
+kesinlik iddia etmek olurdu. Geniş ama dürüst bir aralık, dar ve
+uydurma bir aralıktan iyidir.
+
+### Kapalı kalan sınıflar (5) — gerekçeleriyle
+
+- **`beton`, `dolgu_toprak`, `alcipan`:** EPA **tek nokta değer** veriyor
+  (sırasıyla 860 / 929 / 467 lb/yd³), aralık vermiyor. Miktar tek kesin
+  değer olarak üretilemeyeceği için (Rapor Bölüm 4) aralık zorunlu; aralık
+  **uydurulmadı**. Değerler dosyaya `epa_lb_yd3` alanında kayıtlı, kullanıma
+  kapalı. ⚠️ **Beton en kritik sınıftır; ikinci kaynak önceliklidir.**
+- **`sert_plastik`, `yumusak_plastik`:** EPA'nın C&D bölümünde plastik
+  kalemi **yok**. Tablodaki plastik satırları ambalaj geri dönüşümüne ait
+  (şişe, kap, film). Bir PVC borunun yoğunluğu şişe yoğunluğu değildir;
+  bu eşleme **yapılmadı**.
+
+### Mentöre sorulacaklar
+
+1. Bu değerler **ABD** inşaat/yıkım atığı karakterizasyonundan geliyor.
+   Türkiye'deki yapı malzemesi ve yıkım pratiği farklı olabilir. Kabul
+   edilebilir mi?
+2. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı'nın yayımlanmış bir
+   dönüşüm katsayısı tablosu var mı? Varsa **öncelikle o** kullanılmalı.
+3. Beton / dolgu toprak / alçıpan için aralık veren bir kaynak önerisi?
+
+### Yan düzeltme — `miktar_hesabi.katsayi_kaynagi` artık `Text`
+
+Tam atıf `varchar(300)`'e sığmıyordu; kayıt yazılamıyor ve miktar hesabı
+HTTP 500 ile düşüyordu. Uzunluk sınırı yüzünden gerekçeyi kısaltmak,
+izlenebilirliği veri modeline feda etmek olurdu. Bir katsayının dayanağı
+üretilen tonajın **tek gerekçesidir**; kırpılamaz. Göç:
+`20260829_1557_miktar_hesabi_katsayi_kaynagi_text.py`.
+
+---
+
 ## Mentör görüşmeleri
 
 | # | Tarih | Katılımcılar | Sorulan | Karar |
@@ -379,6 +446,10 @@ Doğrulama kontrol listesi: `docker/README.md`.
 
 **1. görüşmede sorulacaklar** (`docs/lisans-analizi.md` Bölüm 7'nin özeti):
 
+0. **Dönüşüm katsayıları** (K-018): ABD (EPA/CIWMB) verisi Türkiye enkazı
+   için kabul edilebilir mi? Bakanlığın yayımlanmış bir tablosu var mı?
+   Beton için aralık veren kaynak önerisi? *(Beton kapalı olduğu sürece
+   en kritik malzemede hacimden tonaj üretilemiyor.)*
 1. Madde 5.5'teki "sahiplik devri" AGPL'li bir bileşen içeren ürün için
    nasıl yorumlanmalı?
 2. Madde 5.5 üçüncü taraf lisanslarını mı kapsıyor, yalnızca takımın kendi
