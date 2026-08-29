@@ -11,10 +11,13 @@ import { Sayfa } from '../bilesenler/Duzen'
 import { CizilemeyenKutuUyarisi, TespitKutulari } from '../bilesenler/TespitKutulari'
 import { MiktarKarti } from '../bilesenler/MiktarKarti'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
+import { RaporIndir } from '../bilesenler/RaporIndir'
 import { TehlikeliKarti } from '../bilesenler/TehlikeliKarti'
 import type { Goruntu, Miktar, Olcum, Tespit } from '../types'
 
 const YUKLEYEBILIR = new Set(['yonetici', 'saha', 'belediye'])
+// api/app/core/permissions.py RAPOR_ALABILIR ile aynı küme.
+const RAPOR_ALABILIR = new Set(['yonetici', 'belediye', 'afad'])
 const OLCEBILIR = new Set(['yonetici', 'saha', 'uzman'])
 
 // Tehlikeli madde YÖNLENDİRMESİ — teşhis değil (ana talimat Bölüm 1.2).
@@ -95,6 +98,16 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
             ton={dogrulanan > 0 ? 'vurgu' : 'notr'} />
           <OzetSayi deger={incelemeBekleyen} etiket="Uzman incelemesi gerekli"
             ton={incelemeBekleyen > 0 ? 'uyari' : 'notr'} />
+        </Kart>
+      )}
+
+      {/* Alan bazlı rapor. API `?alan_id=` destekliyordu ama arayüzde
+          hiçbir yerden çağrılmıyordu: rapor yalnızca malzeme haritasından,
+          sistemin tamamı için alınabiliyordu. Bir belediye yetkilisinin en
+          çok isteyeceği şey ise BU sahanın raporudur. */}
+      {RAPOR_ALABILIR.has(kullanici?.rol ?? '') && (
+        <Kart className="mb-5 p-4">
+          <RaporIndir alanId={alanId} />
         </Kart>
       )}
 
@@ -221,10 +234,25 @@ function TespitSatiri({
 }) {
   const [miktar, setMiktar] = useState<Miktar | null>(null)
   const [olcumler, setOlcumler] = useState<Olcum[]>([])
+  const [veriHatasi, setVeriHatasi] = useState('')
+  // Her yenilemede artar; işlem geçmişi paneli buna bakarak tazelenir.
+  // Ölçüm eklendikten sonra panelin eski hâlinde kalması, izlenebilirlik
+  // iddiasını ekranda yalanlıyordu.
+  const [surum, setSurum] = useState(0)
 
   const yenile = useCallback(() => {
-    api.miktar(tespit.id).then(setMiktar).catch(() => {})
-    api.olcumler(tespit.id).then(setOlcumler).catch(() => {})
+    setVeriHatasi('')
+    // Hatalar YUTULMAZ. Miktar gelmediğinde ekran sessizce boş kalırsa
+    // kullanıcı "miktar hesaplanmadı" ile "istek başarısız" arasındaki
+    // farkı göremez — bu projede o fark kuralın ta kendisidir.
+    Promise.all([
+      api.miktar(tespit.id).then(setMiktar),
+      api.olcumler(tespit.id).then(setOlcumler),
+    ])
+      .catch((h) => setVeriHatasi(
+        h instanceof Error ? h.message : 'Miktar ve ölçümler alınamadı',
+      ))
+      .finally(() => setSurum((n) => n + 1))
   }, [tespit.id])
 
   useEffect(() => { if (acik) yenile() }, [acik, yenile])
@@ -273,6 +301,15 @@ function TespitSatiri({
         </span>
       </button>
 
+      {acik && veriHatasi && (
+        <div className="px-3 pb-3">
+          <Hata mesaj={veriHatasi} />
+          <Buton tur="ikincil" className="mt-2 text-sm" onClick={yenile}>
+            Yeniden dene
+          </Buton>
+        </div>
+      )}
+
       {acik && miktar && (
         <div className="px-3 pb-3 space-y-3">
           <MiktarKarti
@@ -291,8 +328,9 @@ function TespitSatiri({
           {/* İzlenebilirlik arayüzde de görünür (ana talimat Bölüm 4.2) */}
           <div className="border border-kenar rounded-lg p-4 bg-yuzey-2/40">
             <IslemGecmisiListesi
-              kayitTipi="tespit" kayitId={tespit.id}
-              baslik="Bu tespitin geçmişi" limit={10} kompakt
+              tespitId={tespit.id}
+              yenilemeAnahtari={surum}
+              baslik="Bu tespitin geçmişi" limit={20} kompakt
             />
           </div>
         </div>

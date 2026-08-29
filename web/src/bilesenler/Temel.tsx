@@ -114,9 +114,11 @@ export function OzetSayi({ deger, etiket, alt, ton = 'notr' }: {
     uyari: 'text-uyari',
   }[ton]
   return (
-    <div className="px-4 py-3">
-      <p className={`text-2xl font-semibold sayisal ${renk}`}>{deger}</p>
-      <p className="text-xs text-metin-3 mt-0.5">{etiket}</p>
+    <div className="px-3 sm:px-4 py-3">
+      <p className={`text-xl sm:text-2xl font-semibold sayisal ${renk}`}>{deger}</p>
+      <p className="text-[11px] sm:text-xs text-metin-3 mt-0.5 leading-tight">
+        {etiket}
+      </p>
       {alt && <p className="text-xs text-metin-4 mt-0.5">{alt}</p>}
     </div>
   )

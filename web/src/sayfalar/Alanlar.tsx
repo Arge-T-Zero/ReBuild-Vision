@@ -52,7 +52,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
       />
 
       {alanlar !== null && alanlar.length > 0 && (
-        <Kart className="mb-6 grid grid-cols-2 sm:grid-cols-3 divide-x divide-kenar">
+        <Kart className="mb-6 grid grid-cols-3 divide-x divide-kenar">
           <OzetSayi deger={alanlar.length} etiket="Görünen enkaz alanı" />
           <OzetSayi deger={toplamGoruntu} etiket="Yüklenen görüntü" />
           <OzetSayi
