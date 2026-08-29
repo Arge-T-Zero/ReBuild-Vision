@@ -1,18 +1,130 @@
 {
-  "surum": "0.1",
-  "durum": "KAYNAK BEKLENIYOR",
-  "aciklama": "Hacim -> agirlik donusum katsayilari. Her katsayi icin dogrulanmis bir kaynak ZORUNLUDUR. dogrulandi:false olan katsayi ile miktar HESAPLANMAZ (ana talimat Bolum 14: olculmemis/dayanaksiz sayi uretilmez).",
+  "surum": "0.2",
+  "durum": "KISMEN KAYNAKLANDI — 9 siniftan 4'u kullanilabilir",
+  "aciklama": "Hacim -> agirlik donusum katsayilari. Her katsayi icin dogrulanmis bir kaynak ZORUNLUDUR. dogrulandi:false olan katsayi ile miktar HESAPLANMAZ (ana talimat Bolum 14: olculmemis/dayanaksiz sayi uretilmez). Miktar tek kesin deger olarak da uretilmez; bu yuzden bir katsayinin kullanilabilmesi icin KAYNAKTAN GELEN bir alt-ust araligi gerekir. Tek nokta degeri olan satirlar bilincli olarak kapali birakilmistir — aralik uydurulmamistir.",
   "birim": "ton/m3",
+  "cevrim": {
+    "aciklama": "EPA degerleri lb/yd3 cinsindendir; ton/m3'e cevrildi.",
+    "carpan_lb_yd3_to_ton_m3": 0.000593276,
+    "dayanak": "1 lb = 0,45359237 kg (uluslararasi avoirdupois pound); 1 yd3 = 0,764554857984 m3"
+  },
+  "acik_sorular": [
+    "Bu degerler ABD insaat/yikim atigi karakterizasyonundan gelir. Turkiye'deki yapi malzemesi ve yikim pratigi farkli olabilir; mentore ve alan uzmanina SORULMALIDIR.",
+    "beton, dolgu_toprak ve alcipan icin aralik veren ikinci bir kaynak gerekiyor. Beton en kritik sinif oldugu icin oncelikli.",
+    "sert_plastik ve yumusak_plastik icin insaat/yikim kaynagi bulunamadi.",
+    "Cevre, Sehircilik ve Iklim Degisikligi Bakanligi'nin yayimlanmis bir donusum katsayisi tablosu var mi? Varsa oncelikle o kullanilmalidir."
+  ],
   "katsayilar": [
-    { "sinif": "beton",           "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "dolgu_toprak",    "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "ahsap",           "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "sert_plastik",    "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "yumusak_plastik", "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "metal",           "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "tekstil",         "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "karton",          "alt": null, "ust": null, "kaynak": null, "dogrulandi": false },
-    { "sinif": "alcipan",         "alt": null, "ust": null, "kaynak": null, "dogrulandi": false }
+    {
+      "sinif": "beton",
+      "alt": null,
+      "ust": null,
+      "kaynak": null,
+      "dogrulandi": false,
+      "epa_lb_yd3": [
+        860
+      ],
+      "epa_satirlari": "Concrete — Large/Small Concrete, with/without Re-bar (dordu de 860)",
+      "not_": "EPA tek bir nokta deger veriyor, aralik vermiyor. Tek deger ile miktar uretilemez (Bolum 4: belirsizlik araligi zorunlu). Aralik uydurulmadi. EKSIK: bu sinif icin degiskenlik/aralik veren ikinci kaynak. Not: 860 lb/yd3 = 0,510 ton/m3, kapta bosluklariyla birlikte KIRIK BETON yogunlugudur; masif betonun ~2,4 ton/m3 degeriyle karistirilmamalidir."
+    },
+    {
+      "sinif": "dolgu_toprak",
+      "alt": null,
+      "ust": null,
+      "kaynak": null,
+      "dogrulandi": false,
+      "epa_lb_yd3": [
+        929
+      ],
+      "epa_satirlari": "Dirt and Sand",
+      "not_": "EPA tek nokta deger veriyor (0,551 ton/m3). Aralik yok, uydurulmadi."
+    },
+    {
+      "sinif": "ahsap",
+      "alt": 0.1003,
+      "ust": 0.159,
+      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — EPA'nin bu satirlar icin gosterdigi birincil kaynak (dipnot 18): California Integrated Waste Management Board, “Targeted Statewide Waste Characterization Study: Detailed Characterization of Construction and Demolition Waste”, Haziran 2006.",
+      "dogrulandi": true,
+      "epa_lb_yd3": [
+        169,
+        268
+      ],
+      "epa_satirlari": "Wood — Clean Dimensional Lumber / Other Recyclable / Painted-Stained / Treated = 169; Clean Engineered Wood = 268",
+      "not_": "Aralik EPA'nin kendi alt satirlarindan geliyor; uydurulmadi."
+    },
+    {
+      "sinif": "metal",
+      "alt": 0.0279,
+      "ust": 0.1335,
+      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — EPA'nin bu satirlar icin gosterdigi birincil kaynak (dipnot 18): California Integrated Waste Management Board, “Targeted Statewide Waste Characterization Study: Detailed Characterization of Construction and Demolition Waste”, Haziran 2006.",
+      "dogrulandi": true,
+      "epa_lb_yd3": [
+        47,
+        143,
+        145,
+        225
+      ],
+      "epa_satirlari": "Metal — HVAC Ducting 47 / Remainder-Composite 143 / Major Appliances 145 / Other Ferrous 225 / Other Non-Ferrous 225",
+      "not_": "Aralik GENIS (4,7 kat): en hafif satir hava kanali, en agir satir demir/demir disi hurda. Genis ama DURUST bir aralik; daraltmak kaynakta olmayan bir kesinlik iddia etmek olurdu."
+    },
+    {
+      "sinif": "alcipan",
+      "alt": null,
+      "ust": null,
+      "kaynak": null,
+      "dogrulandi": false,
+      "epa_lb_yd3": [
+        467
+      ],
+      "epa_satirlari": "Gypsum Board — Clean / Painted-Demolition (ikisi de 467)",
+      "not_": "EPA tek nokta deger veriyor (0,277 ton/m3). Aralik yok, uydurulmadi."
+    },
+    {
+      "sinif": "tekstil",
+      "alt": 0.0742,
+      "ust": 0.1038,
+      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — dipnot 10 (Keep America Beautiful / bale spesifikasyonlari)",
+      "dogrulandi": true,
+      "epa_lb_yd3": [
+        125,
+        175
+      ],
+      "epa_satirlari": "Textiles — Mixed Textiles, Loose: 125–175 (aralik EPA tablosunda BASILI)",
+      "not_": "Aralik dogrudan kaynakta basili. UYARI: bu satir kentsel kati atik tekstili icindir, insaat/yikim tekstili icin ayri satir yok."
+    },
+    {
+      "sinif": "karton",
+      "alt": 0.0442,
+      "ust": 0.0629,
+      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — dipnot 4 (Keep America Beautiful, Aralik 2013)",
+      "dogrulandi": true,
+      "epa_lb_yd3": [
+        74.54,
+        106
+      ],
+      "epa_satirlari": "Old Corrugated Containers and Chip Board, Uncompacted 74,54; Old Corrugated Containers, Flattened 106",
+      "not_": "UYARI: kentsel geri donusum satiri; insaat/yikim karton kalemi yok."
+    },
+    {
+      "sinif": "sert_plastik",
+      "alt": null,
+      "ust": null,
+      "kaynak": null,
+      "dogrulandi": false,
+      "epa_lb_yd3": null,
+      "epa_satirlari": null,
+      "not_": "EPA'nin C&D bolumunde plastik kalemi YOK. Tablodaki plastik satirlari ambalaj geri donusumune aittir (siseler, kaplar, film). Bir PVC borunun ya da pencere profilinin yogunlugu sise yogunlugu degildir; bu esleme YAPILMADI."
+    },
+    {
+      "sinif": "yumusak_plastik",
+      "alt": null,
+      "ust": null,
+      "kaynak": null,
+      "dogrulandi": false,
+      "epa_lb_yd3": null,
+      "epa_satirlari": null,
+      "not_": "sert_plastik ile ayni gerekce: C&D bolumunde plastik satiri yok."
+    }
   ],
   "not": "konteyner sinifi malzeme olmadigi icin (siniflar.json malzeme_mi:false) burada yer almaz."
 }

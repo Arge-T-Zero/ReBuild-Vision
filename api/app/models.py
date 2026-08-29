@@ -255,7 +255,14 @@ class MiktarHesabi(Temel):
     deger_ust: Mapped[float] = mapped_column(Float, nullable=False)
     birim: Mapped[str] = mapped_column(String(20), nullable=False)
     kullanilan_katsayi: Mapped[float] = mapped_column(Float, nullable=False)
-    katsayi_kaynagi: Mapped[str] = mapped_column(String(300), nullable=False)
+    # Kaynak atfı KIRPILMAZ: Text, varchar değil.
+    #
+    # Bir katsayının dayanağı, üretilen tonajın tek gerekçesidir. Tam
+    # akademik atıf (kurum + belge adı + tarih + EPA'nın kendi gösterdiği
+    # birincil kaynak) 300 karakteri aşıyordu ve kayıt yazılamıyordu.
+    # Uzunluk sınırı yüzünden gerekçeyi kısaltmak, izlenebilirliği
+    # veri modeline feda etmek olurdu.
+    katsayi_kaynagi: Mapped[str] = mapped_column(Text, nullable=False)
     yontem: Mapped[str] = mapped_column(String(300), nullable=False)
     tarih: Mapped[datetime] = _simdi()
 
