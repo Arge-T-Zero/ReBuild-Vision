@@ -5,6 +5,70 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 29.08.2026 — Arayüz denetimi: güvenlik açığı, kural ihlali ve 15 hata
+
+Arayüz otomatik testten geçirildi (8 hesap, 7 sayfa, 12 senaryo, koyu +
+açık tema, 360–1400 px). Bulunanlar aşağıda; her biri düzeltilip
+**tarayıcıda ölçülerek** doğrulandı.
+
+**Güvenlik**
+- **Haritada saklanmış XSS (kritik).** Leaflet `bindPopup`'a dize
+  verilince içeriği HTML olarak ayrıştırıyor; enkaz alanı adı ise
+  kullanıcı girdisi. Alan tanımlayabilen biri adın içine betik koyarsa
+  haritayı açan herkesin oturum jetonu çalınabilirdi. Açık **yük fiilen
+  çalıştırılarak** doğrulandı, sonra balon DOM olarak kuruldu
+  (`textContent`); yeniden çalıştırılan kanıt betiğinde yük artık metin
+- **`/harita` ve `/gecmis` yetki sızıntısı.** İki uç nokta yalnızca
+  "giriş yapmış olmak" istiyordu. Hiçbir saha göremeyen yıkım/tesis
+  rolleri haritada "0 enkaz alanı" yazarken sistemin **tamamına** ait
+  malzeme kırılımını ve bütün denetim kaydını okuyabiliyordu (K-017)
+
+**İhlal edilemez kural ihlalleri**
+- **Bölüm 1.4 — doğrulanmamış kayıt miktar hesabına giriyordu.** Toplu
+  sorgular filtreliydi ama tekil `GET /miktar/{id}` doğrulama durumuna
+  **hiç bakmıyordu**: `beklemede` bir tespit için sayı döndürüyor ve
+  `miktar_hesabi` satırını kalıcı yazıyordu. Kural miktar servisinin
+  içine taşındı; artık atlanamaz (K-016)
+- **Ölçüm girdisinde üst sınır yoktu.** Tek tespite **999.999.999 ton**
+  girilebiliyordu ve miktar kartı bunu gösteriyordu. Üst sınır ve
+  türden türetilen birim doğrulaması eklendi (K-015)
+
+**İşlevsel hatalar**
+- **Saha personeli hiçbir alan göremiyordu** → görüntü yükleyemiyordu.
+  Tavuk–yumurta kilidi: bir sahaya yükleme yapabilmek için o sahaya daha
+  önce yükleme yapmış olmak gerekiyordu. Rol tamamen işlevsizdi (K-014)
+- **İnceleme kuyruğunda görüntü, kutu ve saha bilgisi yoktu.** Uzman
+  kanıta bakmadan karar veriyordu; iki tespit ekranda ayırt edilemiyordu.
+  Artık kutuya göre ölçeklenmiş kırpma + üzerine çizilmiş model kutusu
+- **"Bu tespitin geçmişi" yarım kalıyordu**: ölçüm ve tehlikeli madde
+  kayıtları görünmüyordu, işlem sonrası tazelenmiyordu (2 → 4 kayıt)
+- Oturum düştüğünde kullanıcı hâlâ giriş yapmış görünüyordu
+- API hata verdiğinde sayfalar sonsuza kadar "Yükleniyor…" kalıyordu
+- Mobilde 360 px'te beş sekmeden **biri** görünüyordu, ipucu da yoktu →
+  alt gezinme çubuğu
+- Tespit kutusu etiketleri üst üste biniyordu ve **"ön tahmin"
+  taşımıyordu** (Bölüm 1.4 istisnasız istiyor)
+- Malzeme filtresi haritayı etkilemiyordu
+- Alan bazlı rapor arayüzden alınamıyordu (API destekliyordu)
+- İşlem geçmişi kullanıcı adı yerine kimlik, sınıf adı yerine ham anahtar
+  gösteriyordu ("kullanıcı #3", "duzeltildi")
+- Pydantic'in İngilizce doğrulama mesajları ekrana çıkıyordu
+- Ölçüm alanı Türkçe ondalık ayracını (virgül) reddediyordu
+- Koyu temada "Yeni alan tanımla" haritası bembeyaz kalıyordu
+- Miktarlar Türkçe sayı biçiminde değildi (11.16 → 11,16)
+
+**Ölçülen sonuç**
+- Etiket çakışması 1 → **0**, görselden taşma **0**
+- 360 px'te beş sayfanın hiçbirinde yatay taşma **yok**
+- JavaScript hatası **yok**
+- Testler **118 → 127**, hepsi geçiyor
+
+**Sorun bulunmayan** (doğrulandı): rol bazlı menüler, onay bekleyen hesabın
+engellenmesi, alan oluşturma ve sınır çizimi, görüntü yükleme ve otomatik
+kuyruğa düşme, uzman doğrulama akışı, ölçüm → aralıklı miktar, rapor
+indirme (CSV/GeoJSON/JSON), tema geçişi, klavye erişilebilirliği, Türkçe
+karakterler.
+
 ### 29.08.2026 — Mobil uygulama, rapor indirme ve çevrimdışı eşitleme
 
 **Eklendi**
