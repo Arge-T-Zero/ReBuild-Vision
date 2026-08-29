@@ -105,7 +105,10 @@ async def test_esitleme_dogrulamayi_atlamaz(istemci, jeton, tespit_kur):
 
 async def test_esitlenen_olcum_miktar_hesabina_girer(istemci, jeton, tespit_kur):
     """Çevrimdışı gelen ölçüm de miktarı açar — Bölüm 1.1 aynen işler."""
-    tid = await tespit_kur()
+    # Tespit onaylı olmalı: doğrulanmamış kayıt ölçümü olsa da miktara
+    # girmez (Bölüm 1.4). Burada sınanan, eşitlemeyle gelen ölçümün
+    # elle girilen ölçümden farksız işlemesi.
+    tid = await tespit_kur(dogrulama="onaylandi")
     d = (await istemci.get(f"/miktar/{tid}", headers=await jeton("saha"))).json()
     assert d["hesaplandi"] is False
 
@@ -130,6 +133,8 @@ async def test_esitleme_islem_gecmisine_duser(istemci, jeton, tespit_kur):
              "deger": 5.0, "birim": "ton", "yontem": "Kantar"},
         ],
     })
-    g = (await istemci.get("/gecmis?kayit_tipi=olcum", headers=baslik)).json()
+    # Sistem geneli dökümü GECMIS_GORUR rolleri okur (bkz. /gecmis).
+    g = (await istemci.get("/gecmis?kayit_tipi=olcum",
+                           headers=await jeton("uzman"))).json()
     assert len(g) == 1
     assert g[0]["kayit_id"] is not None

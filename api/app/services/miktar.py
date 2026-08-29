@@ -11,6 +11,12 @@
    Belirsizlik aralığı ve kullanılan yöntem birlikte döner
    (Rapor Bölüm 4, üçüncü yenilikçi yön).
 
+3. DOĞRULANMAMIŞ KAYIT MİKTAR HESABINA GİRMEZ (Bölüm 1.4).
+   "Bu bir arayüz kuralı değil, veri katmanı kuralıdır." Kural bu yüzden
+   burada, hesabın kendisinde durur: `hesapla` tespiti bütün olarak alır
+   ve doğrulama durumuna bakar. Router'a bırakılsaydı yeni bir çağıran
+   kontrolü atlayabilirdi; buradan atlanamaz.
+
 Ek olarak: dayanağı doğrulanmamış bir katsayı ile hesap yapılmaz
 (Bölüm 14). Bu da 'hesaplanamadı' sonucunu verir.
 """
@@ -21,7 +27,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 from ..core.config import DEPO_KOKU, malzeme_siniflari
-from ..models import Olcum, OlcumTuru
+from ..models import DogrulamaDurumu, Olcum, OlcumTuru, Tespit
 
 
 @lru_cache
@@ -38,6 +44,12 @@ OLCUM_YOK = "olcum_yok"
 MALZEME_DEGIL = "malzeme_degil"
 KATSAYI_YOK = "katsayi_dogrulanmadi"
 UYGUN_OLCUM_YOK = "uygun_olcum_turu_yok"
+DOGRULANMADI = "dogrulanmadi"
+
+# Uzmanın onayladığı sayılan durumlar. `beklemede` ve `belirsiz` yoktur:
+# belirsiz, uzmanın karar veremediği kayıttır ve hesaba katılmaz.
+# services/queries.py DOGRULANMIS ile aynı küme.
+DOGRULANMIS = (DogrulamaDurumu.ONAYLANDI, DogrulamaDurumu.DUZELTILDI)
 
 
 @dataclass(frozen=True)
@@ -57,8 +69,20 @@ class Sonuc:
     yontem: str | None = None
 
 
-def hesapla(sinif: str, olcumler: list[Olcum]) -> Sonuc:
-    """Bir tespit için miktar aralığı üretir ya da üretmeyi reddeder."""
+def hesapla(tespit: Tespit, olcumler: list[Olcum]) -> Sonuc:
+    """Bir tespit için miktar aralığı üretir ya da üretmeyi reddeder.
+
+    Tespit nesnesini bütün olarak alır — yalnızca sınıfını değil. Doğrulama
+    durumu kontrolünün çağıran tarafa bırakılmaması bilinçlidir.
+    """
+    # Kural 3: uzman onaylamadıysa hesap yapılmaz. En başta, çünkü ölçüm
+    # varlığından da katsayıdan da önce gelir.
+    if tespit.dogrulama_durumu not in DOGRULANMIS:
+        return Sonuc(hesaplandi=False, neden=DOGRULANMADI)
+
+    # Uzman düzeltmesi varsa geçerli sınıf odur — insanın kararı modelin
+    # tahminini geçersiz kılar.
+    sinif = tespit.duzeltilen_sinif or tespit.sinif
 
     # Kural: konteyner gibi malzeme olmayan sınıflar miktara girmez (K-007).
     if sinif not in malzeme_siniflari():
@@ -135,4 +159,8 @@ NEDEN_METNI = {
         "miktar hesaplanmadı"
     ),
     MALZEME_DEGIL: "Bu sınıf bir atık malzeme değildir; miktar hesaplanmaz",
+    DOGRULANMADI: (
+        "Tespit uzman tarafından doğrulanmadığı için miktar hesaplanmadı. "
+        "Doğrulanmamış kayıtlar miktar ve raporlama hesaplarına girmez."
+    ),
 }

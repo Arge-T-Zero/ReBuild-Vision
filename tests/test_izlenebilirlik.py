@@ -91,7 +91,9 @@ async def test_olcum_girisi_gecmise_dusuyor(istemci, jeton, tespit_kur):
         "tespit_id": tid, "tur": "agirlik", "deger": 3.2,
         "birim": "ton", "yontem": "Kantar",
     })
-    kayitlar = await _gecmis(istemci, await jeton("saha"), kayit_tipi="olcum")
+    # Sistem geneli dökümü GECMIS_GORUR rolleri okur; burada sınanan
+    # ölçümün geçmişe DÜŞMESİ, saha personelinin okuma yetkisi değil.
+    kayitlar = await _gecmis(istemci, await jeton("uzman"), kayit_tipi="olcum")
     assert len(kayitlar) == 1
     assert kayitlar[0]["yeni_deger"]["yontem"] == "Kantar"
 

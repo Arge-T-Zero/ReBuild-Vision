@@ -55,6 +55,12 @@ export interface Tespit {
   inceleme_gerekli: boolean
   /** Her model çıktısı 'ön tahmin'dir, istisnasız */
   etiket: string
+  /** İnceleme bağlamı — yalnızca /tespit/inceleme-kuyrugu doldurur */
+  goruntu_dosya_yolu?: string | null
+  goruntu_genislik?: number | null
+  goruntu_yukseklik?: number | null
+  alan_id?: number | null
+  alan_ad?: string | null
 }
 
 export interface Goruntu {
@@ -138,6 +144,7 @@ export interface TehlikeliKayit {
   durum: 'incelemeye_yonlendirildi' | 'lab_sonucu_var'
   lab_sonucu_notu: string | null
   giren_id: number
+  giren_ad: string | null
   tarih: string
 }
 
@@ -158,5 +165,6 @@ export interface IslemGecmisi {
   eski_deger: Record<string, unknown> | null
   yeni_deger: Record<string, unknown> | null
   kullanici_id: number | null
+  kullanici_ad: string | null
   tarih: string
 }

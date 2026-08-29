@@ -91,8 +91,30 @@ def gorulebilir_alanlar(rol: Rol | None, kullanici_id: int) -> Select:
         )
         return sorgu.where(EnkazAlani.id.in_(uzman_alt))
 
-    # Diğer roller yalnızca oluşturdukları ya da görüntü yükledikleri
-    # sahaları görür.
+    if rol == Rol.SAHA:
+        # Saha personeli TANIMLI BÜTÜN sahaları görür.
+        #
+        # Bu, Bölüm 5 tablosundaki "kendi sahası" tanımından DAHA GENİŞTİR
+        # ve bilinçli bir ara çözümdür. Gerekçe: saha personeline saha
+        # atama akışı henüz yazılmadı. "Kendi sahası" kuralı atama olmadan
+        # uygulandığında rol tamamen çalışmaz hale geliyordu — saha
+        # personeli bir sahaya görüntü yükleyebilmek için o sahaya daha
+        # önce görüntü yüklemiş olmak zorunda kalıyordu (tavuk–yumurta).
+        # Rolün tek işi görüntü yüklemek olduğu için bu, rolü işlevsiz
+        # bırakıyordu.
+        #
+        # Sızıntı yüzeyi dar tutuldu: saha personeli saha LİSTESİNİ görür,
+        # rapor alamaz ve doğrulama yapamaz. Atama tablosu eklendiğinde bu
+        # dal silinip yerine atama sorgusu gelmelidir.
+        # Bkz. docs/karar-kaydi.md K-014.
+        return sorgu
+
+    # Kalan roller (yikim, tesis) yalnızca oluşturdukları ya da görüntü
+    # yükledikleri sahaları görür. Bu roller dış taraflardır (yıklım
+    # firması, geri kazanım tesisi); atama olmadan sistemin tamamını
+    # görmeleri gerçek bir yetki sızıntısı olurdu. Atama akışı gelene
+    # kadar boş liste görmeleri DOĞRU davranıştır; arayüz bunu "sistemde
+    # saha yok" diye değil, "size saha atanmamış" diye anlatır.
     alt = select(Goruntu.enkaz_alani_id).where(Goruntu.yukleyen_id == kullanici_id)
     return sorgu.where(
         (EnkazAlani.olusturan_id == kullanici_id) | (EnkazAlani.id.in_(alt))

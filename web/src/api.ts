@@ -5,6 +5,42 @@ import type {
 } from './types'
 
 const TABAN = '/api'
+
+/**
+ * Pydantic'in İngilizce doğrulama mesajlarını Türkçeleştirir.
+ *
+ * Tamamen Türkçe bir kamu arayüzünde "String should have at least 8
+ * characters" görünmesi kabul edilemez. Sunucu kendi yazdığı mesajları
+ * zaten Türkçe döner (`ctx.error`); burada çevrilenler yalnızca
+ * Pydantic'in yerleşik kısıt mesajlarıdır.
+ */
+function turkcelestir(h: {
+  type?: string; msg?: string; loc?: (string | number)[]
+  ctx?: Record<string, unknown>
+} | undefined): string | undefined {
+  if (!h) return undefined
+  const alan = ALAN_ADLARI[String(h.loc?.[h.loc.length - 1] ?? '')] ?? 'Bu alan'
+  const n = h.ctx?.min_length ?? h.ctx?.max_length
+
+  switch (h.type) {
+    case 'string_too_short': return `${alan} en az ${n} karakter olmalıdır.`
+    case 'string_too_long': return `${alan} en fazla ${n} karakter olabilir.`
+    case 'missing': return `${alan} zorunludur.`
+    case 'string_pattern_mismatch': return `${alan} geçerli bir biçimde değil.`
+    case 'greater_than': return `${alan} ${h.ctx?.gt}'dan büyük olmalıdır.`
+    case 'float_parsing':
+    case 'int_parsing': return `${alan} sayı olmalıdır.`
+    // `value_error`, sunucunun kendi yazdığı (Türkçe) mesajdır; olduğu
+    // gibi geçer — yalnızca Pydantic'in eklediği önek atılır.
+    default: return h.msg?.replace(/^Value error, /, '')
+  }
+}
+
+const ALAN_ADLARI: Record<string, string> = {
+  parola: 'Parola', eposta: 'E-posta', ad: 'Ad soyad',
+  deger: 'Ölçüm değeri', yontem: 'Ölçüm yöntemi', birim: 'Birim',
+  sinif: 'Sınıf', durum: 'Durum', not: 'Not',
+}
 const ANAHTAR = 'rebuild_vision_jeton'
 
 export const jetonAl = () => localStorage.getItem(ANAHTAR)
@@ -19,6 +55,17 @@ export class ApiHatasi extends Error {
   }
 }
 
+/**
+ * Oturumun düştüğünü uygulamaya duyurur.
+ *
+ * Jeton varken 401 gelmesi tek bir şey demektir: jeton artık geçerli
+ * değil. Önceden bu durumda sayfanın ortasına "Jeton geçersiz veya süresi
+ * dolmuş" yazılıyor, üst çubukta kullanıcının adı ve bütün menü duruyordu
+ * — kullanıcı hâlâ giriş yapmış görünüyor ama hiçbir şey çalışmıyordu.
+ * Şimdi jeton silinir ve uygulama giriş ekranına döner.
+ */
+export const OTURUM_DUSTU = 'rebuild-vision:oturum-dustu'
+
 async function istek<T>(yol: string, secenek: RequestInit = {}): Promise<T> {
   const basliklar = new Headers(secenek.headers)
   const jeton = jetonAl()
@@ -29,12 +76,22 @@ async function istek<T>(yol: string, secenek: RequestInit = {}): Promise<T> {
 
   const yanit = await fetch(`${TABAN}${yol}`, { ...secenek, headers: basliklar })
 
+  // Jeton GÖNDERİLDİĞİ hâlde 401 geldiyse oturum düşmüştür. Jeton
+  // gönderilmediğinde gelen 401 (hatalı parolayla giriş denemesi) bu
+  // yola girmez — orada silinecek bir oturum yoktur.
+  if (yanit.status === 401 && jeton) {
+    jetonSil()
+    window.dispatchEvent(new CustomEvent(OTURUM_DUSTU))
+  }
+
   if (!yanit.ok) {
     let mesaj = `İstek başarısız (${yanit.status})`
     try {
       const govde = await yanit.json()
       if (typeof govde.detail === 'string') mesaj = govde.detail
-      else if (Array.isArray(govde.detail)) mesaj = govde.detail[0]?.msg ?? mesaj
+      else if (Array.isArray(govde.detail)) {
+        mesaj = turkcelestir(govde.detail[0]) ?? mesaj
+      }
     } catch { /* gövde JSON değilse varsayılan mesaj kalır */ }
     throw new ApiHatasi(yanit.status, mesaj)
   }

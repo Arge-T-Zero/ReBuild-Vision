@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 from .core.permissions import OnayDurumu, Rol
 from .models import DogrulamaDurumu, ErisimDurumu, OlcumTuru, TehlikeliDurum
@@ -144,6 +144,18 @@ class TespitCikti(Model):
     # Her model çıktısı 'ön tahmin'dir, istisnasız (ana talimat Bölüm 1.4).
     etiket: str = "ön tahmin"
 
+    # --- İnceleme bağlamı (yalnızca kuyruk uç noktasında doldurulur) ---
+    #
+    # Uzman KANITA bakmadan karar veremez. Bu alanlar olmadan kuyrukta
+    # yalnızca "Beton · %32" yazıyordu; iki ayrı tespit ekranda birbirinden
+    # ayırt edilemiyordu. Projenin ana iddiası insan denetimli
+    # sınıflandırma; o ekran bu iddiayı taşıyamıyordu.
+    goruntu_dosya_yolu: str | None = None
+    goruntu_genislik: int | None = None
+    goruntu_yukseklik: int | None = None
+    alan_id: int | None = None
+    alan_ad: str | None = None
+
 
 class GoruntuCikti(Model):
     id: int
@@ -178,7 +190,57 @@ class DogrulamaIstek(Model):
 
 # --- Ölçüm ve miktar --------------------------------------------------------
 
-class OlcumIstek(Model):
+
+# --- Ölçüm girdisi doğrulaması ---------------------------------------
+#
+# İki kural sunucuda zorlanır. İkisi de istemcide zaten uygulanıyor
+# (web MiktarKarti.tsx, mobil olcum.dart birimi türden türetiyor) ama
+# istemci atlanabilir: mobil eşitleme uç noktasına doğrudan istek
+# gönderilebilir. Bir ölçüm miktar hesabının tek dayanağıdır; bozuk bir
+# ölçüm bozuk bir tonaj demektir.
+
+# Ölçüm türünün birimi TÜRETİLİR, kullanıcıdan alınmaz. `agirlik` türünde
+# "m3" birimi gelirse bu bir hatadır; kabul edilirse hacim değeri ağırlık
+# sanılıp katsayısız hesaba girerdi.
+TURUN_BIRIMI = {
+    OlcumTuru.ALAN: "m2",
+    OlcumTuru.HACIM: "m3",
+    OlcumTuru.AGIRLIK: "ton",
+}
+
+# Tek bir tespit için üst sınır — yazım hatası kalkanı, alan iddiası değil.
+#
+# Dayanak: bir tespit tek bir fotoğraftaki tek bir görünür bölgedir. Tek
+# karede görülebilecek en büyük yığın kabaca 50 m × 50 m × 10 m = 25.000 m³;
+# beton yoğunluğuyla (~2,4 ton/m³) 60.000 ton eder. 100.000 bunun rahatça
+# üstünde, ama parmak kayması sonucu girilen 10⁹'u durdurur.
+#
+# Sınır sessizce kırpmaz, isteği REDDEDER: kullanıcının girdiği sayıyı
+# değiştirip kaydetmek, ölçümü uydurmak olurdu.
+OLCUM_UST_SINIR = 100_000.0
+
+
+class OlcumDogrulamasi:
+    """`OlcumIstek` ve `EsitlemeSatiri` için ortak doğrulama."""
+
+    @model_validator(mode="after")
+    def _olcum_tutarli(self):
+        beklenen = TURUN_BIRIMI[self.tur]
+        if self.birim != beklenen:
+            raise ValueError(
+                f"'{self.tur.value}' ölçümünün birimi '{beklenen}' olmalı, "
+                f"'{self.birim}' gönderildi."
+            )
+        if self.deger > OLCUM_UST_SINIR:
+            raise ValueError(
+                f"Ölçüm değeri tek bir tespit için fazla yüksek "
+                f"({self.deger:g} {beklenen}). Üst sınır "
+                f"{OLCUM_UST_SINIR:g} {beklenen}. Değeri kontrol edin."
+            )
+        return self
+
+
+class OlcumIstek(Model, OlcumDogrulamasi):
     tespit_id: int
     tur: OlcumTuru
     deger: float = Field(gt=0)
@@ -186,7 +248,7 @@ class OlcumIstek(Model):
     yontem: str
 
 
-class EsitlemeSatiri(Model):
+class EsitlemeSatiri(Model, OlcumDogrulamasi):
     """Çevrimdışı kuyruktan gelen tek ölçüm."""
     # Cihazda üretilir (UUID). Yinelenen yazımı engelleyen anahtar budur.
     yerel_kimlik: Annotated[str, StringConstraints(min_length=8, max_length=64)]
@@ -265,6 +327,10 @@ class TehlikeliCikti(Model):
     durum: TehlikeliDurum
     lab_sonucu_notu: str | None
     giren_id: int
+    # Tehlikeli madde kaydında "kimin girdiği" en kritik bilgilerden
+    # biridir; ekranda "Kullanıcı #3" yazması izlenebilirlik vaadini
+    # karşılamıyordu.
+    giren_ad: str | None = None
     tarih: datetime
 
 
@@ -278,4 +344,9 @@ class IslemGecmisiCikti(Model):
     eski_deger: dict | None
     yeni_deger: dict | None
     kullanici_id: int | None
+    # Denetim kaydının vaadi "KİM, ne zaman, neyi değiştirdi". Yalnızca
+    # kimlik numarası dönmek bu vaadi karşılamıyordu: arayüzde
+    # "kullanıcı #3 değiştirdi" yazıyordu. Ad, kimliğin yanında döner —
+    # kimlik izlenebilirlik için korunur.
+    kullanici_ad: str | None = None
     tarih: datetime

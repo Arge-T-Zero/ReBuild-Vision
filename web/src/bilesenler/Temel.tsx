@@ -84,7 +84,7 @@ export function Baslik({ ustBaslik, baslik, aciklama, sag }: {
           <p className="text-xs font-medium uppercase tracking-wider
             text-metin-4 mb-1.5">{ustBaslik}</p>
         )}
-        <h2 className="text-2xl font-semibold tracking-tight">{baslik}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight break-words">{baslik}</h2>
         {aciklama && (
           <p className="text-sm text-metin-3 mt-1.5 max-w-2xl leading-relaxed">
             {aciklama}

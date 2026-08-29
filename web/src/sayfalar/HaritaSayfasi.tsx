@@ -23,6 +23,33 @@ import L from 'leaflet'
 // api/app/core/permissions.py RAPOR_ALABILIR ile aynı küme.
 const RAPOR_ALABILIR = new Set(['yonetici', 'belediye', 'afad'])
 
+/**
+ * Harita açılır balonunun içeriğini DOM olarak kurar.
+ *
+ * ⚠️ Leaflet'in `bindPopup` metoduna dize verilirse onu **HTML olarak
+ * ayrıştırır**. Alan adı kullanıcı girdisidir; dize olarak geçirmek
+ * saklanmış XSS açığıdır. Alan tanımlama yetkisi olan biri adın içine
+ * betik koyarsa, haritayı açan HER kullanıcının oturum jetonu çalınabilir.
+ *
+ * `textContent` ile kurulan bir düğüm bu yolu tamamen kapatır: tarayıcı
+ * içeriği metin olarak ele alır, hiçbir kaçış işlemine gerek kalmaz.
+ */
+function balon(alan: EnkazAlani): HTMLElement {
+  const kok = document.createElement('div')
+
+  const ad = document.createElement('strong')
+  ad.textContent = alan.ad
+  kok.appendChild(ad)
+
+  const alt = document.createElement('div')
+  alt.style.marginTop = '2px'
+  alt.style.opacity = '0.75'
+  alt.textContent = `${alan.goruntu_sayisi} görüntü · ${alan.tespit_sayisi} tespit`
+  kok.appendChild(alt)
+
+  return kok
+}
+
 export function HaritaSayfasi() {
   const { durum, siniflar, siniflarHam, kullanici } = useDurum()
   const { git, erisilebilir } = useGezinme()
@@ -54,13 +81,13 @@ export function HaritaSayfasi() {
       if (a.sinir && a.sinir.length >= 3) {
         L.polygon(a.sinir.map((n) => [n.enlem, n.boylam] as [number, number]), {
           color: '#4da3ff', weight: 2, fillOpacity: 0.08,
-        }).addTo(katman).bindPopup(a.ad)
+        }).addTo(katman).bindPopup(balon(a))
       }
       if (a.konum) {
         noktalar.push([a.konum.enlem, a.konum.boylam])
         L.marker([a.konum.enlem, a.konum.boylam], { icon: isaretciIkonu('#4da3ff') })
           .addTo(katman)
-          .bindPopup(`<strong>${a.ad}</strong><br>${a.goruntu_sayisi} görüntü`)
+          .bindPopup(balon(a))
       }
     })
     if (noktalar.length > 0 && harita) {
@@ -107,7 +134,7 @@ export function HaritaSayfasi() {
       )}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="harita-koyu">
+        <div>
           <Harita merkez={[40.9862, 40.5219]} yakinlik={13} yukseklik="560px"
             hazir={setHarita} etiket="Malzeme kaynak haritası" />
         </div>

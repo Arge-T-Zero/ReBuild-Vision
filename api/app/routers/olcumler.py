@@ -65,6 +65,21 @@ async def miktar(
     if not t:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Tespit bulunamadı")
 
+    y = await db.execute(select(Olcum).where(Olcum.tespit_id == tespit_id))
+    # Hesap ÖNCE yapılır, kayıtlı satıra SONRA bakılır. Sıra bilinçli:
+    # doğrulama, malzeme ve ölçüm kurallarının tamamı servisin içinde ve
+    # önbellek bu kuralları atlayamıyor. Ters sırada, kural konmadan önce
+    # yazılmış eski bir satır kuralı delerdi.
+    sonuc = miktar_servisi.hesapla(t, list(y.scalars()))
+
+    if not sonuc.hesaplandi:
+        # Satır YAZILMAZ. Sıfır yazılmaz, NULL yazılmaz — satır yoktur.
+        return MiktarCikti(
+            tespit_id=tespit_id,
+            hesaplandi=False,
+            aciklama=miktar_servisi.NEDEN_METNI.get(sonuc.neden, "Miktar hesaplanmadı"),
+        )
+
     kayitli = await db.scalar(
         select(MiktarHesabi).where(MiktarHesabi.tespit_id == tespit_id)
     )
@@ -78,19 +93,6 @@ async def miktar(
             kullanilan_katsayi=kayitli.kullanilan_katsayi,
             katsayi_kaynagi=kayitli.katsayi_kaynagi,
             yontem=kayitli.yontem,
-        )
-
-    y = await db.execute(select(Olcum).where(Olcum.tespit_id == tespit_id))
-    # Uzman düzeltmesi varsa katsayı ve malzeme kontrolü DÜZELTİLEN sınıfa
-    # göre yapılır — insanın kararı modelinkini geçersiz kılar.
-    sonuc = miktar_servisi.hesapla(t.duzeltilen_sinif or t.sinif, list(y.scalars()))
-
-    if not sonuc.hesaplandi:
-        # Satır YAZILMAZ. Sıfır yazılmaz, NULL yazılmaz — satır yoktur.
-        return MiktarCikti(
-            tespit_id=tespit_id,
-            hesaplandi=False,
-            aciklama=miktar_servisi.NEDEN_METNI.get(sonuc.neden, "Miktar hesaplanmadı"),
         )
 
     m = MiktarHesabi(

@@ -1,17 +1,20 @@
 """Sistem durumu, sınıflar, harita ve işlem geçmişi."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import siniflar as sinif_tanimlari
 from ..db import oturum
+from ..core.permissions import GECMIS_GORUR
 from ..deps import aktif_kullanici
-from ..models import Goruntu, IslemGecmisi, Kullanici, Tespit
+from ..models import EnkazAlani, Goruntu, IslemGecmisi, Kullanici, Tespit
 from ..schemas import IslemGecmisiCikti
 from ..services import model_client
-from ..services.queries import gecerli_sinif, hesaba_girebilir
+from ..services.queries import (
+    gecerli_sinif, gorulebilir_alanlar, hesaba_girebilir,
+)
 
 router = APIRouter(tags=["sistem"])
 
@@ -69,13 +72,20 @@ async def harita(
 
     Yalnızca DOĞRULANMIŞ ve MALZEME olan tespitler döner — filtre veri
     katmanındadır (ana talimat Bölüm 1.4, docs/karar-kaydi.md K-007).
+
+    Dağılım ayrıca ROLÜN GÖREBİLDİĞİ sahalarla sınırlanır. Bu olmadan,
+    hiçbir saha göremeyen bir yıkım firması "0 enkaz alanı" görürken
+    yanında sistemin tamamına ait malzeme kırılımını okuyordu: hem
+    mantıksal tutarsızlık hem yetki sızıntısı.
     """
     # Uzman düzeltmesi model tahminini geçersiz kılar; gruplama GEÇERLİ
     # sınıf üzerinden yapılır.
     sinif = gecerli_sinif().label("sinif")
+    kapsam = gorulebilir_alanlar(k.rol, k.id).with_only_columns(EnkazAlani.id)
     sorgu = hesaba_girebilir(
         select(sinif, func.count(Tespit.id))
         .join(Goruntu, Tespit.goruntu_id == Goruntu.id)
+        .where(Goruntu.enkaz_alani_id.in_(kapsam))
     ).group_by(sinif)
 
     y = await db.execute(sorgu)
@@ -94,18 +104,49 @@ async def gecmis(
     kayit_tipi: str | None = None,
     kayit_id: int | None = None,
     limit: int = 50,
-    _: Kullanici = Depends(aktif_kullanici),
+    k: Kullanici = Depends(aktif_kullanici),
     db: AsyncSession = Depends(oturum),
 ):
     """İşlem geçmişi — kim, ne zaman, neyi değiştirdi.
 
     Rapor Bölüm 6, dördüncü yenilikçi yön. Arayüzde de görünür olmalıdır,
     yalnızca veri tabanında durmamalıdır.
+
+    YETKİ İKİ KADEMELİDİR:
+
+    - **Tek bir kaydın geçmişi** (`kayit_tipi` + `kayit_id` verilmiş):
+      giriş yapmış herkes okuyabilir. Tespit detayındaki "Bu tespitin
+      geçmişi" paneli buradan beslenir; ölçüm girebilen saha personelinin
+      kendi girdiği kaydın izini görememesi izlenebilirlik iddiasıyla
+      çelişirdi.
+    - **Sistem geneli döküm** (filtresiz ya da yalnızca `kayit_tipi`):
+      `GECMIS_GORUR` rolleriyle sınırlıdır. Bu döküm, kimin neyi
+      değiştirdiğini sistemin tamamı için gösterir; salt okunur dış
+      taraflara (yıkım firması, geri kazanım tesisi) açık olmamalıdır.
+
+    Yetki API katmanında zorlanır: arayüzde sekmeyi gizlemek yetmez,
+    uç nokta doğrudan çağrılabilir.
     """
-    sorgu = select(IslemGecmisi).order_by(IslemGecmisi.id.desc()).limit(min(limit, 200))
+    if kayit_id is None and k.rol not in GECMIS_GORUR:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Sistem geneli işlem geçmişini görme yetkiniz yok. "
+            "Tek bir kaydın geçmişini o kaydın ekranından görebilirsiniz.",
+        )
+    sorgu = (
+        select(IslemGecmisi, Kullanici.ad)
+        # Dış birleştirme: kullanıcısı olmayan (sistem kaynaklı) kayıtlar
+        # da listede kalmalıdır.
+        .join(Kullanici, Kullanici.id == IslemGecmisi.kullanici_id, isouter=True)
+        .order_by(IslemGecmisi.id.desc())
+        .limit(min(limit, 200))
+    )
     if kayit_tipi:
         sorgu = sorgu.where(IslemGecmisi.kayit_tipi == kayit_tipi)
     if kayit_id is not None:
         sorgu = sorgu.where(IslemGecmisi.kayit_id == kayit_id)
     y = await db.execute(sorgu)
-    return list(y.scalars())
+    return [
+        IslemGecmisiCikti.model_validate(k).model_copy(update={"kullanici_ad": ad})
+        for k, ad in y.all()
+    ]
