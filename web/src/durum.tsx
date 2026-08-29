@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { api, jetonAl, jetonSil, jetonYaz } from './api'
+import { api, jetonAl, jetonSil, jetonYaz, OTURUM_DUSTU } from './api'
 import type { Kullanici, SinifTanimi, SiniflarYaniti, SistemDurumu } from './types'
 
 interface Baglam {
   kullanici: Kullanici | null
   yukleniyor: boolean
+  /** Oturum kendiliğinden düştüyse giriş ekranında gösterilecek not. */
+  oturumNotu: string
   durum: SistemDurumu | null
   siniflar: Map<string, SinifTanimi>
   siniflarHam: SiniflarYaniti | null
@@ -20,6 +22,22 @@ export function DurumSaglayici({ children }: { children: ReactNode }) {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [durum, setDurum] = useState<SistemDurumu | null>(null)
   const [siniflarHam, setSiniflarHam] = useState<SiniflarYaniti | null>(null)
+  const [oturumNotu, setOturumNotu] = useState('')
+
+  // Jeton geçerliliğini yitirdiğinde uygulama giriş ekranına döner ve
+  // NEDENİNİ söyler. Sessizce giriş ekranına atmak, kullanıcının az önce
+  // yazdığı bir şeyi kaybettiğini anlamamasına yol açardı.
+  useEffect(() => {
+    const dinleyici = () => {
+      setKullanici(null)
+      setOturumNotu(
+        'Oturumunuz sona erdi. Kaldığınız yerden devam etmek için '
+        + 'tekrar giriş yapın.',
+      )
+    }
+    window.addEventListener(OTURUM_DUSTU, dinleyici)
+    return () => window.removeEventListener(OTURUM_DUSTU, dinleyici)
+  }, [])
 
   useEffect(() => {
     // Sistem durumu ve sınıf tanımları arka planda gelir; arayüzü
@@ -49,11 +67,13 @@ export function DurumSaglayici({ children }: { children: ReactNode }) {
     const y = await api.giris(eposta, parola)
     jetonYaz(y.jeton)
     setKullanici(y.kullanici)
+    setOturumNotu('')
   }, [])
 
   const cikisYap = useCallback(() => {
     jetonSil()
     setKullanici(null)
+    setOturumNotu('')
   }, [])
 
   const siniflar = new Map((siniflarHam?.siniflar ?? []).map((s) => [s.ad, s]))
@@ -61,6 +81,7 @@ export function DurumSaglayici({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{
       kullanici, yukleniyor, durum, siniflar, siniflarHam, girisYap, cikisYap,
+      oturumNotu,
     }}>
       {children}
     </Ctx.Provider>

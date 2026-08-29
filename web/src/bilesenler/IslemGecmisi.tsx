@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
-import type { IslemGecmisi as Kayit } from '../types'
+import { useDurum } from '../durum'
+import type { IslemGecmisi as Kayit, SinifTanimi } from '../types'
 import { BosDurum, Buton } from './Temel'
 
 /**
@@ -32,6 +33,34 @@ const ALAN_ADI: Record<string, string> = {
   rol: 'Rol',
   onay_durumu: 'Onay durumu',
   erisim_durumu: 'Erişim durumu',
+}
+
+/**
+ * Ham veri tabanı değerlerinin okunur karşılıkları.
+ *
+ * Sayfanın vaadi "kim, ne zaman, NEYİ değiştirdi". Ekranda `duzeltildi`,
+ * `onaylandi` gibi Türkçe karakterleri düşmüş ham enum değerleri
+ * göstermek bu vaadi yarım bırakıyordu. Sınıf adları burada YOKTUR —
+ * onlar `siniflar` tanımından (`gorunen_ad`) gelir, tek kaynak orasıdır.
+ */
+const DEGER_ADI: Record<string, string> = {
+  beklemede: 'Beklemede',
+  onaylandi: 'Onaylandı',
+  duzeltildi: 'Düzeltildi',
+  belirsiz: 'Belirsiz',
+  reddedildi: 'Reddedildi',
+  acik: 'Açık',
+  kisitli: 'Kısıtlı',
+  kapali: 'Kapalı',
+  incelemeye_yonlendirildi: 'İncelemeye yönlendirildi',
+  lab_sonucu_var: 'Laboratuvar sonucu var',
+  yonetici: 'Yönetici',
+  saha: 'Saha personeli',
+  uzman: 'Doğrulayıcı uzman',
+  belediye: 'Belediye yetkilisi',
+  afad: 'AFAD yetkilisi',
+  yikim: 'Yıkım firması',
+  tesis: 'Geri kazanım tesisi',
 }
 
 const KAYIT_TIPI_ADI: Record<string, string> = {
@@ -67,12 +96,18 @@ function tarihBicimle(s: string): string {
   })
 }
 
-function degerBicimle(d: unknown): string {
+function degerBicimle(
+  d: unknown, siniflar?: Map<string, SinifTanimi>,
+): string {
   if (d === null || d === undefined) return '—'
   if (typeof d === 'boolean') return d ? 'evet' : 'hayır'
   const m = String(d)
   // Ham ISO damgası göstermek yerine okunur tarih yaz.
-  return ISO_TARIH.test(m) ? tarihBicimle(m) : m
+  if (ISO_TARIH.test(m)) return tarihBicimle(m)
+  // Sınıf adları tek kaynaktan gelir: siniflar.json.
+  const sinif = siniflar?.get(m)
+  if (sinif) return sinif.gorunen_ad
+  return DEGER_ADI[m] ?? m
 }
 
 export function IslemGecmisiListesi({
@@ -84,6 +119,7 @@ export function IslemGecmisiListesi({
   limit?: number
   kompakt?: boolean
 }) {
+  const { siniflar } = useDurum()
   const [kayitlar, setKayitlar] = useState<Kayit[] | null>(null)
   const [hata, setHata] = useState('')
 
@@ -131,7 +167,10 @@ export function IslemGecmisiListesi({
               </span>
               {' '}kaydını{' '}
               <span className="text-metin">
-                {k.kullanici_id != null ? `kullanıcı #${k.kullanici_id}` : 'sistem'}
+                {k.kullanici_ad
+                  ?? (k.kullanici_id != null
+                    ? `kullanıcı #${k.kullanici_id}`
+                    : 'sistem')}
               </span>
               {' '}{ISLEM_ADI[k.islem] ?? k.islem}
               <span className="text-metin-3"> · {tarihBicimle(k.tarih)}</span>
@@ -143,10 +182,12 @@ export function IslemGecmisiListesi({
                   <li key={alan} className="text-metin-3">
                     {ALAN_ADI[alan] ?? alan}:{' '}
                     <s className="text-metin-3">
-                      {degerBicimle(k.eski_deger?.[alan])}
+                      {degerBicimle(k.eski_deger?.[alan], siniflar)}
                     </s>
                     {' → '}
-                    <span className="text-metin-2">{degerBicimle(yeni)}</span>
+                    <span className="text-metin-2">
+                      {degerBicimle(yeni, siniflar)}
+                    </span>
                   </li>
                 ))}
               </ul>

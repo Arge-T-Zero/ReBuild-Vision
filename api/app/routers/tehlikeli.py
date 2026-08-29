@@ -94,11 +94,15 @@ async def kayitlar(
     anlamına gelmediğini AÇIKÇA söyler. Arayüz bu metni gösterir.
     """
     y = await db.execute(
-        select(TehlikeliKayit)
+        select(TehlikeliKayit, Kullanici.ad)
+        .join(Kullanici, Kullanici.id == TehlikeliKayit.giren_id, isouter=True)
         .where(TehlikeliKayit.tespit_id == tespit_id)
         .order_by(TehlikeliKayit.id.desc())
     )
-    kayit_listesi = [TehlikeliCikti.model_validate(x) for x in y.scalars()]
+    kayit_listesi = [
+        TehlikeliCikti.model_validate(x).model_copy(update={"giren_ad": ad})
+        for x, ad in y.all()
+    ]
     return {
         "tespit_id": tespit_id,
         "kayitlar": kayit_listesi,

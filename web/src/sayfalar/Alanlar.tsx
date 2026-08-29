@@ -19,8 +19,15 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
   const [formAcik, setFormAcik] = useState(false)
   const [hata, setHata] = useState('')
 
-  const yenile = () =>
-    api.alanlar().then(setAlanlar).catch((h) => setHata(h.message))
+  // Hata durumunda liste boş diziye çekilir. Önceden `null` kalıyordu ve
+  // `null` "yükleniyor" anlamına geldiği için ekranda AYNI ANDA hem
+  // "Sunucu hatası" hem "Yükleniyor…" görünüp orada kalıyordu.
+  const yenile = () => {
+    setHata('')
+    return api.alanlar()
+      .then(setAlanlar)
+      .catch((h) => { setHata(h.message); setAlanlar([]) })
+  }
 
   useEffect(() => { yenile() }, [])
 
@@ -56,7 +63,14 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
         </Kart>
       )}
 
-      {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
+      {hata && (
+        <div className="mb-4">
+          <Hata mesaj={hata} />
+          <Buton tur="ikincil" className="mt-3" onClick={yenile}>
+            Yeniden dene
+          </Buton>
+        </div>
+      )}
 
       {formAcik && (
         <AlanFormu
@@ -67,11 +81,17 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
 
       {alanlar === null ? (
         <p className="text-metin-3 text-sm">Yükleniyor…</p>
-      ) : alanlar.length === 0 ? (
+      ) : hata ? null : alanlar.length === 0 ? (
         <Kart>
           <BosDurum
             ikon={<Ikon.Alan boyut={20} />}
-            baslik="Henüz enkaz alanı tanımlanmadı"
+            /* Başlık role göre değişir: alan tanımlayamayan bir rol için
+               "henüz tanımlanmadı" YANLIŞTIR — sistemde alan olabilir,
+               bu role atanmamıştır. Alt açıklama zaten doğruyu söylüyordu;
+               başlık onu yalanlıyordu. */
+            baslik={olusturabilir
+              ? 'Henüz enkaz alanı tanımlanmadı'
+              : 'Size atanmış saha yok'}
             aciklama={olusturabilir
               ? 'Bir alan tanımlayarak başlayın; sonra bu alana görüntü yükleyebilirsiniz.'
               : 'Size atanmış bir saha bulunmuyor. Yetkili birimin alan tanımlaması gerekiyor.'}

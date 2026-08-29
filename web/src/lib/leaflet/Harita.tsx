@@ -70,7 +70,11 @@ export function Harita({
     <div
       ref={kapsayici}
       style={{ height: yukseklik }}
-      className="w-full rounded-lg border border-kenar"
+      /* `harita-koyu` bileşenin KENDİSİNDE: karo filtresi tek tek
+         çağrı yerlerine bırakılırsa unutuluyor — "Yeni alan tanımla"
+         formundaki harita koyu temada bembeyaz kalıyordu. Açık temada
+         --u-harita-filtre zaten `none`. */
+      className="harita-koyu w-full rounded-lg border border-kenar"
       role="application"
       aria-label={etiket}
     />

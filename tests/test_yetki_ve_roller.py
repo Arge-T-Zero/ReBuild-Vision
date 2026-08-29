@@ -162,3 +162,86 @@ async def test_uzman_isi_olmayan_sahayi_gormez(istemci, jeton, tespit_kur,
     # Yıkım firmasının o sahada hiçbir işi yok.
     yikim = (await istemci.get("/enkaz-alani", headers=await jeton("yikim"))).json()
     assert len(yikim) == 0
+
+
+async def test_saha_personeli_alanlari_gorur(istemci, jeton, tespit_kur):
+    """K-014 — saha personeli tanımlı sahaları görür.
+
+    Rolün tek işi görüntü yüklemek. Görünürlük "oluşturduğu ya da daha
+    önce görüntü yüklediği saha" ile sınırlandığında, saha personeli bir
+    sahaya görüntü yükleyebilmek için o sahaya DAHA ÖNCE görüntü yüklemiş
+    olmak zorunda kalıyordu — rol tamamen işlevsizdi.
+    """
+    await tespit_kur("beton")
+    alanlar = (await istemci.get("/enkaz-alani",
+                                 headers=await jeton("saha"))).json()
+    assert len(alanlar) == 1, "Saha personeli tanımlı sahayı görmeli"
+
+
+async def test_dis_taraflar_atanmamis_sahayi_gormez(istemci, jeton, tespit_kur):
+    """Yıkım firması ve geri kazanım tesisi dış taraftır.
+
+    Atama akışı gelene kadar boş liste görmeleri DOĞRU davranıştır;
+    saha personeline tanınan genişletme bu rollere tanınmaz.
+    """
+    await tespit_kur("beton")
+    for rol in ("yikim", "tesis"):
+        y = (await istemci.get("/enkaz-alani", headers=await jeton(rol))).json()
+        assert y == [], f"{rol} atanmamış sahayı görmemeli"
+
+
+async def test_harita_rol_kapsamiyla_sinirli(istemci, jeton, tespit_kur):
+    """K-017 — harita dağılımı da rolün gördüğü sahalarla sınırlıdır.
+
+    Önceden hiçbir saha göremeyen bir rol, haritada "0 enkaz alanı"
+    yazarken yanında sistemin TAMAMINA ait malzeme kırılımını okuyordu.
+    """
+    tid = await tespit_kur("metal")
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "onaylandi"})
+
+    yonetici = (await istemci.get("/harita",
+                                  headers=await jeton("yonetici"))).json()
+    assert sum(d["adet"] for d in yonetici["malzeme_dagilimi"]) == 1
+
+    yikim = (await istemci.get("/harita", headers=await jeton("yikim"))).json()
+    assert yikim["malzeme_dagilimi"] == [], (
+        "Hiçbir saha göremeyen rol, haritada da veri görmemeli"
+    )
+
+
+async def test_gecmis_sistem_genelini_herkes_goremez(istemci, jeton, tespit_kur):
+    """K-017 — sistem geneli denetim dökümü sınırlıdır, kayıt bazlı değil.
+
+    Arayüzde sekmeyi gizlemek yetki değildir; uç nokta doğrudan
+    çağrılabilir.
+    """
+    tid = await tespit_kur("beton")
+
+    for rol in ("yikim", "tesis", "saha"):
+        y = await istemci.get("/gecmis", headers=await jeton(rol))
+        assert y.status_code == 403, f"{rol} sistem geneli dökümü görmemeli"
+
+    for rol in ("yonetici", "uzman", "belediye", "afad"):
+        y = await istemci.get("/gecmis", headers=await jeton(rol))
+        assert y.status_code == 200, f"{rol} sistem geneli dökümü görmeli"
+
+    # Tek bir kaydın geçmişi herkese açıktır: tespit detayındaki
+    # "Bu tespitin geçmişi" paneli buradan beslenir.
+    y = await istemci.get(f"/gecmis?kayit_tipi=tespit&kayit_id={tid}",
+                          headers=await jeton("saha"))
+    assert y.status_code == 200
+    assert len(y.json()) >= 1
+
+
+async def test_gecmis_kullanici_adini_dondurur(istemci, jeton, tespit_kur):
+    """Denetim kaydının vaadi "KİM, ne zaman, neyi değiştirdi"."""
+    tid = await tespit_kur("beton")
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "onaylandi"})
+
+    y = (await istemci.get(f"/gecmis?kayit_tipi=tespit&kayit_id={tid}",
+                           headers=await jeton("uzman"))).json()
+    guncelleme = [k for k in y if k["islem"] == "guncelleme"]
+    assert guncelleme, "Doğrulama geçmişe düşmeli"
+    assert guncelleme[0]["kullanici_ad"], "Kullanıcı adı dönmeli, yalnızca id değil"

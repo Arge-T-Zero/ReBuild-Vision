@@ -46,3 +46,11 @@ SALT_OKUNUR = {Rol.YIKIM, Rol.TESIS}
 # Bütün sahaları görebilen roller. Diğerleri yalnızca ilişkili oldukları
 # sahaları görür (bkz. api/app/services/queries.py).
 TUM_SAHALARI_GORUR = {Rol.YONETICI, Rol.AFAD}
+
+# İşlem geçmişini görebilen roller.
+#
+# Denetim kaydı kimin neyi değiştirdiğini gösterir; sistemin tamamına ait
+# bu döküm herkese açık olmamalıdır. Küme, web/src/roller.ts içindeki
+# menü tanımlarıyla birebir aynıdır — arayüzde sekmeyi gizlemek yetmez,
+# yetki API katmanında zorlanır (ana talimat Bölüm 5).
+GECMIS_GORUR = {Rol.YONETICI, Rol.UZMAN, Rol.BELEDIYE, Rol.AFAD}

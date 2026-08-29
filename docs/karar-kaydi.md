@@ -273,6 +273,101 @@ Doğrulama kontrol listesi: `docker/README.md`.
 
 ---
 
+## K-014 · Saha personeli bütün sahaları görür (ara çözüm)
+
+- **Tarih:** 29.08.2026
+- **Karar:** `saha` rolü, tanımlı bütün enkaz alanlarını görür. `yikim` ve
+  `tesis` rolleri için kısıt korunur.
+- **Sorun:** Bölüm 5 tablosu saha personeli için "kendi sahası" diyor.
+  Saha ataması akışı henüz yazılmadığı için bu kural "oluşturduğu ya da
+  daha önce görüntü yüklediği saha" olarak uygulanıyordu. Saha personeli
+  saha oluşturamadığı için sonuç bir tavuk–yumurta kilidi oldu: bir sahaya
+  görüntü yükleyebilmek için o sahaya **daha önce** görüntü yüklemiş olmak
+  gerekiyordu. Rolün tek işi görüntü yüklemek olduğundan rol tamamen
+  işlevsizdi — `saha@demo.local` ile girişte "Size atanmış bir saha
+  bulunmuyor" boş durumu çıkıyor ve demonun 3. adımı yapılamıyordu.
+- **Gerekçe:** İşlevsiz bir rol, belgelenmiş bir genişletmeden kötüdür.
+  Aynı yaklaşım `uzman` rolü için de uygulanmıştı (görünürlük iş
+  üzerinden türetiliyor). Sızıntı yüzeyi dar: saha personeli saha
+  **listesini** görür; rapor alamaz, doğrulama yapamaz, işlem geçmişini
+  göremez.
+- **Reddedilen seçenek:** `erisim_durumu` alanını yetki kapısı olarak
+  kullanmak. Bu alan sahaya **fiziksel** erişimi anlatır (açık / kısıtlı /
+  kapalı — girmek güvenli mi); veri yetkisi değildir. İkisini
+  karıştırmak, yapısal olarak güvensiz bir sahanın kayıtlarını da
+  gizlerdi.
+- **Kalan boşluk:** `yikim` ve `tesis` rolleri atama gelene kadar boş liste
+  görür. Bu **doğru** davranıştır — bu roller dış taraflardır. Arayüz
+  bunu "sistemde saha yok" diye değil "size saha atanmamış" diye anlatır.
+- **Kapatma koşulu:** Saha atama tablosu eklendiğinde
+  `services/queries.py` içindeki `Rol.SAHA` dalı silinip yerine atama
+  sorgusu gelmelidir.
+
+---
+
+## K-015 · Ölçüm girdisine üst sınır ve birim denetimi
+
+- **Tarih:** 29.08.2026
+- **Karar:** Ölçüm değeri için tek tespit başına **100.000** üst sınırı
+  kondu ve birim, ölçüm türünden **türetilerek** doğrulanıyor
+  (`alan→m2`, `hacim→m3`, `agirlik→ton`).
+- **Sorun:** `deger` alanında yalnızca `gt=0` kısıtı vardı. Testte tek bir
+  tekstil tespitine **999.999.999 ton** girilebildi ve miktar kartı
+  "899999999,1 – 1099999998,9 ton" gösterdi. `birim` serbest metindi:
+  `agirlik` türüne `m3` gönderilebiliyordu; kabul edilseydi hacim değeri
+  ağırlık sanılıp katsayısız hesaba girerdi.
+- **Sınırın dayanağı:** Bir tespit tek fotoğraftaki tek görünür bölgedir.
+  Tek karede görülebilecek en büyük yığın kabaca 50 × 50 × 10 m = 25.000 m³;
+  beton yoğunluğuyla (~2,4 ton/m³) 60.000 ton eder. 100.000 bunun rahatça
+  üstünde ama parmak kaymasıyla girilen 10⁹'u durdurur. Bu bir alan
+  iddiası değil, **yazım hatası kalkanıdır**.
+- **Neden kırpma değil ret:** Kullanıcının girdiği sayıyı sessizce
+  değiştirip kaydetmek, ölçümü uydurmak olurdu. İstek 422 ile reddedilir.
+- **Nerede:** `api/app/schemas.py` — `OlcumDogrulamasi`, hem `/olcum` hem
+  `/esitleme/olcum` üzerinde.
+
+---
+
+## K-016 · Doğrulama kapısı miktar servisinin içine taşındı
+
+- **Tarih:** 29.08.2026
+- **Karar:** `miktar.hesapla()` artık sınıf dizesi değil **`Tespit`
+  nesnesi** alır ve doğrulama durumunu kendisi kontrol eder.
+- **Sorun:** Bölüm 1.4 "doğrulanmamış kayıtlar miktar hesaplarına girmez;
+  bu bir arayüz kuralı değil, veri katmanı kuralıdır" diyor. Toplu
+  sorgular (`/harita`, `/rapor`) `hesaba_girebilir()` ile filtreleniyordu
+  ama tekil `GET /miktar/{id}` uç noktası doğrulama durumuna **hiç
+  bakmıyordu**: `beklemede` durumundaki bir tespit için sayı döndürüyor ve
+  `miktar_hesabi` satırını kalıcı olarak **yazıyordu**. Yerel veri
+  tabanında böyle iki satır bulundu ve silindi.
+- **Gerekçe:** Kural router'da kalsaydı yeni bir çağıran onu atlayabilirdi.
+  Servisin içinde atlanamaz.
+- **Ek düzeltme:** Uç noktada önbelleğe alınmış `miktar_hesabi` satırına
+  bakış, hesaptan **sonraya** alındı. Ters sırada, kural konmadan önce
+  yazılmış eski bir satır kuralı delerdi.
+- **Testler:** `test_dogrulanmamis_tespit_miktara_girmez`,
+  `test_belirsiz_isaretlenen_tespit_de_miktara_girmez`.
+
+---
+
+## K-017 · `/harita` ve `/gecmis` rol kapsamına indirildi
+
+- **Tarih:** 29.08.2026
+- **Sorun:** İki uç nokta yalnızca "giriş yapmış olmak" istiyordu.
+  Sonuç: hiçbir saha göremeyen `yikim` ve `tesis` rolleri haritada
+  "**0 Enkaz alanı**" yazarken yanında sistemin **tamamına** ait
+  doğrulanmış malzeme kırılımını okuyordu. `/gecmis` de bu rollere
+  sistemin bütün denetim kaydını döndürüyordu. Arayüz sekmeyi gizliyordu
+  ama uç nokta doğrudan çağrılabilirdi.
+- **Karar:** `/harita` dağılımı `gorulebilir_alanlar()` ile sınırlandı;
+  `/gecmis` yeni `GECMIS_GORUR` kümesine bağlandı
+  (`yonetici, uzman, belediye, afad` — `web/src/roller.ts` menüleriyle
+  birebir aynı).
+- **İlke:** Arayüzde gizlemek yetki değildir. Yetki API katmanında
+  zorlanır (ana talimat Bölüm 5).
+
+---
+
 ## Mentör görüşmeleri
 
 | # | Tarih | Katılımcılar | Sorulan | Karar |

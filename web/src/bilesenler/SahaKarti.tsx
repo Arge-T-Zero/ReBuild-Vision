@@ -26,7 +26,7 @@ export function SahaKarti({ alan, siniflar, acildi }: {
   return (
     <Kart className="p-5 h-full flex flex-col">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-medium leading-snug">{alan.ad}</h3>
+        <h3 className="font-medium leading-snug break-words">{alan.ad}</h3>
         <ErisimRozeti durum={alan.erisim_durumu} />
       </div>
 

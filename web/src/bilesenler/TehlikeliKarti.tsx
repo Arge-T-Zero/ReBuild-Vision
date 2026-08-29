@@ -95,7 +95,7 @@ export function TehlikeliKarti({
                   : 'Laboratuvar sonucu girildi'}
               </p>
               <p className="text-metin-3 mt-0.5">
-                Kullanıcı #{k.giren_id} ·{' '}
+                {k.giren_ad ?? `Kullanıcı #${k.giren_id}`} ·{' '}
                 {new Date(k.tarih).toLocaleString('tr-TR')}
               </p>
               {k.lab_sonucu_notu && (

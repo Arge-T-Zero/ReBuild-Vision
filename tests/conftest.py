@@ -131,7 +131,12 @@ async def jeton(istemci, kullanicilar):
 async def tespit_kur(kullanicilar):
     """Alan → görüntü → tespit zinciri kurar, tespit id'sini döner."""
     async def kur(sinif: str = "beton", guven: float = 0.9,
-                  inceleme: bool = False) -> int:
+                  inceleme: bool = False,
+                  dogrulama: str = "beklemede") -> int:
+        # `dogrulama` varsayılanı `beklemede`: modelden yeni çıkmış bir
+        # tespitin gerçek hâli budur. Miktar hesabı sınayan testler
+        # açıkça "onaylandi" geçmek zorundadır — doğrulanmamış kayıt
+        # miktara giremez (Bölüm 1.4).
         async with db_modulu.OturumUret() as db:
             a = EnkazAlani(ad="Test Alan", olusturan_id=kullanicilar["belediye"])
             db.add(a)
@@ -144,7 +149,8 @@ async def tespit_kur(kullanicilar):
             t = Tespit(goruntu_id=g.id, sinif=sinif, guven_skoru=guven,
                        bbox={"x": 1, "y": 1, "w": 10, "h": 10},
                        bbox_format="pixel_absolute_original",
-                       inceleme_gerekli=inceleme)
+                       inceleme_gerekli=inceleme,
+                       dogrulama_durumu=dogrulama)
             db.add(t)
             await db.commit()
             return t.id

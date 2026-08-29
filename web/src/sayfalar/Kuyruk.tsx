@@ -25,7 +25,11 @@ export function Kuyruk() {
   const [hata, setHata] = useState('')
 
   const yenile = useCallback(() => {
-    api.kuyruk().then(setKayitlar).catch((h) => setHata(h.message))
+    // Hata durumunda liste boş diziye çekilir; `null` "yükleniyor"
+    // demektir ve hatayla birlikte kalıcı olarak ekranda kalırdı.
+    api.kuyruk()
+      .then(setKayitlar)
+      .catch((h) => { setHata(h.message); setKayitlar([]) })
   }, [])
 
   useEffect(() => { yenile() }, [yenile])
@@ -80,6 +84,60 @@ export function Kuyruk() {
   )
 }
 
+/**
+ * Tespitin görüntü üzerindeki kırpılmış önizlemesi.
+ *
+ * Uzman kanıta bakmadan karar veremez. Kırpma, görüntüyü büyütüp
+ * `object-position` ile kutunun merkezine kaydırarak yapılır — sunucuda
+ * ayrı bir kırpma işi gerektirmez.
+ *
+ * Ölçekleme `bbox_format` alanına göre yapılır (ana talimat Bölüm 4.3):
+ * `pixel_absolute_original` kutu koordinatlarının ORİJİNAL görüntü
+ * pikselinde olduğunu söyler. Başka bir biçim gelirse önizleme
+ * gösterilmez — yanlış yeri kırpmaktansa hiç göstermemek doğrudur.
+ */
+function Kanit({ tespit }: { tespit: Tespit }) {
+  const { bbox, bbox_format: bicim } = tespit
+  const yol = tespit.goruntu_dosya_yolu
+  const gen = tespit.goruntu_genislik
+  const yuk = tespit.goruntu_yukseklik
+
+  if (!yol) return null
+
+  const kirpilabilir = !!bbox && bicim === 'pixel_absolute_original'
+    && !!gen && !!yuk
+  // Kutunun merkezi yüzde olarak — object-position bunu bekler.
+  const mx = kirpilabilir ? ((bbox!.x + bbox!.w / 2) / gen!) * 100 : 50
+  const my = kirpilabilir ? ((bbox!.y + bbox!.h / 2) / yuk!) * 100 : 50
+
+  return (
+    <div className="shrink-0">
+      <div className="w-24 h-24 rounded-md overflow-hidden border border-kenar
+        bg-yuzey-3">
+        <img
+          src={api.gorselUrl(yol)}
+          alt={kirpilabilir
+            ? 'Tespitin görüntü üzerindeki kırpılmış önizlemesi'
+            : 'Tespitin alındığı görüntü'}
+          loading="lazy"
+          className="w-full h-full object-cover"
+          style={{
+            objectPosition: `${mx}% ${my}%`,
+            // Kutunun çevresini de göstermek için hafif büyütme; uzman
+            // malzemeyi bağlamıyla birlikte görmeli.
+            transform: kirpilabilir ? 'scale(1.6)' : undefined,
+          }}
+        />
+      </div>
+      {!kirpilabilir && (
+        <p className="text-[10px] text-metin-4 mt-1 w-24 leading-tight">
+          Kutu konumu ölçeklenemedi
+        </p>
+      )}
+    </div>
+  )
+}
+
 function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
   tespit: Tespit
   siniflar: Map<string, { gorunen_ad: string; renk: string }>
@@ -107,7 +165,14 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
   return (
     <Kart className="p-4">
       <div className="flex items-start gap-3">
+        <Kanit tespit={tespit} />
         <div className="grow min-w-0">
+          {/* Hangi sahadaki hangi tespit — iki kayıt birbirinden
+              ayırt edilebilmeli. */}
+          <p className="text-xs text-metin-4 mb-1.5 truncate">
+            Tespit #{tespit.id}
+            {tespit.alan_ad && <> · {tespit.alan_ad}</>}
+          </p>
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="font-medium">
               <SinifEtiketi renk={tanim?.renk ?? '#6b7280'}

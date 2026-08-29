@@ -15,6 +15,18 @@ import { Alan, Buton, Hata, girdiSinifi } from './Temel'
  *
  * Bu, final demosunun 7. adımıdır.
  */
+/**
+ * Sayıyı Türkçe biçimde yazar: ondalık ayracı virgül, binlik ayracı nokta.
+ *
+ * "11.16 ton" bir Türkçe arayüzde on bir bin yüz altmış gibi okunabilir.
+ * Miktar bu projenin ana çıktısı olduğu için yanlış okunması pahalıdır.
+ * Basamak sayısı KIRPILMAZ — miktar aralığı olduğu gibi gösterilir.
+ */
+function sayi(d: number | null | undefined): string {
+  if (d === null || d === undefined) return '—'
+  return d.toLocaleString('tr-TR', { maximumFractionDigits: 3 })
+}
+
 export function MiktarKarti({
   miktar, olcumler, olcumEklenebilir, olcumEklendi,
 }: {
@@ -32,7 +44,7 @@ export function MiktarKarti({
       {miktar.hesaplandi ? (
         <div>
           <p className="text-2xl font-semibold tabular-nums">
-            {miktar.deger_alt} – {miktar.deger_ust}{' '}
+            {sayi(miktar.deger_alt)} – {sayi(miktar.deger_ust)}{' '}
             <span className="text-base font-normal text-metin-2">{miktar.birim}</span>
           </p>
           <p className="text-xs text-metin-3 mt-1">belirsizlik aralığı</p>
@@ -69,7 +81,9 @@ export function MiktarKarti({
           <ul className="space-y-1">
             {olcumler.map((o) => (
               <li key={o.id} className="text-xs text-metin-2">
-                <span className="tabular-nums font-medium">{o.deger} {o.birim}</span>
+                <span className="tabular-nums font-medium">
+                  {sayi(o.deger)} {o.birim}
+                </span>
                 {' · '}{o.tur}{' · '}{o.yontem}
               </li>
             ))}
@@ -111,9 +125,22 @@ function OlcumFormu({ tespitId, acik, ac, eklendi }: {
   async function gonder(e: React.FormEvent) {
     e.preventDefault()
     setHata('')
-    const sayi = Number(deger)
+    // Türkçe klavyede ondalık ayracı virgüldür; "12,4" yazan kullanıcı
+    // hata yapmıyor. Number('12,4') NaN döndüğü için önceden bu giriş
+    // "sıfırdan büyük olmalıdır" hatası alıyordu — değer sıfırdan
+    // büyüktü, sorun biçimdi ve mesaj yanlış yeri gösteriyordu.
+    const sayi = Number(deger.trim().replace(',', '.'))
     if (!Number.isFinite(sayi) || sayi <= 0) {
       setHata('Ölçüm değeri sıfırdan büyük bir sayı olmalıdır')
+      return
+    }
+    // Sunucudaki üst sınırla aynı (api/app/schemas.py OLCUM_UST_SINIR).
+    // Burada da kontrol edilir ki kullanıcı formu göndermeden uyarılsın.
+    if (sayi > 100000) {
+      setHata(
+        `Bu değer tek bir tespit için olağandışı yüksek (${sayi} ${birim}). `
+        + 'Girdiğiniz sayıyı kontrol edin.',
+      )
       return
     }
     if (!yontem.trim()) {

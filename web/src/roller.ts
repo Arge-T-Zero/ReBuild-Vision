@@ -79,6 +79,22 @@ export const SAYFA_ETIKETI: Record<Exclude<SayfaAdi, 'alan'>, string> = {
   yonetici: 'Rol onayları',
 }
 
+/**
+ * Mobil alt gezinme çubuğunun kısa etiketleri.
+ *
+ * 360 px ekranda beş sekme yan yana durunca sekme başına ~72 px kalıyor;
+ * "İnceleme kuyruğu" oraya sığmaz. Kısaltmalar tek başına anlaşılır
+ * olacak biçimde seçildi — yanlarındaki ikonla birlikte okunuyorlar.
+ */
+export const SAYFA_KISA_ETIKET: Record<Exclude<SayfaAdi, 'alan'>, string> = {
+  yukle: 'Yükle',
+  alanlar: 'Alanlar',
+  kuyruk: 'Kuyruk',
+  harita: 'Harita',
+  gecmis: 'Geçmiş',
+  yonetici: 'Roller',
+}
+
 /** Rolü olmayan (onay bekleyen) kullanıcı için güvenli varsayılan. */
 export const VARSAYILAN: RolTanimi = {
   ad: 'Rol atanmadı',

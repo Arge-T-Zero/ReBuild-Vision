@@ -11,7 +11,7 @@ from ..core.config import siniflar
 from ..core.permissions import DOGRULAYABILIR
 from ..db import oturum
 from ..deps import aktif_kullanici
-from ..models import DogrulamaDurumu, Kullanici, Tespit
+from ..models import DogrulamaDurumu, EnkazAlani, Goruntu, Kullanici, Tespit
 from ..schemas import DogrulamaIstek, TespitCikti
 from ..deps import rol_gerekli
 
@@ -28,13 +28,30 @@ async def inceleme_kuyrugu(
     Düşük güvenli kayıtlar buraya OTOMATİK düşer (ana talimat Bölüm 7.3).
     Kullanıcının kuyruğa ekleme yapması gerekmez.
     """
+    # Görüntü ve saha bilgisi birlikte döner: uzman kanıta bakmadan karar
+    # veremez. Bkz. schemas.TespitCikti "İnceleme bağlamı".
     y = await db.execute(
-        select(Tespit)
+        select(
+            Tespit,
+            Goruntu.dosya_yolu, Goruntu.genislik, Goruntu.yukseklik,
+            EnkazAlani.id, EnkazAlani.ad,
+        )
+        .join(Goruntu, Goruntu.id == Tespit.goruntu_id)
+        .join(EnkazAlani, EnkazAlani.id == Goruntu.enkaz_alani_id)
         .where(Tespit.inceleme_gerekli.is_(True))
         .where(Tespit.dogrulama_durumu == DogrulamaDurumu.BEKLEMEDE)
         .order_by(Tespit.guven_skoru.asc())
     )
-    return [TespitCikti.model_validate(t) for t in y.scalars()]
+    return [
+        TespitCikti.model_validate(t).model_copy(update={
+            "goruntu_dosya_yolu": yol,
+            "goruntu_genislik": gen,
+            "goruntu_yukseklik": yuk,
+            "alan_id": aid,
+            "alan_ad": aad,
+        })
+        for t, yol, gen, yuk, aid, aad in y.all()
+    ]
 
 
 @router.post("/{tespit_id}/dogrula", response_model=TespitCikti)

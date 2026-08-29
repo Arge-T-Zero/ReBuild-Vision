@@ -4,7 +4,7 @@ import { TemaSaglayici, useTema } from './tema'
 import { GezinmeSaglayici } from './gezinme'
 import { Buton } from './bilesenler/Temel'
 import { Ikon } from './bilesenler/Ikon'
-import { SAYFA_ETIKETI, rolTanimi } from './roller'
+import { SAYFA_ETIKETI, SAYFA_KISA_ETIKET, rolTanimi } from './roller'
 import type { SayfaAdi } from './roller'
 import { Giris } from './sayfalar/Giris'
 import { Yukle } from './sayfalar/Yukle'
@@ -95,7 +95,12 @@ function Kabuk() {
             </span>
           </span>
 
-          <nav className="flex gap-0.5 grow overflow-x-auto" aria-label="Ana gezinme">
+          {/* Üst menü yalnızca sm ve üzerinde. 360 px'te beş sekme bu
+              çubuğa sığmıyor, yatay kaydırmaya düşüyor ve kaydırılabildiğine
+              dair hiçbir ipucu olmadığı için sekmelerin çoğu görünmez
+              kalıyordu. Mobilde yerini alttaki sabit çubuk alır. */}
+          <nav className="hidden sm:flex gap-0.5 grow overflow-x-auto"
+            aria-label="Ana gezinme">
             {tanim.menu.map((s) => (
               <button
                 key={s}
@@ -127,7 +132,38 @@ function Kabuk() {
         </div>
       </header>
 
-      <main className="grow">
+      {/* Mobil alt gezinme — bütün sekmeler aynı anda görünür ve başparmak
+          erişimindedir. Sekme sayısı en fazla beştir (yönetici rolü). */}
+      <nav aria-label="Ana gezinme"
+        className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-yuzey
+          border-t border-kenar pb-[env(safe-area-inset-bottom)]">
+        <ul className="grid" style={{
+          gridTemplateColumns: `repeat(${tanim.menu.length}, minmax(0, 1fr))`,
+        }}>
+          {tanim.menu.map((s) => (
+            <li key={s}>
+              <button
+                aria-current={konum.ad === s ? 'page' : undefined}
+                onClick={() => setKonum({ ad: s })}
+                className={`w-full flex flex-col items-center justify-center
+                  gap-1 py-2 text-[11px] leading-none transition-colors
+                  ${aktif(s)
+                    ? 'text-marka'
+                    : 'text-metin-3 hover:text-metin'}`}
+              >
+                {SAYFA_IKONU[s]}
+                <span className="truncate max-w-full px-0.5">
+                  {SAYFA_KISA_ETIKET[s]}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Alt çubuk sabit konumlu; içeriğin son satırı altında kalmasın diye
+          mobilde çubuk yüksekliği kadar boşluk bırakılır. */}
+      <main className="grow pb-20 sm:pb-0">
         <Suspense fallback={
           <div className="p-10 text-center text-metin-3 text-sm">Yükleniyor…</div>
         }>

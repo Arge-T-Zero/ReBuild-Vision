@@ -22,7 +22,7 @@ const OZELLIKLER = [
 ]
 
 export function Giris() {
-  const { girisYap } = useDurum()
+  const { girisYap, oturumNotu } = useDurum()
   const [kayitModu, setKayitModu] = useState(false)
   const [eposta, setEposta] = useState('')
   const [parola, setParola] = useState('')
@@ -153,6 +153,14 @@ export function Giris() {
                 rounded-md px-3 py-2.5 leading-relaxed">
                 Rolünüzü kendiniz seçemezsiniz. Kayıt sonrası hesabınız onay
                 bekler; yetkiniz yönetici tarafından atanır.
+              </p>
+            )}
+
+            {/* Oturum kendiliğinden düştüyse nedeni burada söylenir. */}
+            {!hata && !kayitModu && oturumNotu && (
+              <p role="status" className="text-uyari text-sm bg-uyari/10
+                border border-uyari/30 rounded-md px-3 py-2.5 leading-relaxed">
+                {oturumNotu}
               </p>
             )}
 
