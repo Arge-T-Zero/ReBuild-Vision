@@ -6,21 +6,39 @@ import { Alan, Buton, Hata, girdiSinifi } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
 import { SahteModelUyarisi } from '../bilesenler/ModelDurumu'
 
+/**
+ * Giriş ve kayıt ekranı.
+ *
+ * DÜZEN ORTALANMIŞTIR ve her ekran boyutunda AYNIDIR. Önceki düzen ikiye
+ * bölünüyordu (solda görsel, sağda form); dar ekranda sol panel tamamen
+ * gizlendiği için mobil ile masaüstü başka ürünler gibi duruyordu ve
+ * metin fotoğrafın üzerinde kaldığı için okunurluk perdenin gücüne
+ * bağlıydı. Kart artık kendi zeminine oturur: kontrast fotoğraftan
+ * bağımsız garanti altındadır.
+ *
+ * İki ekranın GÖRSELİ DE METNİ DE farklıdır. Yalnızca fotoğrafı
+ * değiştirip başlığı sabit bırakmak yarım iş olurdu — kullanıcı başka
+ * bir yere geldiğini görselden sezip metinden doğrulayamıyordu.
+ */
+
+/** Sunucudaki `Field(min_length=8)` ile aynı (api/app/schemas.py). */
+const PAROLA_ASGARI = 8
+
 const OZELLIKLER = [
   {
     baslik: 'İnsan denetimli sınıflandırma',
-    metin: 'Model çıktıları ön tahmindir; uzman onaylar, düzeltir ya da ' +
-      'belirsiz işaretler. İnsanın kararı modelin tahminini geçersiz kılar.',
+    metin: 'Model çıktıları ön tahmindir; uzman onaylar, düzeltir ya da '
+      + 'belirsiz işaretler. İnsanın kararı modelin tahminini geçersiz kılar.',
   },
   {
     baslik: 'Ölçüm yoksa miktar üretilmez',
-    metin: 'Sistem dayanağı olmayan tonaj tahmini oluşturmaz. Miktar ' +
-      'hesaplandığında tek bir kesin değer değil, belirsizlik aralığı verilir.',
+    metin: 'Sistem dayanağı olmayan tonaj tahmini oluşturmaz. Miktar '
+      + 'hesaplandığında tek bir kesin değer değil, belirsizlik aralığı verilir.',
   },
   {
     baslik: 'Her kayıt izlenebilir',
-    metin: 'Kimin ne zaman neyi değiştirdiği otomatik kaydedilir. ' +
-      'Kayıtlar silinemez ve düzenlenemez.',
+    metin: 'Kimin ne zaman neyi değiştirdiği otomatik kaydedilir. '
+      + 'Kayıtlar silinemez ve düzenlenemez.',
   },
 ]
 
@@ -28,35 +46,29 @@ const KUNYE = 'TEKNOFEST 2026 Sıfır Atık ve Döngüsel Ekonomi Yarışması �
   + 'Takım Arge-T Zero. Sistem yalnızca görünür yüzeye ilişkin ön '
   + 'değerlendirme yapar ve tehlikeli madde teşhisi yapmaz.'
 
-/** Sunucudaki `Field(min_length=8)` ile aynı (api/app/schemas.py). */
-const PAROLA_ASGARI = 8
-
 /**
- * Ekranın arka plan görseli — giriş ve kayıt için AYRI.
+ * Ekran başına görsel VE metin.
  *
- * İki ekran aynı fotoğrafı paylaşınca kullanıcı yer değiştirdiğini
- * hissetmiyor; kayıt bir "kip" gibi duruyordu. Farklı görsel, ayrı bir
- * yere geldiğini söyleyen en ucuz işaret.
+ * Kayıt görseli bilinçli seçildi: ayrıştırılmış malzeme yığınları
+ * (ahşap, beton, tuğla, metal) sistemin ne ürettiğini gösteriyor —
+ * başvuran kişinin merak ettiği tam olarak budur. Giriş görseli ise
+ * ayrıştırılmamış enkazı gösterir: işin başladığı yer.
  *
- * Kayıt ekranındaki görsel ayrıca daha isabetli: ayrıştırılmış malzeme
- * yığınları (ahşap, beton, tuğla, metal) sistemin ne ürettiğini
- * gösteriyor — yeni gelen kişi tam da onu merak ediyor.
- *
- * Her ikisi de depoda zaten var ve yapay zekâ ile üretilmiştir
+ * Her iki görsel de depoda hazır ve yapay zekâ ile üretilmiştir
  * (gorseller/README.md); yeni dosya eklenmedi.
  */
-const GORSEL = {
-  giris: { buyuk: '/gorseller/giris-hero.webp', kucuk: '/gorseller/giris-hero-kucuk.webp' },
-  kayit: { buyuk: '/gorseller/ornek-enkaz-3.webp', kucuk: '/gorseller/ornek-enkaz-3-kucuk.webp' },
+const EKRAN = {
+  giris: {
+    gorsel: '/gorseller/giris-hero.webp',
+    baslik: 'Enkaz malzemelerinin görüntü tabanlı ön sınıflandırması ve '
+      + 'doğrulanabilir kaynak haritası',
+  },
+  kayit: {
+    gorsel: '/gorseller/ornek-enkaz-3.webp',
+    baslik: 'Ayrıştırılan her malzeme, doğrulanmış bir kayda dönüşür',
+  },
 } as const
 
-/**
- * Giriş ekranındaki tema düğmesi.
- *
- * Tema düğmesi yalnızca giriş YAPTIKTAN sonraki üst çubukta vardı. Oysa
- * temayı en çok isteyecek kişi, ekranı henüz okuyamayan kişidir: güneş
- * altındaki saha personeli ya da gece nöbetindeki uzman.
- */
 function TemaDugmesi() {
   const { tema, temaDegistir } = useTema()
   return (
@@ -73,19 +85,14 @@ function TemaDugmesi() {
   )
 }
 
-function Marka({ boyut = 'normal' }: { boyut?: 'normal' | 'buyuk' }) {
-  const k = boyut === 'buyuk' ? 36 : 32
+function Marka() {
   return (
     <span className="flex items-center gap-2.5">
-      <span aria-hidden className="rounded-lg bg-marka/15 border border-marka/40
-        grid place-items-center text-marka shrink-0"
-        style={{ width: k, height: k }}>
-        <img src="/logo-isaret.svg" alt="" aria-hidden
-          width={boyut === 'buyuk' ? 20 : 18}
-          height={boyut === 'buyuk' ? 20 : 18} />
+      <span aria-hidden className="w-9 h-9 rounded-lg bg-marka/15
+        border border-marka/40 grid place-items-center text-marka shrink-0">
+        <img src="/logo-isaret.svg" alt="" aria-hidden width={20} height={20} />
       </span>
-      <span className={`font-semibold tracking-tight
-        ${boyut === 'buyuk' ? 'text-lg' : ''}`}>ReBuild Vision</span>
+      <span className="font-semibold text-lg tracking-tight">ReBuild Vision</span>
     </span>
   )
 }
@@ -101,8 +108,7 @@ function ParolaAlani({ deger, degisti, etiket, tamamlama }: {
   return (
     <Alan etiket={etiket}>
       {/* Parolayı görebilmek eldivenli parmakla ve güneş altında yazan
-          biri için konfor değil, gerekliliktir: yanlış yazdığını ancak
-          "e-posta veya parola hatalı" cevabından anlıyordu. */}
+          biri için konfor değil, gerekliliktir. */}
       <span className="relative block">
         <input
           value={deger} onChange={(e) => degisti(e.target.value)}
@@ -125,12 +131,7 @@ function ParolaAlani({ deger, degisti, etiket, tamamlama }: {
   )
 }
 
-/**
- * Kural göstergesi — parolanın koşulu sağlayıp sağlamadığını SÖYLER.
- *
- * Renk tek başına anlam taşımaz: ikon da değişir ve metin zaten kuralın
- * kendisidir (ana talimat Bölüm 9.3).
- */
+/** Kural göstergesi — renk tek başına anlam taşımaz, ikon da değişir. */
 function Kural({ saglandi, children }: {
   saglandi: boolean; children: React.ReactNode
 }) {
@@ -145,139 +146,118 @@ function Kural({ saglandi, children }: {
   )
 }
 
-/** Tanıtım blokları — masaüstünde sol panelde, mobilde formun altında. */
-function Ozellikler({ kompakt = false }: { kompakt?: boolean }) {
-  return (
-    <ul className={kompakt ? 'space-y-4' : 'space-y-6'}>
-      {OZELLIKLER.map((o) => (
-        <li key={o.baslik} className="border-l-2 border-kenar-net pl-4">
-          <p className="font-medium text-metin">{o.baslik}</p>
-          {/* Masaüstünde bu paragraflar fotoğrafın ÜZERİNDE duruyor ve
-              bir ton koyu olmaları gerekiyor; mobilde düz zeminde. */}
-          <p className={`text-sm mt-1 leading-relaxed
-            ${kompakt ? 'text-metin-3' : 'text-metin-2'}`}>
-            {o.metin}
-          </p>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
 export function Giris() {
   const { girisYap, oturumNotu } = useDurum()
   const [kayitModu, setKayitModu] = useState(false)
   const [bilgi, setBilgi] = useState('')
 
-  const gorsel = kayitModu ? GORSEL.kayit : GORSEL.giris
+  const ekran = kayitModu ? EKRAN.kayit : EKRAN.giris
 
   function kipDegistir(kayit: boolean) {
     setKayitModu(kayit)
     setBilgi('')
-    // Uzun kayıt ekranından kısa giriş ekranına dönerken sayfa ortada
-    // kalıyordu; kullanıcı boş bir alana bakıyordu.
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-[1.1fr_minmax(0,460px)]">
-      {/* Sol: kimlik ve iddia — arkada saha görüntüsü.
-          `aside` bilinçli: içerik bir yer işaretine (landmark) ait olmalı. */}
-      <aside aria-label="Proje tanıtımı"
-        className="hidden lg:flex flex-col justify-between p-12 border-r
-        border-kenar bg-yuzey relative overflow-hidden">
-        {/* Görsel yapay zekâ ile üretilmiştir; gerçek bir afet fotoğrafı
-            değildir (Madde 10.7 ile uyumlu, telif sorunu yok). */}
-        <img
-          src={gorsel.buyuk} alt="" aria-hidden
-          className="giris-gorsel absolute inset-0 w-full h-full object-cover"
-          fetchPriority="high"
-        />
-        {/* Okunabilirlik perdesi; gücü temaya göre değişir (index.css). */}
-        <div aria-hidden className="giris-perde absolute inset-0" />
-
-        <Marka boyut="buyuk" />
-
-        <div className="max-w-lg relative">
-          <h1 className="text-3xl font-semibold tracking-tight leading-tight">
-            Enkaz malzemelerinin görüntü tabanlı ön sınıflandırması ve
-            doğrulanabilir kaynak haritası
-          </h1>
-          <div className="mt-10"><Ozellikler /></div>
-        </div>
-
-        <p className="text-xs text-metin-3 max-w-lg leading-relaxed relative">
-          {KUNYE}
-        </p>
-      </aside>
-
-      {/* Sağ: form — sayfanın ana içeriği */}
-      <main className="relative flex flex-col">
-        {/* MOBİL HERO ŞERİDİ — saha görüntüsü telefonda da görünür.
-            640 px'lik küçük sürüm kullanılır (masaüstü sürümü 170 KB). */}
-        <div aria-hidden className="lg:hidden relative h-[200px] sm:h-[240px]
-          overflow-hidden shrink-0">
+    <div className="min-h-screen relative">
+      {/* Arka plan: İKİ görsel de yüklüdür ve opaklıkla geçiş yapar.
+          Tek bir `src` değiştirilseydi yeni dosya inene kadar ekran
+          boşalır, geçiş "acayip" görünürdü. Görsel yapay zekâ ile
+          üretilmiştir; gerçek bir afet fotoğrafı değildir (Madde 10.7). */}
+      <div aria-hidden className="fixed inset-0 overflow-hidden">
+        {(['giris', 'kayit'] as const).map((k) => (
           <img
-            src={gorsel.kucuk} alt=""
-            className="giris-gorsel w-full h-full object-cover"
-            fetchPriority="high" width={640} height={478}
+            key={k}
+            src={EKRAN[k].gorsel} alt=""
+            className="giris-gorsel absolute inset-0 w-full h-full object-cover"
+            style={{ opacity: (k === 'kayit') === kayitModu ? 1 : 0 }}
+            fetchPriority={k === 'giris' ? 'high' : 'low'}
           />
-          <div className="giris-perde-mobil absolute inset-0" />
+        ))}
+        <div className="giris-perde-tam absolute inset-0" />
+      </div>
+
+      <div className="relative min-h-screen flex flex-col items-center
+        px-4 py-6 sm:px-6 sm:py-10">
+        <div className="w-full max-w-[460px] flex justify-end mb-4">
+          <TemaDugmesi />
         </div>
 
-        {/* Şeridin son 40 px'ine binerek içeriği yukarı çeker: fotoğrafla
-            metin arasında kopuk bir bant kalmaz. */}
-        <div className="relative flex flex-col grow p-6 sm:p-10
-          -mt-10 lg:mt-0">
-          <div className="flex justify-end mb-6 lg:mb-0">
-            <TemaDugmesi />
-          </div>
+        {/* Kart KENDİ ZEMİNİNE oturur (yarı saydam değil): kontrast
+            fotoğraftan bağımsız garanti altındadır. */}
+        <main className="w-full max-w-[460px] rounded-kart border border-kenar
+          bg-yuzey shadow-[var(--u-golge-ust)] p-6 sm:p-8">
+          <Marka />
 
-          <div className="w-full max-w-sm mx-auto grow flex flex-col
-            justify-center">
-            <div className="lg:hidden mb-7">
-              <Marka />
-              <h1 className="text-xl font-semibold tracking-tight
-                leading-snug mt-4">
-                Enkaz malzemelerinin görüntü tabanlı ön sınıflandırması ve
-                doğrulanabilir kaynak haritası
-              </h1>
-            </div>
+          {/* `key` ile birlikte içerik her kip değişiminde yeniden
+              belirir; ani sıçrama yerine yumuşak geçiş olur. */}
+          <div key={kayitModu ? 'kayit' : 'giris'} className="giris-belir">
+            {/* Geri bağlantısı BAŞLIĞIN ÜSTÜNDE: aşağıda kalırsa ekranın
+                başlığıyla formun başlığı arasına sıkışıyor ve okuma
+                sırasını bozuyordu. */}
+            {kayitModu && (
+              <Buton tur="sessiz" boyut="kucuk" onClick={() => kipDegistir(false)}
+                className="mt-4 -ml-2.5" ikon={<Ikon.Geri boyut={14} />}>
+                Girişe dön
+              </Buton>
+            )}
 
-            {kayitModu
-              ? <KayitFormu
-                  girisEkranina={() => kipDegistir(false)}
-                  tamamlandi={(m) => { setBilgi(m); setKayitModu(false) }}
-                />
-              : <GirisFormu
-                  kayitEkranina={() => kipDegistir(true)}
-                  bilgi={bilgi}
-                  oturumNotu={oturumNotu}
-                  girisYap={girisYap}
-                />}
+            <h1 className={`text-xl sm:text-[22px] font-semibold tracking-tight
+              leading-snug ${kayitModu ? 'mt-3' : 'mt-5'}`}>
+              {ekran.baslik}
+            </h1>
 
-            {/* Sahte model uyarısı giriş ekranında da görünür: demoyu
-                izleyen kişi sisteme bakmadan gerçek bir modelin
-                çalıştığını sanmamalı (ana talimat Bölüm 9.5). */}
-            <div className="mt-6"><SahteModelUyarisi /></div>
-
-            {/* TANITIM METNİ FORMUN ALTINDA — bilinçli.
-
-                Masaüstünde anlatı solda, form sağda; ikisi aynı anda
-                görünür. Telefonda ise alt alta gelmek zorundalar. Anlatı
-                üste konursa her gün giriş yapan saha personeli formu
-                görmek için onu her seferinde geçmek zorunda kalır.
-                Kimlik (görsel + başlık) üstte kalır, açıklama aşağı
-                iner: arayan bulur, aramayan formla karşılaşır. */}
-            <div className="lg:hidden mt-8 pt-8 border-t border-kenar">
-              <Ozellikler kompakt />
-              <p className="text-xs text-metin-4 leading-relaxed mt-7">
-                {KUNYE}
-              </p>
+            <div className="mt-7">
+              {kayitModu
+                ? <KayitFormu
+                    girisEkranina={() => kipDegistir(false)}
+                    tamamlandi={(m) => { setBilgi(m); setKayitModu(false) }}
+                  />
+                : <GirisFormu
+                    kayitEkranina={() => kipDegistir(true)}
+                    bilgi={bilgi}
+                    oturumNotu={oturumNotu}
+                    girisYap={girisYap}
+                  />}
             </div>
           </div>
-        </div>
-      </main>
+
+          {/* Sahte model uyarısı her iki ekranda da görünür: demoyu
+              izleyen kişi sisteme bakmadan gerçek bir modelin
+              çalıştığını sanmamalı (ana talimat Bölüm 9.5). */}
+          <div className="mt-6"><SahteModelUyarisi /></div>
+        </main>
+
+        {/* Tanıtım YALNIZCA giriş ekranında. Kayıt ekranında yerini üç
+            adımlı süreç anlatımı alır; ikisini birden göstermek aynı
+            ekranda iki farklı şey öğretmeye çalışmak olurdu. */}
+        {!kayitModu && (
+          <section aria-label="Sistemin çalışma kuralları"
+            className="w-full max-w-[460px] mt-4 rounded-kart border
+              border-kenar bg-yuzey p-6 sm:p-8 giris-belir">
+            <ul className="space-y-5">
+              {OZELLIKLER.map((o) => (
+                <li key={o.baslik} className="border-l-2 border-kenar-net pl-4">
+                  <p className="font-medium text-metin">{o.baslik}</p>
+                  <p className="text-sm text-metin-3 mt-1 leading-relaxed">
+                    {o.metin}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* `footer` bilinçli: künye bir yer işaretine ait olmalı.
+            Çıplak bir `p` olarak dururken hiçbir yer işaretinin içinde
+            değildi (axe: `region`) ve yer işaretlerine göre gezinen bir
+            ekran okuyucu kullanıcısı onu atlıyordu. */}
+        <footer className="w-full max-w-[460px] mt-4 rounded-kart border
+          border-kenar bg-yuzey px-6 py-4">
+          <p className="text-xs text-metin-3 leading-relaxed">{KUNYE}</p>
+        </footer>
+      </div>
     </div>
   )
 }
@@ -307,8 +287,8 @@ function GirisFormu({ kayitEkranina, bilgi, oturumNotu, girisYap }: {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold tracking-tight">Giriş yap</h2>
-      <p className="text-sm text-metin-3 mt-1 mb-7">
+      <h2 className="text-lg font-semibold tracking-tight">Giriş yap</h2>
+      <p className="text-sm text-metin-3 mt-1 mb-6">
         Kurumsal hesabınızla oturum açın.
       </p>
 
@@ -321,7 +301,6 @@ function GirisFormu({ kayitEkranina, bilgi, oturumNotu, girisYap }: {
         <ParolaAlani etiket="Parola" deger={parola} degisti={setParola}
           tamamlama="current-password" />
 
-        {/* Oturum kendiliğinden düştüyse nedeni burada söylenir. */}
         {!hata && oturumNotu && (
           <p role="status" className="text-uyari text-sm bg-uyari/10
             border border-uyari/30 rounded-md px-3 py-2.5 leading-relaxed">
@@ -329,8 +308,6 @@ function GirisFormu({ kayitEkranina, bilgi, oturumNotu, girisYap }: {
           </p>
         )}
 
-        {/* Kayıt tamamlandıysa sonucu BURADA görür: kayıt ekranından
-            döndüğü için mesaj onu giriş ekranında karşılar. */}
         {bilgi && (
           <p role="status" className="flex items-start gap-2 text-olumlu
             text-sm bg-olumlu/10 border border-olumlu/30 rounded-md
@@ -361,14 +338,10 @@ function GirisFormu({ kayitEkranina, bilgi, oturumNotu, girisYap }: {
 /**
  * Kayıt ekranı — giriş formunun bir kipi DEĞİL, kendi ekranı.
  *
- * Önceden aynı forma bir alan eklenip başlığı değişiyordu; kullanıcı
- * nereye geldiğini anlamıyor, kaydın ardından ne olacağını hiç
- * öğrenmiyordu. Burada süreç açıkça yazılı: hesap onay bekler, rolü
- * yönetici atar, onaya kadar giriş yapılamaz.
- *
  * Parola tekrarı EKLENDİ. Tek alanda yazılan bir parolanın yanlış
  * yazıldığı ancak ilk giriş denemesinde anlaşılıyordu — ve o an hesap
- * çoktan onay kuyruğuna girmiş oluyordu.
+ * çoktan onay kuyruğuna girmiş, yönetici sahibinin giremeyeceği bir
+ * hesabı onaylamış oluyordu.
  */
 function KayitFormu({ girisEkranina, tamamlandi }: {
   girisEkranina: () => void
@@ -413,12 +386,7 @@ function KayitFormu({ girisEkranina, tamamlandi }: {
 
   return (
     <div>
-      <Buton tur="sessiz" boyut="kucuk" onClick={girisEkranina}
-        className="mb-4 -ml-2.5" ikon={<Ikon.Geri boyut={14} />}>
-        Girişe dön
-      </Buton>
-
-      <h2 className="text-xl font-semibold tracking-tight">Hesap oluştur</h2>
+      <h2 className="text-lg font-semibold tracking-tight">Hesap oluştur</h2>
       <p className="text-sm text-metin-3 mt-1 mb-6 leading-relaxed">
         Kurumsal e-posta adresinizle başvurun. Hesabınız yönetici onayından
         sonra etkinleşir.
