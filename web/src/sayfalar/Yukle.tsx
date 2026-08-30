@@ -9,7 +9,9 @@ import {
 } from '../bilesenler/Temel'
 import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
 import { Ikon } from '../bilesenler/Ikon'
+import { SahteModelUyarisi } from '../bilesenler/ModelDurumu'
 import type { EnkazAlani, YuklemeSonucu } from '../types'
+import { sayfaGorevi } from '../roller'
 
 /**
  * Saha personelinin ana ekranı.
@@ -19,7 +21,7 @@ import type { EnkazAlani, YuklemeSonucu } from '../types'
  * anlamıyordu. Artık doğrudan çalışma ekranına düşüyor.
  */
 export function Yukle() {
-  const { durum, siniflar } = useDurum()
+  const { kullanici, durum, siniflar } = useDurum()
   const { alanaGit, git, erisilebilir } = useGezinme()
   const [alanlar, setAlanlar] = useState<EnkazAlani[] | null>(null)
   const [seciliAlan, setSeciliAlan] = useState<number | ''>('')
@@ -72,8 +74,14 @@ export function Yukle() {
       <Baslik
         ustBaslik="Saha çalışması"
         baslik="Görüntü yükle"
+        gorev={sayfaGorevi(kullanici?.rol ?? null, 'yukle')}
         aciklama="Yüklediğiniz görüntüler otomatik sınıflandırılır. Model güveni düşük olan tespitler uzman incelemesine kendiliğinden gider."
       />
+
+      {/* Sınıflandırmayı ÜRETEN servisin ne olduğu, yükleme düğmesinin
+          hemen üstünde yazar: sonucu sahte bir servisin ürettiğini
+          sonradan değil, yüklemeden önce bilmeli. */}
+      <div className="mb-4"><SahteModelUyarisi /></div>
 
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
 
@@ -228,9 +236,9 @@ export function Yukle() {
           {/* Yan panel: ne olacağını önceden anlatır */}
           <div className="space-y-4">
             <Kart className="p-4">
-              <h3 className="text-sm font-semibold text-metin-2 mb-3">
+              <h2 className="text-sm font-semibold text-metin-2 mb-3">
                 Yükledikten sonra ne olur
-              </h3>
+              </h2>
               <ol className="space-y-3 text-sm text-metin-3">
                 {[
                   'Görüntüler otomatik sınıflandırılır; sonuçlar ön tahmin olarak listelenir.',

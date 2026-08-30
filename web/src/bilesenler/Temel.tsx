@@ -9,13 +9,16 @@ export function Buton({
   boyut?: 'normal' | 'kucuk'
   ikon?: ReactNode
 }) {
+  // Renkler TEMA JETONUNDAN gelir. `ikincil` düğmenin üzerine gelme rengi
+  // burada `#2a3140` olarak sabit kodlanmıştı: açık temada düğme imlecin
+  // altında koyu laciverte dönüyordu. Gölge de aynı biçimde sabit siyahtı
+  // ve açık zeminde ağır duruyordu.
   const stiller = {
     birincil:
-      'bg-marka text-taban font-semibold hover:bg-marka-2 ' +
-      'shadow-[0_1px_2px_rgba(0,0,0,0.4)]',
+      'bg-marka text-taban font-semibold hover:bg-marka-2 shadow-dugme',
     ikincil:
       'bg-yuzey-3 text-metin border border-kenar-net hover:border-kenar-parlak ' +
-      'hover:bg-[#2a3140]',
+      'hover:bg-yuzey-vurgu',
     sessiz: 'bg-transparent text-metin-2 hover:text-metin hover:bg-yuzey-2',
     tehlike:
       'bg-transparent text-dikkat border border-dikkat/40 hover:bg-dikkat/10',
@@ -68,14 +71,28 @@ export function Kart({ children, className = '', vurgulu = false }: {
   return (
     <div className={`bg-yuzey rounded-kart border transition-colors
       ${vurgulu ? 'border-marka/60' : 'border-kenar'}
-      shadow-[0_1px_3px_rgba(0,0,0,0.35)] ${className}`}>
+      shadow-kart ${className}`}>
       {children}
     </div>
   )
 }
 
-export function Baslik({ ustBaslik, baslik, aciklama, sag }: {
-  ustBaslik?: string; baslik: string; aciklama?: string; sag?: ReactNode
+/**
+ * Sayfa başlığı.
+ *
+ * `h1` — `h2` DEĞİL. Her sayfanın başlığı buradan gelir ve bileşen `h2`
+ * ürettiği için giriş yapıldıktan sonraki HİÇBİR ekranda birinci düzey
+ * başlık yoktu (axe-core: `page-has-heading-one`, her sayfada). Başlığa
+ * göre gezinen bir ekran okuyucu kullanıcısı, sayfanın neyle ilgili
+ * olduğunu söyleyen düğümü hiç bulamıyordu.
+ */
+export function Baslik({ ustBaslik, baslik, aciklama, gorev, sag }: {
+  ustBaslik?: string
+  baslik: string
+  aciklama?: string
+  /** Rolün o ekrandaki işi — tek cümle. */
+  gorev?: string
+  sag?: ReactNode
 }) {
   return (
     <div className="flex items-start justify-between gap-6 flex-wrap mb-6">
@@ -84,10 +101,19 @@ export function Baslik({ ustBaslik, baslik, aciklama, sag }: {
           <p className="text-xs font-medium uppercase tracking-wider
             text-metin-4 mb-1.5">{ustBaslik}</p>
         )}
-        <h2 className="text-2xl font-semibold tracking-tight break-words">{baslik}</h2>
+        <h1 className="text-2xl font-semibold tracking-tight break-words">{baslik}</h1>
         {aciklama && (
           <p className="text-sm text-metin-3 mt-1.5 max-w-2xl leading-relaxed">
             {aciklama}
+          </p>
+        )}
+        {/* Rolün görevi `roller.ts` içinde her rol için yazılmıştı ve
+            hiçbir yerde gösterilmiyordu — ölü veri. Kullanıcı giriş
+            yapınca kendisinden ne beklendiğini okuyor. */}
+        {gorev && (
+          <p className="flex items-start gap-2 text-sm text-metin-2 mt-3
+            border-l-2 border-marka/60 pl-3 py-0.5 max-w-2xl leading-relaxed">
+            {gorev}
           </p>
         )}
       </div>

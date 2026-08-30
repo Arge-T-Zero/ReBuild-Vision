@@ -72,9 +72,9 @@ export function TehlikeliKarti({
 
   return (
     <div className="border border-kenar rounded-lg p-4 bg-yuzey-2/40">
-      <h4 className="text-sm font-semibold text-metin-2 mb-1">
+      <h3 className="text-sm font-semibold text-metin-2 mb-1">
         Tehlikeli madde incelemesi
-      </h4>
+      </h3>
       <p className="text-xs text-metin-3 mb-3">
         Sistem tehlikeli madde teşhisi yapmaz. Bu bölüm yalnızca uzman ve
         laboratuvar incelemesi kayıtlarını tutar.

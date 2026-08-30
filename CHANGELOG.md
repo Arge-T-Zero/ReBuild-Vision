@@ -5,6 +5,140 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — Arayüz denetimi: varsayılan tema, dürüstlük rozeti ve 5 kırık ekran
+
+Arayüz dört bakış açısıyla yeniden denetlendi (genel kullanıcı, jüri /
+şartname tutarlılığı, erişilebilirlik, tasarım sistemi). Uygulama ayağa
+kaldırılıp **tarayıcıda ölçülerek** incelendi: 4 rol, 7 sayfa, iki tema,
+320–1920 px.
+
+**Değiştirildi — varsayılan tema artık AÇIK**
+- Sistem "güneş altında kullanılır" diyor ve açık zeminin doğrudan
+  güneşte daha okunur olduğunu kendi kodunda yazıyordu; buna rağmen
+  kullanıcıyı koyu ekranla karşılıyordu. Varsayılan açık temaya alındı.
+- `index.css` tersine çevrildi: `:root` artık açık tema, koyu tema
+  `[data-theme="dark"]` altında. Hiçbir renk yalnızca koşullu bir blokta
+  tanımlı değil.
+- `index.html` açılış betiği ve `theme-color` buna göre güncellendi;
+  tema değişince tarayıcı çubuğu da değişiyor.
+
+**🔴 Düzeltildi — depolama engelliyken uygulama HİÇ AÇILMIYORDU**
+- `jetonAl/jetonYaz/jetonSil` `localStorage`'a korumasız dokunuyordu.
+  Tarayıcı "tüm site verilerini engelle" ayarındaysa erişimin kendisi
+  `SecurityError` atıyor; hata React ağacının kökünde patlıyor ve ekranda
+  **bomboş beyaz sayfa** kalıyordu — ne form, ne hata, ne açıklama.
+- Ölçüldü: `Storage.prototype` erişimi hata atacak biçimde ayarlandığında
+  `#root` tamamen boş kalıyordu. Düzeltmeden sonra giriş yapılabiliyor ve
+  tema değiştirilebiliyor; jeton depolama yoksa bellekte tutuluyor.
+- `tema.tsx` bu riski görüp try/catch kullanıyordu; jeton tarafına
+  uygulanmamıştı.
+
+**🔴 Düzeltildi — README'nin vaat ettiği "SAHTE MODEL SERVİSİ" rozeti yoktu**
+- README ve `/sistem/durum` uç noktasının kendi belgesi kalıcı bir rozet
+  taahhüt ediyordu. `sahte` alanı API'den geliyor, `types.ts` onu tipliyor,
+  `durum.tsx` çekiyordu — **hiçbir bileşen okumuyordu.**
+- Yani sistem sahte model servisiyle çalışırken ekranda bunu söyleyen tek
+  bir işaret yoktu. Demoyu izleyen bir jüri üyesinin gerçek bir modelin
+  çalıştığını sanması, sonradan öğrenmesinden kötüdür (Bölüm 9.5).
+- `ModelDurumu.tsx` eklendi: üst çubukta kalıcı rozet, giriş ve yükleme
+  ekranlarında açıklamalı uyarı. Model servisine ulaşılamadığı durum da
+  aynı yerden söyleniyor — kullanıcı bunu yükleme anında değil önceden
+  öğreniyor.
+
+**🔴 Düzeltildi — üst menü 640–1280 px arasında kırpılıyordu**
+- Eşik `sm` (640 px) idi. 768 px'te dört sekmelik 610 px'lik içeriğe
+  177 px yer kalıyor, sekmeler sessizce kırpılıyor ve kaydırılabildiğine
+  dair hiçbir ipucu bulunmuyordu: tablet kullanıcısı menünün çoğunu
+  hiç göremiyordu.
+- Eşik ölçülerek `lg`ye çekildi; altında alt çubuk devralıyor. Üst menü
+  kısa etiket kullanıyor (tam ad `aria-label` ve `title`'da) — kapsayıcı
+  1240 px'te sınırlı ve tam adlarla beş sekme 737 px istiyor, eldeki yer
+  614 px. Ölçüldü: artık 1024–1920 px arasında hiçbir sekme kırpılmıyor.
+
+**Düzeltildi — açık ve koyu temada 5 WCAG AA kontrast ihlali**
+axe-core ile ölçüldü; hepsi arayüzün en çok kullanılan öğeleri:
+- birincil düğme (marka üzerinde metin) **4,27** → 6,02
+- kuyruk rozeti (uyarı %10 zeminde) **4,09** → 5,40
+- erişim rozeti (marka %10 zeminde) **4,07** → 5,21
+- yardımcı metin (metin-4 / yüzey-3, açık) **4,11** → 4,68
+- rapor biçim açıklaması (metin-4 / yüzey-3, **koyu**) **3,95** → 5,18
+
+Sonuç: 4 rol × 7 sayfa × 2 tema taramasında **sıfır ihlal.**
+
+**Düzeltildi — erişilebilirlik**
+- Giriş yapıldıktan sonra **hiçbir sayfada `h1` yoktu** (`Baslik` `h2`
+  üretiyordu). Başlığa göre gezinen kullanıcı sayfanın konusunu söyleyen
+  düğümü hiç bulamıyordu.
+- Başlık sırası atlıyordu (`h1` → `h3`/`h4`); tüm bölüm başlıkları
+  hiyerarşiye oturtuldu.
+- Harita işaretçilerinin **erişilebilir adı yoktu** (serious): Leaflet
+  onları `role="button"` ile çiziyor, ekran okuyucu yalnızca "düğme"
+  diyordu. Saha adı `title`/`alt` ile verildi.
+- Tespit kutusunun `aria-label`'ı ham sınıf adını ("dolgu_toprak")
+  okuyor ve uzman düzeltmesini yansıtmıyordu — kutu görsel olarak
+  düzeltilmiş sınıfı gösterirken sesli olarak modelin ilk tahminini
+  söylüyordu.
+- Giriş ekranının sol paneli hiçbir yer işaretinin içinde değildi.
+- "İçeriğe geç" bağlantısı eklendi.
+
+**Düzeltildi — giriş ekranı**
+- **Mobilde ekran bomboştu.** Kimlik, üç iddia ve TEKNOFEST künyesi
+  `hidden lg:*` ile gizliydi; telefondaki kullanıcı siyah bir boşlukta
+  tek bir form görüyordu — üstelik sahanın asıl aygıtı telefon.
+  Anlatının sıkışmış hâli küçük ekrana eklendi.
+- **Tema düğmesi giriş ekranında yoktu.** Temayı en çok isteyecek kişi
+  ekranı henüz okuyamayan kişidir; tercihini yapmak için önce giriş
+  yapması gerekiyordu.
+- Görselin üzerindeki okunabilirlik perdesi iki temada aynı güçteydi ve
+  açık temada fotoğrafı beyaz bir sise çeviriyordu. Perde artık temaya
+  bağlı bir jeton.
+- Parola göster/gizle eklendi.
+
+**Düzeltildi — kararın ve sahanın görünmezliği**
+- **Kuyrukta karar sonrası hiçbir geri bildirim yoktu:** uzman
+  "Onayla"ya bastığında satır sessizce yok oluyor, kaydın işlendiğini mi
+  yoksa uygulamanın mı düştüğünü ayırt edemiyordu. Bu ürünün ana işi
+  insanın kararını kaydetmek; kararın kaydedildiğini söylememek en pahalı
+  yerdeki sessizlikti. Karar artık adıyla duyuruluyor (`role="status"`).
+- **Enkaz alanı detayında künye yoktu:** erişim durumu, sorumlu, koordinat
+  ve sınır listedeki kartta görünüp alanın kendi sayfasında kayboluyordu.
+  Sahaya ekip gönderecek yetkilinin ilk soracağı şey ("girilebiliyor mu")
+  tam da orada eksikti.
+- **`roller.ts` içindeki `gorev` alanı ölü veriydi:** yedi rol için
+  yazılmış "ana sayfada gösterilecek tek cümlelik yönlendirme" hiçbir
+  bileşen tarafından okunmuyordu. Artık rolün kendi ana sayfasında
+  görünüyor.
+
+**Düzeltildi — harita altlığı sessizce boş kalıyordu**
+- Karolar OpenStreetMap'ten gelir. Ağ kapalıysa, kurum güvenlik duvarı
+  engelliyorsa ya da jüri sistemi çevrimdışı bir makinede çalıştırıyorsa
+  Leaflet hiçbir şey söylemeden **boş gri bir kutu** bırakıyordu:
+  projenin amiral gemisi olan Malzeme Kaynak Haritası "bozuk" görünüyordu,
+  oysa işaretçiler ve saha sınırları çalışıyordu.
+- Artık karo hatası sayılıyor ve haritanın üstünde durumu söyleyen bir not
+  çıkıyor: altlık eksik, veri duruyor. Bu senaryo ölçülerek doğrulandı
+  (inceleme ortamında OSM erişimi kapalıydı).
+
+**Düzeltildi — tema sızıntıları ve küçük tutarsızlıklar**
+- `ikincil` düğmenin üzerine gelme rengi `#2a3140` olarak sabit
+  kodlanmıştı: açık temada düğme imlecin altında koyu laciverte
+  dönüyordu (ölçüldü: `rgb(42,49,64)`). Kart ve düğme gölgeleri de sabit
+  siyahtı; hepsi jetona bağlandı.
+- Harita işaretçisinin halkası sabit `#0e1116` idi — açık temada neredeyse
+  siyah bir çember bırakıyordu.
+- Rapor dosya adı hep aynıydı (`rebuild-vision-rapor.csv`); üç sahanın
+  raporunu indiren yetkilinin klasöründe hangisinin hangisi olduğu
+  kayboluyordu. Ada kapsam ve tarih eklendi.
+- Ölçüm formunun örneği "12.4" diyerek kullanıcıyı noktaya yönlendiriyordu;
+  kod virgülü zaten kabul ediyordu. Örnek kabul edilen biçimle eşitlendi.
+
+**Doğrulama**
+- Backend: **130 test geçti**
+- `tsc -b` temiz, üretim derlemesi başarılı
+- axe-core: 4 rol × 7 sayfa × 2 tema → **0 ihlal**
+- 320 / 360 / 390 / 414 / 768 / 1024 / 1280 / 1440 / 1920 px'te
+  **yatay taşma yok**
+
 ### 29.08.2026 — Madde 10.3 karşılandı (Docker doğrulandı)
 
 **Doğrulandı**

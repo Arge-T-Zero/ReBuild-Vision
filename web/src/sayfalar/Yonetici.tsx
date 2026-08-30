@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
+import { useDurum } from '../durum'
 import {
   Baslik, BosDurum, Buton, Hata, Kart, girdiSinifi,
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { Kullanici, Rol } from '../types'
+import { sayfaGorevi } from '../roller'
 
 /**
  * Rol onay ekranı — kamu sistemi mantığının göstergesi.
@@ -33,6 +35,7 @@ const ROLLER: { deger: Rol; etiket: string; aciklama: string }[] = [
 ]
 
 export function Yonetici() {
+  const { kullanici } = useDurum()
   const [bekleyenler, setBekleyenler] = useState<Kullanici[] | null>(null)
   const [hata, setHata] = useState('')
 
@@ -47,6 +50,7 @@ export function Yonetici() {
       <Baslik
         ustBaslik="Yönetim"
         baslik="Rol onayı bekleyen hesaplar"
+        gorev={sayfaGorevi(kullanici?.rol ?? null, 'yonetici')}
         aciklama="Kullanıcılar kayıt olurken kendi rollerini seçemez. Yetki bu ekrandan verilir; atama işlem geçmişine kaydedilir."
       />
 
