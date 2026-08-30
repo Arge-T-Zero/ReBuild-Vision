@@ -78,6 +78,16 @@
      imlecin altında koyu laciverte dönüyordu. Renk artık temaya ait. */
   --u-yuzey-vurgu:  #dfe3db;
 
+  /* Kayıt tipi renkleri — beyaz ve `yuzey-2` zeminde ölçüldü, hepsi
+     AA'yı (4,5) geçer. */
+  --u-kayit-tespit:    #1a5fc4;
+  --u-kayit-olcum:     #0d6b48;
+  --u-kayit-alan:      #7d5305;
+  --u-kayit-goruntu:   #6b4bb8;
+  --u-kayit-kullanici: #a8371f;
+  --u-kayit-miktar:    #0f6d75;
+  --u-kayit-tehlikeli: #9c2f6b;
+
   --u-golge:         0 1px 2px rgba(16, 24, 32, 0.10);
   --u-golge-kart:    0 1px 3px rgba(16, 24, 32, 0.09);
   --u-golge-ust:     0 10px 30px rgba(16, 24, 32, 0.16);
@@ -122,6 +132,14 @@
   --u-bilgi:        #4d9bff;
 
   --u-yuzey-vurgu:  #2a3140;
+
+  --u-kayit-tespit:    #6fb0ff;
+  --u-kayit-olcum:     #45c894;
+  --u-kayit-alan:      #dfab45;
+  --u-kayit-goruntu:   #a992f5;
+  --u-kayit-kullanici: #f28a69;
+  --u-kayit-miktar:    #4cc5cf;
+  --u-kayit-tehlikeli: #ef8ac0;
 
   --u-golge:         0 1px 3px rgba(0, 0, 0, 0.5);
   --u-golge-kart:    0 1px 3px rgba(0, 0, 0, 0.35);
@@ -173,6 +191,21 @@
 
   --shadow-kart:  var(--u-golge-kart);
   --shadow-dugme: var(--u-golge-dugme);
+
+  /* Kayıt tipi renkleri — işlem geçmişinde kaydın NE OLDUĞUNU bir
+     bakışta ayırır. Malzeme sınıfı renklerinden ve durum renklerinden
+     (onaylandı/uyarı/hata) BİLİNÇLİ OLARAK ayrıdır: aynı listede üç
+     ayrı renk dili varsa hiçbiri okunmaz.
+
+     Renk TEK BAŞINA anlam taşımaz (ana talimat Bölüm 9.3): her kaydın
+     yanında tür adı yazılı ve ayırt edici bir ikon durur. */
+  --color-kayit-tespit:     var(--u-kayit-tespit);
+  --color-kayit-olcum:      var(--u-kayit-olcum);
+  --color-kayit-alan:       var(--u-kayit-alan);
+  --color-kayit-goruntu:    var(--u-kayit-goruntu);
+  --color-kayit-kullanici:  var(--u-kayit-kullanici);
+  --color-kayit-miktar:     var(--u-kayit-miktar);
+  --color-kayit-tehlikeli:  var(--u-kayit-tehlikeli);
 
   --radius-kart: 12px;
 

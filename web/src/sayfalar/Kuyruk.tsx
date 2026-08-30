@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import {
@@ -7,7 +7,7 @@ import {
 } from '../bilesenler/Temel'
 import { Ikon } from '../bilesenler/Ikon'
 import { useGezinme } from '../gezinme'
-import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
+import { GuvenSkoru, yuzdeMetni } from '../bilesenler/GuvenSkoru'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { Tespit } from '../types'
 import { sayfaGorevi } from '../roller'
@@ -131,7 +131,10 @@ export function Kuyruk() {
  * pikselinde olduğunu söyler. Başka bir biçim gelirse önizleme
  * gösterilmez — yanlış yeri kırpmaktansa hiç göstermemek doğrudur.
  */
-function Kanit({ tespit }: { tespit: Tespit }) {
+function Kanit({ tespit, buyut }: {
+  tespit: Tespit
+  buyut: () => void
+}) {
   const { bbox, bbox_format: bicim } = tespit
   const yol = tespit.goruntu_dosya_yolu
   const gen = tespit.goruntu_genislik
@@ -148,12 +151,14 @@ function Kanit({ tespit }: { tespit: Tespit }) {
     // karara sürükler.
     return (
       <div className="shrink-0">
-        <div className="w-28 h-28 rounded-md overflow-hidden border border-kenar
-          bg-yuzey-3">
+        <button onClick={buyut} aria-label="Görüntüyü büyüt"
+          className="block w-28 h-28 rounded-md overflow-hidden border
+            border-kenar bg-yuzey-3 !min-h-0 p-0 hover:border-kenar-parlak
+            transition-colors">
           <img src={api.gorselUrl(yol)} loading="lazy"
             alt="Tespitin alındığı görüntü"
             className="w-full h-full object-cover" />
-        </div>
+        </button>
         <p className="text-[10px] text-metin-4 mt-1 w-28 leading-tight">
           Kutu konumu ölçeklenemedi — görüntünün tamamı
         </p>
@@ -171,11 +176,16 @@ function Kanit({ tespit }: { tespit: Tespit }) {
 
   return (
     <div className="shrink-0">
-      <div
-        role="img"
-        aria-label={`Tespitin görüntü üzerindeki konumu — ${tespit.sinif} ön tahmini`}
+      {/* ÖNİZLEME TIKLANABİLİR.
+          112 px, uzmanın "ahşap mı metal mi" kararı için küçüktü; karar
+          kanıta yakından bakmadan veriliyordu. Tıklayınca görüntünün
+          tamamı, tespit kutusu üzerinde işaretli olarak açılır. */}
+      <button
+        onClick={buyut}
+        aria-label={`Tespiti büyüt — ${tespit.sinif} ön tahmini`}
         className="rounded-md border border-kenar bg-yuzey-3 relative
-          overflow-hidden"
+          overflow-hidden block !min-h-0 p-0 group hover:border-marka
+          transition-colors"
         style={{
           width: P, height: P,
           backgroundImage: `url(${api.gorselUrl(yol)})`,
@@ -197,10 +207,106 @@ function Kanit({ tespit }: { tespit: Tespit }) {
             height: bbox!.h * k,
           }}
         />
-      </div>
+        <span aria-hidden className="absolute inset-0 grid place-items-center
+          bg-taban/55 opacity-0 group-hover:opacity-100
+          group-focus-visible:opacity-100 transition-opacity">
+          <span className="text-metin text-[11px] font-medium bg-yuzey-ust
+            border border-kenar rounded px-2 py-1">Büyüt</span>
+        </span>
+      </button>
       <p className="text-[10px] text-metin-4 mt-1 w-28 leading-tight">
-        Model kutusu
+        Model kutusu · büyütmek için tıklayın
       </p>
+    </div>
+  )
+}
+
+/**
+ * Kanıt büyütücü — tespitin alındığı görüntünün tamamı.
+ *
+ * Uzman kararını 112 px'lik bir önizlemeye bakarak veriyordu. Bir
+ * malzemenin ahşap mı metal mi olduğu o boyutta çoğu zaman ayırt
+ * edilemez; sistemin bütün iddiası ise insanın modelden daha iyi karar
+ * vermesi üzerine kurulu. Kanıta bakılamıyorsa iddia da boşa çıkar.
+ *
+ * Kutu görüntünün üzerinde İŞARETLİ kalır — büyütünce modelin nereyi
+ * gösterdiği kaybolmamalı.
+ */
+function KanitBuyutec({ tespit, ad, kapat }: {
+  tespit: Tespit
+  ad: string
+  kapat: () => void
+}) {
+  const [olcu, setOlcu] = useState({ g: 0, y: 0 })
+  const gorselRef = useRef<HTMLImageElement>(null)
+
+  useEffect(() => {
+    const t = (e: KeyboardEvent) => { if (e.key === 'Escape') kapat() }
+    window.addEventListener('keydown', t)
+    return () => window.removeEventListener('keydown', t)
+  }, [kapat])
+
+  const yol = tespit.goruntu_dosya_yolu
+  const gen = tespit.goruntu_genislik
+  const yuk = tespit.goruntu_yukseklik
+  const bbox = tespit.bbox
+  const cizilebilir = !!bbox && tespit.bbox_format === 'pixel_absolute_original'
+    && !!gen && !!yuk && olcu.g > 0
+
+  function olc() {
+    const el = gorselRef.current
+    if (el) setOlcu({ g: el.clientWidth, y: el.clientHeight })
+  }
+
+  if (!yol) return null
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label={`${ad} tespiti — kanıt görüntüsü`}
+      className="fixed inset-0 z-[3000] bg-taban/85 flex flex-col
+        items-center justify-center p-4 sm:p-8"
+      onClick={kapat}
+    >
+      <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <p className="text-sm text-metin-2">
+            <strong className="font-medium">{ad}</strong>
+            {' · '}<span className="sayisal">%{yuzdeMetni(tespit.guven_skoru)}</span>
+            {' '}model güveni
+            {' · '}<span className="text-metin-3">ön tahmin</span>
+          </p>
+          <Buton tur="ikincil" boyut="kucuk" onClick={kapat}>Kapat</Buton>
+        </div>
+
+        <div className="relative inline-block max-w-full bg-yuzey rounded-lg
+          overflow-hidden border border-kenar">
+          <img
+            ref={gorselRef} src={api.gorselUrl(yol)} onLoad={olc}
+            alt={`${ad} tespitinin alındığı görüntü`}
+            className="block max-w-full max-h-[70vh] w-auto h-auto"
+          />
+          {cizilebilir && (() => {
+            const oran = olcu.g / gen!
+            return (
+              <span aria-hidden
+                className="absolute border-2 border-uyari rounded-[3px]
+                  pointer-events-none"
+                style={{
+                  left: bbox!.x * oran, top: bbox!.y * oran,
+                  width: bbox!.w * oran, height: bbox!.h * oran,
+                  boxShadow: '0 0 0 9999px rgba(8, 12, 18, 0.35)',
+                }}
+              />
+            )
+          })()}
+        </div>
+
+        <p className="text-xs text-metin-3 mt-3 leading-relaxed">
+          Sarı çerçeve modelin işaretlediği alandır ve bir
+          <strong className="text-metin-2"> ön tahmindir</strong>. Kararı
+          siz verirsiniz; kutunun doğru yeri gösterdiğinden emin
+          değilseniz "Belirsiz olarak işaretle" seçeneği vardır.
+        </p>
+      </div>
     </div>
   )
 }
@@ -215,6 +321,7 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
   const [yeniSinif, setYeniSinif] = useState('')
   const [hata, setHata] = useState('')
   const [bekliyor, setBekliyor] = useState(false)
+  const [buyutecAcik, setBuyutecAcik] = useState(false)
 
   async function karar(durum: string, duzeltilen?: string) {
     setHata(''); setBekliyor(true)
@@ -236,8 +343,14 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
 
   return (
     <Kart className="p-4">
+      {buyutecAcik && (
+        <KanitBuyutec tespit={tespit}
+          ad={siniflar.get(tespit.sinif)?.gorunen_ad ?? tespit.sinif}
+          kapat={() => setBuyutecAcik(false)} />
+      )}
+
       <div className="flex items-start gap-3">
-        <Kanit tespit={tespit} />
+        <Kanit tespit={tespit} buyut={() => setBuyutecAcik(true)} />
         <div className="grow min-w-0">
           {/* Hangi sahadaki hangi tespit — iki kayıt birbirinden
               ayırt edilebilmeli. */}

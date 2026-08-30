@@ -14,11 +14,41 @@ import { sayfaGorevi } from '../roller'
 
 const OLUSTURABILIR = new Set(['yonetici', 'belediye', 'afad'])
 
+/**
+ * Liste süzgeci.
+ *
+ * Üç sahayla süzgece gerek yok; elli sahayla liste kullanılamaz hâle
+ * gelir ve sistem "birkaç saha içindi" demeye gelir. Süzgeç İSTEMCİ
+ * TARAFINDADIR: sunucu zaten yalnızca rolün görebildiği sahaları
+ * dönüyor, o küme bir sayfada rahat duruyor.
+ *
+ * Sıralama bilinçli olarak "inceleme bekleyen önce": listeyi açan
+ * kişinin ilk sorusu "nerede iş var" oluyor.
+ */
+type Suzgec = 'hepsi' | 'acik' | 'kisitli' | 'kapali' | 'bekleyen'
+
+const SUZGECLER: { deger: Suzgec; etiket: string }[] = [
+  { deger: 'hepsi', etiket: 'Tümü' },
+  { deger: 'bekleyen', etiket: 'İnceleme bekleyen' },
+  { deger: 'acik', etiket: 'Erişim açık' },
+  { deger: 'kisitli', etiket: 'Kısıtlı' },
+  { deger: 'kapali', etiket: 'Kapalı' },
+]
+
+/** Türkçe arama: büyük/küçük ve aksan farkı aramayı bozmamalı. */
+function normalize(m: string): string {
+  return m.toLocaleLowerCase('tr-TR')
+    .replaceAll('ı', 'i').replaceAll('ğ', 'g').replaceAll('ü', 'u')
+    .replaceAll('ş', 's').replaceAll('ö', 'o').replaceAll('ç', 'c')
+}
+
 export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
   const { kullanici, siniflar } = useDurum()
   const [alanlar, setAlanlar] = useState<EnkazAlani[] | null>(null)
   const [formAcik, setFormAcik] = useState(false)
   const [hata, setHata] = useState('')
+  const [arama, setArama] = useState('')
+  const [suzgec, setSuzgec] = useState<Suzgec>('hepsi')
 
   // Hata durumunda liste boş diziye çekilir. Önceden `null` kalıyordu ve
   // `null` "yükleniyor" anlamına geldiği için ekranda AYNI ANDA hem
@@ -38,6 +68,24 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
   const sinirliErisim = (alanlar ?? []).filter(
     (a) => a.erisim_durumu !== 'acik',
   ).length
+
+  const aramaN = normalize(arama.trim())
+  const gorunen = (alanlar ?? [])
+    .filter((a) => {
+      if (suzgec === 'bekleyen' && a.inceleme_bekleyen === 0) return false
+      if (suzgec !== 'hepsi' && suzgec !== 'bekleyen'
+        && a.erisim_durumu !== suzgec) return false
+      if (!aramaN) return true
+      // Ad VE sorumlu aranır: sahayı adıyla değil sorumlusuyla
+      // hatırlayan kullanıcı da bulabilmeli.
+      return normalize(a.ad).includes(aramaN)
+        || normalize(a.sorumlu ?? '').includes(aramaN)
+    })
+    // İnceleme bekleyen önce; eşitse ada göre.
+    .sort((x, y) => (y.inceleme_bekleyen - x.inceleme_bekleyen)
+      || x.ad.localeCompare(y.ad, 'tr'))
+
+  const suzuluyor = aramaN !== '' || suzgec !== 'hepsi'
 
   return (
     <Sayfa>
@@ -103,13 +151,78 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
           />
         </Kart>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {alanlar.map((a) => (
-            <li key={a.id}>
-              <SahaKarti alan={a} siniflar={siniflar} acildi={acildi} />
-            </li>
-          ))}
-        </ul>
+        <>
+          {/* Süzgeç yalnızca gerçekten gerektiğinde çıkar: tek bir saha
+              varken arama kutusu göstermek gürültüdür. */}
+          {alanlar.length > 3 && (
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <label className="relative grow min-w-[200px] max-w-sm">
+                <span className="sr-only">Saha adı ya da sorumlusuyla ara</span>
+                <span aria-hidden className="absolute left-3 top-1/2
+                  -translate-y-1/2 text-metin-4 pointer-events-none">
+                  <Ikon.Ara boyut={16} />
+                </span>
+                <input
+                  value={arama} onChange={(e) => setArama(e.target.value)}
+                  type="search" placeholder="Saha adı ya da sorumlu ara…"
+                  className={`${girdiSinifi} pl-10`}
+                />
+              </label>
+
+              <div className="flex flex-wrap gap-1.5" role="group"
+                aria-label="Saha süzgeci">
+                {SUZGECLER.map((f) => (
+                  <Buton key={f.deger} boyut="kucuk"
+                    tur={suzgec === f.deger ? 'ikincil' : 'sessiz'}
+                    aria-pressed={suzgec === f.deger}
+                    onClick={() => setSuzgec(f.deger)}
+                  >
+                    {f.etiket}
+                  </Buton>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Kaç kaydın gizlendiği SÖYLENİR: süzgeç açıkken kısa bir
+              liste görmek, sahaların silindiği izlenimi veriyordu. */}
+          {suzuluyor && (
+            <p role="status" className="text-sm text-metin-3 mb-4">
+              <span className="sayisal text-metin-2">{gorunen.length}</span>
+              {' / '}
+              <span className="sayisal">{alanlar.length}</span> saha gösteriliyor
+              {' · '}
+              <button onClick={() => { setArama(''); setSuzgec('hepsi') }}
+                className="text-metin-2 hover:text-metin underline !min-h-0">
+                süzgeci temizle
+              </button>
+            </p>
+          )}
+
+          {gorunen.length === 0 ? (
+            <Kart>
+              <BosDurum
+                ikon={<Ikon.Ara boyut={20} />}
+                baslik="Aramanıza uyan saha yok"
+                aciklama="Arama metnini değiştirin ya da süzgeci temizleyin. Sahalar silinmedi; yalnızca bu ölçüte uymuyorlar."
+                aksiyon={(
+                  <Buton tur="ikincil"
+                    onClick={() => { setArama(''); setSuzgec('hepsi') }}>
+                    Süzgeci temizle
+                  </Buton>
+                )}
+              />
+            </Kart>
+          ) : (
+            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {gorunen.map((a) => (
+                <li key={a.id}>
+                  <SahaKarti alan={a} siniflar={siniflar} acildi={acildi} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </Sayfa>
   )
