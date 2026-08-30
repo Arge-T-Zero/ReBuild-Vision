@@ -13,7 +13,7 @@ import { MiktarKarti } from '../bilesenler/MiktarKarti'
 import { IslemGecmisiListesi } from '../bilesenler/IslemGecmisi'
 import { RaporIndir } from '../bilesenler/RaporIndir'
 import { TehlikeliKarti } from '../bilesenler/TehlikeliKarti'
-import type { Goruntu, Miktar, Olcum, Tespit } from '../types'
+import type { EnkazAlani, Goruntu, Miktar, Olcum, Tespit } from '../types'
 
 const YUKLEYEBILIR = new Set(['yonetici', 'saha', 'belediye'])
 // api/app/core/permissions.py RAPOR_ALABILIR ile aynı küme.
@@ -28,7 +28,12 @@ const LAB_GIREBILIR = new Set(['yonetici', 'uzman'])
 export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }) {
   const { kullanici, durum, siniflar } = useDurum()
   const [goruntuler, setGoruntuler] = useState<Goruntu[] | null>(null)
-  const [alanAdi, setAlanAdi] = useState('')
+  // Alanın TAMAMI tutulur. Önceden yalnızca `ad` alınıyor, gelen kaydın
+  // geri kalanı atılıyordu: erişim durumu, sorumlu ve koordinat listedeki
+  // kartta görünüp alanın kendi sayfasında kayboluyordu. Bir sahaya
+  // gidecek ekibin ilk soracağı şey ("girilebiliyor mu, sorumlusu kim")
+  // tam da orada eksikti.
+  const [alan, setAlan] = useState<EnkazAlani | null>(null)
   const [seciliTespit, setSeciliTespit] = useState<number | null>(null)
   const [hata, setHata] = useState('')
   const [yukleniyor, setYukleniyor] = useState(false)
@@ -40,7 +45,7 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
   }, [alanId])
 
   useEffect(() => {
-    api.alan(alanId).then((a) => setAlanAdi(a.ad)).catch(() => {})
+    api.alan(alanId).then(setAlan).catch(() => {})
     yenile()
   }, [alanId, yenile])
 
@@ -76,7 +81,7 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
 
       <Baslik
         ustBaslik="Enkaz alanı"
-        baslik={alanAdi || 'Enkaz alanı'}
+        baslik={alan?.ad || 'Enkaz alanı'}
         sag={yukleyebilir && (
           <div>
             <input ref={dosyaGirdi} type="file" multiple accept="image/*"
@@ -89,6 +94,8 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
           </div>
         )}
       />
+
+      {alan && <AlanKunyesi alan={alan} />}
 
       {goruntuler !== null && goruntuler.length > 0 && (
         <Kart className="mb-5 grid grid-cols-2 sm:grid-cols-4 divide-x divide-kenar">
@@ -161,6 +168,88 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
   )
 }
 
+const ERISIM = {
+  acik: { ad: 'Erişim açık', sinif: 'border-olumlu/50 text-olumlu bg-olumlu/10',
+    not: 'Sahaya giriş açık.' },
+  kisitli: { ad: 'Erişim kısıtlı', sinif: 'border-uyari/50 text-uyari bg-uyari/10',
+    not: 'Sahaya giriş kısıtlı; yetkili birimle görüşülmeden gidilmemelidir.' },
+  kapali: { ad: 'Erişim kapalı', sinif: 'border-dikkat/50 text-dikkat bg-dikkat/10',
+    not: 'Sahaya giriş kapalı.' },
+}
+
+/**
+ * Alan künyesi — sahanın kimlik bilgisi.
+ *
+ * Bu bilgi listedeki kartta vardı, alanın KENDİ sayfasında yoktu: sayfa
+ * yalnızca adı gösterip doğrudan görüntülere geçiyordu. Sahaya ekip
+ * gönderecek bir belediye ya da AFAD yetkilisi için erişim durumu
+ * kartta değil, burada gerekiyor.
+ *
+ * Koordinat `sayisal` sınıfıyla ve tam duyarlıkla yazılır; kırpılmış bir
+ * koordinat sahada yanlış yere götürür.
+ */
+function AlanKunyesi({ alan }: { alan: EnkazAlani }) {
+  const e = ERISIM[alan.erisim_durumu]
+  return (
+    <Kart className="mb-5 p-4">
+      <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-metin-4 mb-1.5">
+            Erişim durumu
+          </p>
+          <span className={`inline-flex px-2 py-0.5 rounded border text-xs
+            font-medium ${e.sinif}`}>{e.ad}</span>
+          <p className="text-xs text-metin-3 mt-1.5 max-w-xs leading-relaxed">
+            {e.not}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wide text-metin-4 mb-1.5">
+            Sorumlu
+          </p>
+          <p className="text-sm text-metin-2">{alan.sorumlu || '—'}</p>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wide text-metin-4 mb-1.5">
+            Merkez konum
+          </p>
+          {alan.konum ? (
+            <p className="text-sm text-metin-2 sayisal">
+              {alan.konum.enlem.toFixed(5)}, {alan.konum.boylam.toFixed(5)}
+            </p>
+          ) : (
+            /* "0, 0" ya da "—" değil: konumun GİRİLMEDİĞİ yazılır.
+               Yokluk, sahanın koordinatsız olduğu anlamına gelmez. */
+            <p className="text-sm text-metin-3">Girilmedi</p>
+          )}
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wide text-metin-4 mb-1.5">
+            Sınır
+          </p>
+          <p className="text-sm text-metin-2">
+            {alan.sinir && alan.sinir.length >= 3
+              ? <><span className="sayisal">{alan.sinir.length - 1}</span> köşeli poligon</>
+              : <span className="text-metin-3">Çizilmedi</span>}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wide text-metin-4 mb-1.5">
+            Tanımlanma
+          </p>
+          <p className="text-sm text-metin-2 sayisal">
+            {new Date(alan.olusturma_tarihi).toLocaleDateString('tr-TR')}
+          </p>
+        </div>
+      </div>
+    </Kart>
+  )
+}
+
 function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
   goruntu: Goruntu
   siniflar: Map<string, { renk: string; gorunen_ad: string; malzeme_mi: boolean }>
@@ -193,7 +282,7 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
 
         <div className="lg:sticky lg:top-20">
           <div className="flex items-baseline justify-between mb-3">
-            <h3 className="text-sm font-semibold text-metin-2">Tespitler</h3>
+            <h2 className="text-sm font-semibold text-metin-2">Tespitler</h2>
             <span className="text-xs text-metin-4">
               <span className="sayisal">{goruntu.tespitler.length}</span> kayıt ·
               hepsi ön tahmin

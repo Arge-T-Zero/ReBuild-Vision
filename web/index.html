@@ -10,21 +10,30 @@
     <link rel="preload" as="image" href="/gorseller/giris-hero.webp"
       fetchpriority="high" />
 
-    <!-- Tema, React yüklenmeden uygulanır: sayfa açılırken yanıp sönme olmaz. -->
+    <!-- Tema, React yüklenmeden uygulanır: sayfa açılırken yanıp sönme olmaz.
+         Varsayılan AÇIK temadır (güneş altında okunurluk); kayıtlı bir
+         tercih varsa o kazanır. -->
     <script>
       (function () {
+        var t = 'light';
         try {
-          var t = localStorage.getItem('rebuild_vision_tema');
-          if (t === 'light' || t === 'dark') {
-            document.documentElement.setAttribute('data-theme', t);
-          }
-        } catch (e) { /* depolama kapalıysa koyu temada kalır */ }
+          // `_secim` sonekli anahtar: eskisi kullanıcı seçmese de her
+          // açılışta yazılıyordu ve siteyi bir kez açmış herkeste
+          // "dark" olarak kaldı. Okunsaydı varsayılanı açık yapmak eski
+          // ziyaretçilerde hiçbir şey değiştirmezdi. Bkz. tema.tsx.
+          var k = localStorage.getItem('rebuild_vision_tema_secim');
+          if (k === 'light' || k === 'dark') t = k;
+        } catch (e) { /* depolama kapalıysa açık temada kalır */ }
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.style.background =
+          t === 'dark' ? '#000000' : '#f5f6f3';
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ReBuild Vision</title>
     <meta name="description" content="Afet sonrası enkaz malzemelerinin görüntü tabanlı ön sınıflandırması ve doğrulanabilir kaynak haritası. Ölçüm yoksa miktar üretilmez; her model çıktısı ön tahmindir." />
-    <meta name="theme-color" content="#000000" />
+    <!-- Açılış rengi açık temanınki; tema değişince tema.tsx günceller. -->
+    <meta name="theme-color" content="#f5f6f3" />
 
     <!-- Bağlantı paylaşımı önizlemesi (WhatsApp, LinkedIn, X, Slack) -->
     <meta property="og:type" content="website" />
