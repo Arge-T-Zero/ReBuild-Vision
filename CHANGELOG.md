@@ -5,6 +5,28 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — Saha görseli telefonda da görünüyor
+
+**Eklendi**
+- Giriş ekranındaki saha görüntüsü `hidden lg:flex` içindeydi: **telefonda
+  hiç görünmüyordu.** Oysa sahanın asıl aygıtı telefon ve görsel, ekranın
+  ne işe yaradığını metinden önce anlatan öğe.
+- Küçük ekranda tam genişlikte bir hero şeridi olarak eklendi; alt kenarı
+  sayfa zeminine eriyor. Marka, başlık ve form şeridin ALTINDA, düz
+  zeminde kalıyor — fotoğrafın üzerine form girdisi koymak okunurluğu
+  iki temada da kumara çevirirdi.
+
+**Düzeltildi**
+- `index.html` **her cihaza** 170 KB'lık masaüstü görselini önceden
+  yüklettiriyordu; telefonda o dosya hiç gösterilmediği hâlde. Önyükleme
+  `media` sorgusuyla ayrıldı ve mobil, zaten depoda duran ama hiç
+  kullanılmayan 640 px'lik `giris-hero-kucuk.webp` sürümünü (102 KB)
+  çekiyor.
+
+**Doğrulama**
+- axe-core: masaüstü / tablet / telefon × iki tema → **0 ihlal**
+- 320 / 390 / 768 px'te yatay taşma yok, masaüstü paneli değişmedi
+
 ### 30.08.2026 — Arayüz denetimi: varsayılan tema, dürüstlük rozeti ve 5 kırık ekran
 
 Arayüz dört bakış açısıyla yeniden denetlendi (genel kullanıcı, jüri /

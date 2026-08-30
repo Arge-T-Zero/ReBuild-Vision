@@ -150,13 +150,40 @@ export function Giris() {
       </aside>
 
       {/* Sağ: form — sayfanın ana içeriği */}
-      <main className="flex flex-col p-6 sm:p-10">
-        {/* Tema düğmesi her ekran boyutunda, giriş yapmadan erişilebilir. */}
-        <div className="flex justify-end mb-6 lg:mb-0">
+      <main className="relative flex flex-col p-6 sm:p-10">
+        {/* MOBİL HERO ŞERİDİ.
+
+            Saha görüntüsü yalnızca `lg` ve üzerindeki sol panelde vardı;
+            telefonda hiç görünmüyordu. Oysa sahanın asıl aygıtı telefon
+            ve görsel, ekranın ne işe yaradığını tek bakışta anlatan
+            öğe — metinden önce o okunuyor.
+
+            Şerit tam genişlikte (kenar boşluğundan taşar) ve alt kenarı
+            sayfa zeminine erir; üzerinde yalnızca tema düğmesi durur.
+            Marka, başlık ve form ŞERİDİN ALTINDA, düz zeminde kalır:
+            fotoğrafın üzerine metin ve form girdisi koymak her iki
+            temada da okunurluğu kumara çevirirdi.
+
+            640 px'lik küçük sürüm kullanılır — masaüstü sürümü 170 KB,
+            bu 102 KB ve telefonda aradaki farkın karşılığı yok. */}
+        <div aria-hidden className="lg:hidden absolute inset-x-0 top-0
+          h-[190px] sm:h-[240px] overflow-hidden">
+          <img
+            src="/gorseller/giris-hero-kucuk.webp" alt=""
+            className="giris-gorsel w-full h-full object-cover"
+            fetchPriority="high" width={640} height={478}
+          />
+          <div className="giris-perde-mobil absolute inset-0" />
+        </div>
+
+        {/* Tema düğmesi her ekran boyutunda, giriş yapmadan erişilebilir.
+            Kendi zemini olduğu için fotoğrafın üzerinde de okunur. */}
+        <div className="relative flex justify-end mb-6 lg:mb-0">
           <TemaDugmesi />
         </div>
 
-        <div className="w-full max-w-sm mx-auto grow flex flex-col justify-center">
+        <div className="relative w-full max-w-sm mx-auto grow flex flex-col
+          justify-center pt-[120px] sm:pt-[160px] lg:pt-0">
           {/* Küçük ekranda sol panel gizlendiği için burası BOMBOŞ bir
               ekrandı: ne proje adı, ne ne yaptığı, ne kimin yaptığı
               görünüyordu — üstelik sahanın asıl aygıtı telefon.
