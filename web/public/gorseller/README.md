@@ -16,7 +16,8 @@ Bu bilinçli bir tercihtir:
 
 | Dosya | Kullanım |
 |---|---|
-| `giris-hero.webp` | Giriş ekranı arka planı (%25 opaklık + geçiş katmanı) |
+| `giris-hero.webp` | Giriş ekranı sol paneli — yalnızca `lg` ve üzeri |
+| `giris-hero-kucuk.webp` | Giriş ekranı mobil hero şeridi (`lg` altı) |
 | `ornek-enkaz-1…3.webp` | Demo görüntüleri |
 | `*-kucuk.webp` | Kart ve liste önizlemeleri (640px) |
 

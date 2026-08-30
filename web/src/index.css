@@ -280,6 +280,19 @@ button, a[role="button"], input, select, textarea { min-height: 44px; }
 
 .giris-gorsel { filter: saturate(var(--u-giris-doygunluk)); }
 
+/* Mobil hero şeridinin perdesi — DİKEY.
+
+   Masaüstündeki perde yataydır (metin solda durur); mobilde metin
+   şeridin altındadır, dolayısıyla perdenin işi fotoğrafı karartmak
+   değil, alt kenarı sayfa zeminine ERİTMEKTİR. Üst tarafta fotoğraf
+   neredeyse açıkta kalır. */
+.giris-perde-mobil {
+  background: linear-gradient(to bottom,
+    color-mix(in srgb, var(--u-taban) 12%, transparent) 0%,
+    color-mix(in srgb, var(--u-taban) 35%, transparent) 55%,
+    var(--u-taban) 100%);
+}
+
 .giris-perde {
   background:
     linear-gradient(to top,
