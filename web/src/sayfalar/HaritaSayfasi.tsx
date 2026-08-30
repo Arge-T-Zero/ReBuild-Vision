@@ -12,6 +12,7 @@ import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani } from '../types'
 import L from 'leaflet'
+import { sayfaGorevi } from '../roller'
 
 /**
  * Malzeme Kaynak Haritası.
@@ -103,7 +104,14 @@ export function HaritaSayfasi() {
       }
       if (a.konum) {
         noktalar.push([a.konum.enlem, a.konum.boylam])
-        L.marker([a.konum.enlem, a.konum.boylam], { icon: isaretciIkonu('#4da3ff') })
+        // `title` işaretçinin ERİŞİLEBİLİR ADIDIR. Leaflet işaretçiyi
+        // `role="button"` ile çiziyor; adsız kaldığı için ekran okuyucu
+        // yalnızca "düğme" diyor, hangi saha olduğunu söylemiyordu.
+        L.marker([a.konum.enlem, a.konum.boylam], {
+          icon: isaretciIkonu('#4da3ff'),
+          title: `${a.ad} — enkaz alanı`,
+          alt: `${a.ad} — enkaz alanı`,
+        })
           .addTo(katman)
           .bindPopup(balon(a))
       }
@@ -144,6 +152,7 @@ export function HaritaSayfasi() {
       <Baslik
         ustBaslik="Doğrulanmış kayıtlar"
         baslik="Malzeme Kaynak Haritası"
+        gorev={sayfaGorevi(kullanici?.rol ?? null, 'harita')}
         aciklama={not}
       />
 
@@ -166,9 +175,9 @@ export function HaritaSayfasi() {
         <div className="space-y-4">
           <Kart className="p-4">
             <div className="flex items-baseline justify-between gap-2 mb-3">
-              <h3 className="text-sm font-semibold text-metin-2">
+              <h2 className="text-sm font-semibold text-metin-2">
                 Malzeme dağılımı
-              </h3>
+              </h2>
               {seciliSiniflar.size > 0 && (
                 <button onClick={() => setSeciliSiniflar(new Set())}
                   className="text-xs text-metin-3 hover:text-metin !min-h-0">

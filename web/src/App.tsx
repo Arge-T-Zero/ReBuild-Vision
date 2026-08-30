@@ -1,9 +1,10 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { DurumSaglayici, useDurum } from './durum'
 import { TemaSaglayici, useTema } from './tema'
 import { GezinmeSaglayici } from './gezinme'
 import { Buton } from './bilesenler/Temel'
 import { Ikon } from './bilesenler/Ikon'
+import { ModelRozeti } from './bilesenler/ModelDurumu'
 import { SAYFA_ETIKETI, SAYFA_KISA_ETIKET, rolTanimi } from './roller'
 import type { SayfaAdi } from './roller'
 import { Giris } from './sayfalar/Giris'
@@ -41,7 +42,9 @@ function TemaDugmesi() {
         : 'Koyu tema — düşük ışıkta daha okunur'}
       ikon={tema === 'dark' ? <Ikon.Gunes boyut={15} /> : <Ikon.Ay boyut={15} />}
     >
-      <span className="sr-only sm:not-sr-only">
+      {/* Etiket yalnızca geniş ekranda; dar masaüstünde bu iki kelime,
+          menünün son sekmesinin sığmasına engel oluyordu. */}
+      <span className="sr-only xl:not-sr-only">
         {tema === 'dark' ? 'Açık' : 'Koyu'}
       </span>
     </Buton>
@@ -52,6 +55,22 @@ function Kabuk() {
   const { kullanici, yukleniyor, durum, cikisYap } = useDurum()
   const tanim = rolTanimi(kullanici?.rol ?? null)
   const [konum, setKonum] = useState<Konum>({ ad: tanim.anaSayfa })
+  const menuRef = useRef<HTMLElement>(null)
+
+  // Menü gerçekten taşıyor mu? Taşıyorsa sağ kenara soluklaşma konur.
+  // Sabit bir soluklaşma, her şey sığdığında da son sekmeyi
+  // soluklaştırırdı; ölçmeden karar verilemez.
+  useEffect(() => {
+    const el = menuRef.current
+    if (!el) return
+    const olc = () => el.setAttribute(
+      'data-kayar', el.scrollWidth > el.clientWidth + 1 ? 'evet' : 'hayir',
+    )
+    olc()
+    const g = new ResizeObserver(olc)
+    g.observe(el)
+    return () => g.disconnect()
+  }, [tanim.menu.length])
 
   // Rol belli olduğunda o rolün ana sayfasına git: saha personeli doğrudan
   // görüntü yükleme ekranına, uzman inceleme kuyruğuna düşer.
@@ -82,6 +101,16 @@ function Kabuk() {
   return (
     <GezinmeSaglayici deger={gezinme}>
     <div className="min-h-screen flex flex-col">
+      {/* Klavye kullanıcısı her sayfada beş sekmelik menüyü geçmek zorunda
+          kalıyordu; bu bağlantı odaklanınca görünür olur ve doğrudan
+          içeriğe atlar. */}
+      <a href="#icerik"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2
+          focus:z-50 focus:px-4 focus:py-2 focus:rounded-md focus:bg-marka
+          focus:text-taban focus:font-semibold">
+        İçeriğe geç
+      </a>
+
       <header className="border-b border-kenar bg-yuzey sticky top-0 z-20">
         <div className="max-w-[1240px] mx-auto px-5 sm:px-6 h-14
           flex items-center gap-4 sm:gap-8">
@@ -99,12 +128,33 @@ function Kabuk() {
               çubuğa sığmıyor, yatay kaydırmaya düşüyor ve kaydırılabildiğine
               dair hiçbir ipucu olmadığı için sekmelerin çoğu görünmez
               kalıyordu. Mobilde yerini alttaki sabit çubuk alır. */}
-          <nav className="hidden sm:flex gap-0.5 grow overflow-x-auto"
-            aria-label="Ana gezinme">
+          {/* ÜST MENÜ YALNIZCA lg VE ÜZERİNDE.
+
+              Eşik `sm` (640 px) idi ve o aralıkta menü ÇALIŞMIYORDU:
+              768 px'te dört sekmelik 610 px'lik içeriğe 177 px yer
+              kalıyor, sekmeler sessizce kırpılıyor ve kaydırılabildiğine
+              dair hiçbir ipucu bulunmuyordu — yani bir tablet
+              kullanıcısı menünün çoğunu hiç göremiyordu. Eşik
+              ölçülerek `lg`ye çekildi; altında yerini alttaki sabit
+              çubuk alır (o çubuk zaten kısa etiketlerle tasarlanmıştı).
+
+              Etiket KISA addır ("Kuyruk"), tam ad değil. Kapsayıcı
+              1240 px'te sınırlı; içine marka, beş sekme, model rozeti,
+              tema, kullanıcı ve çıkış giriyor. Tam adlarla beş sekme
+              737 px istiyor, eldeki yer 614 px — yani tam ad hiçbir
+              ekran genişliğinde sığmıyor, çünkü sınır ekran değil
+              kapsayıcı. Kısa etiketler alt çubuk için zaten "ikonuyla
+              birlikte tek başına anlaşılır" olacak biçimde seçilmişti.
+              Tam ad `aria-label` ve `title` ile korunur. */}
+          <nav ref={menuRef}
+            className="menu-kayan hidden lg:flex gap-0.5 grow min-w-0
+            overflow-x-auto" aria-label="Ana gezinme">
             {tanim.menu.map((s) => (
               <button
                 key={s}
                 aria-current={konum.ad === s ? 'page' : undefined}
+                aria-label={SAYFA_ETIKETI[s]}
+                title={SAYFA_ETIKETI[s]}
                 onClick={() => setKonum({ ad: s })}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md
                   text-sm whitespace-nowrap transition-colors !min-h-0
@@ -113,34 +163,39 @@ function Kabuk() {
                     : 'text-metin-3 hover:text-metin hover:bg-yuzey-2'}`}
               >
                 {SAYFA_IKONU[s]}
-                {SAYFA_ETIKETI[s]}
+                <span aria-hidden>{SAYFA_KISA_ETIKET[s]}</span>
               </button>
             ))}
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
+            {/* Sahte model servisi rozeti — kalıcı ve her ekranda
+                (README taahhüdü, ana talimat Bölüm 9.5). */}
+            <ModelRozeti />
             <TemaDugmesi />
             {/* Menü mobilde alttaki çubuğa taşındığı için üst çubukta yer
                 açıldı: kullanıcı artık hangi hesapla ve hangi rolle
                 bağlı olduğunu her ekran boyutunda görüyor. */}
-            <span className="text-right leading-tight">
-              <span className="block text-sm text-metin-2 truncate max-w-[9rem]
-                sm:max-w-none">{kullanici.ad}</span>
-              <span className="block text-xs text-metin-4 truncate max-w-[9rem]
-                sm:max-w-none">{tanim.ad}</span>
+            <span className="text-right leading-tight min-w-0">
+              <span className="block text-sm text-metin-2 truncate max-w-[6.5rem]
+                sm:max-w-[8rem] xl:max-w-[10rem]">{kullanici.ad}</span>
+              <span className="block text-xs text-metin-4 truncate max-w-[6.5rem]
+                sm:max-w-[8rem] xl:max-w-[10rem]">{tanim.ad}</span>
             </span>
             <Buton tur="sessiz" boyut="kucuk" onClick={cikisYap}
               ikon={<Ikon.Cikis boyut={14} />}>
-              <span className="sr-only sm:not-sr-only">Çıkış</span>
+              <span className="sr-only xl:not-sr-only">Çıkış</span>
             </Buton>
           </div>
         </div>
       </header>
 
-      {/* Mobil alt gezinme — bütün sekmeler aynı anda görünür ve başparmak
-          erişimindedir. Sekme sayısı en fazla beştir (yönetici rolü). */}
+      {/* Dar ekran gezinmesi — bütün sekmeler aynı anda görünür ve
+          başparmak erişimindedir. Sekme sayısı en fazla beştir (yönetici
+          rolü). Telefonun yanında tabletler ve dar dizüstü ekranlar da
+          buraya düşer: üst çubuk lg'nin altında sekmeleri taşıyamıyor. */}
       <nav aria-label="Ana gezinme"
-        className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-yuzey
+        className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-yuzey
           border-t border-kenar pb-[env(safe-area-inset-bottom)]">
         <ul className="grid" style={{
           gridTemplateColumns: `repeat(${tanim.menu.length}, minmax(0, 1fr))`,
@@ -168,7 +223,7 @@ function Kabuk() {
 
       {/* Alt çubuk sabit konumlu; içeriğin son satırı altında kalmasın diye
           mobilde çubuk yüksekliği kadar boşluk bırakılır. */}
-      <main className="grow pb-20 sm:pb-0">
+      <main id="icerik" className="grow pb-20 lg:pb-0">
         <Suspense fallback={
           <div className="p-10 text-center text-metin-3 text-sm">Yükleniyor…</div>
         }>

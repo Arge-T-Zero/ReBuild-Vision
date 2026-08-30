@@ -10,6 +10,7 @@ import { useGezinme } from '../gezinme'
 import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { Tespit } from '../types'
+import { sayfaGorevi } from '../roller'
 
 /**
  * Uzman doğrulama kuyruğu.
@@ -18,11 +19,24 @@ import type { Tespit } from '../types'
  * ekleme yapması gerekmez (ana talimat Bölüm 7.3). Final demosunun
  * 4. ve 5. adımı.
  */
+const KARAR_METNI: Record<string, string> = {
+  onaylandi: 'onaylandı',
+  duzeltildi: 'düzeltildi',
+  belirsiz: 'belirsiz olarak işaretlendi',
+}
+
 export function Kuyruk() {
-  const { siniflar, siniflarHam } = useDurum()
+  const { kullanici, siniflar, siniflarHam } = useDurum()
   const { git, erisilebilir } = useGezinme()
   const [kayitlar, setKayitlar] = useState<Tespit[] | null>(null)
   const [hata, setHata] = useState('')
+  // Verilen son karar. Karar verilince satır listeden düşüyor ve ekranda
+  // OLAN BİTENE DAİR HİÇBİR İZ KALMIYORDU: uzman "Onayla"ya bastığında
+  // kayıt sessizce yok oluyor, kaydın gerçekten işlendiğini mi yoksa
+  // uygulamanın mı düştüğünü ayırt edemiyordu. Bu ürünün ana işi insanın
+  // kararını kaydetmek; kararın kaydedildiğini söylememek en pahalı
+  // yerdeki sessizlikti.
+  const [sonKarar, setSonKarar] = useState<string>('')
 
   const yenile = useCallback(() => {
     // Hata durumunda liste boş diziye çekilir; `null` "yükleniyor"
@@ -39,6 +53,7 @@ export function Kuyruk() {
       <Baslik
         ustBaslik="Doğrulama"
         baslik="Uzman inceleme kuyruğu"
+        gorev={sayfaGorevi(kullanici?.rol ?? null, 'kuyruk')}
         aciklama="Model güveni düşük olan tespitler bu kuyruğa otomatik olarak alınır; sizin eklemeniz gerekmez."
         sag={kayitlar && kayitlar.length > 0 && (
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md
@@ -50,6 +65,20 @@ export function Kuyruk() {
       />
 
       {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
+
+      {/* `role="status"` ile duyurulur: ekran okuyucu kullanan uzman da
+          kararının kaydedildiğini duyar. */}
+      {sonKarar && (
+        <p role="status" className="flex items-start gap-2 text-sm mb-4
+          text-olumlu bg-olumlu/10 border border-olumlu/30 rounded-md
+          px-3 py-2.5">
+          <Ikon.Onayla boyut={16} className="mt-0.5 shrink-0" />
+          <span>
+            {sonKarar} Karar işlem geçmişine kaydedildi ve geri alınamaz;
+            değişiklik gerekirse alan sayfasından yeni bir kayıt açılır.
+          </span>
+        </p>
+      )}
 
       {kayitlar === null ? (
         <p className="text-metin-3 text-sm">Yükleniyor…</p>
@@ -74,7 +103,13 @@ export function Kuyruk() {
               <KuyrukSatiri
                 tespit={t} siniflar={siniflar}
                 secenekler={siniflarHam?.siniflar ?? []}
-                tamamlandi={yenile}
+                tamamlandi={(durum, sinifAdi) => {
+                  setSonKarar(
+                    `Tespit #${t.id} ${KARAR_METNI[durum] ?? durum}`
+                    + (sinifAdi ? ` — sınıf ${sinifAdi} olarak güncellendi.` : '.'),
+                  )
+                  yenile()
+                }}
               />
             </li>
           ))}
@@ -174,7 +209,7 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
   tespit: Tespit
   siniflar: Map<string, { gorunen_ad: string; renk: string }>
   secenekler: { ad: string; gorunen_ad: string }[]
-  tamamlandi: () => void
+  tamamlandi: (durum: string, sinifAdi?: string) => void
 }) {
   const [duzeltmeAcik, setDuzeltmeAcik] = useState(false)
   const [yeniSinif, setYeniSinif] = useState('')
@@ -185,7 +220,12 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
     setHata(''); setBekliyor(true)
     try {
       await api.dogrula(tespit.id, durum, duzeltilen)
-      tamamlandi()
+      tamamlandi(
+        durum,
+        duzeltilen
+          ? secenekler.find((o) => o.ad === duzeltilen)?.gorunen_ad ?? duzeltilen
+          : undefined,
+      )
     } catch (h) {
       setHata(h instanceof Error ? h.message : 'Doğrulama kaydedilemedi')
       setBekliyor(false)

@@ -43,9 +43,44 @@ const ALAN_ADLARI: Record<string, string> = {
 }
 const ANAHTAR = 'rebuild_vision_jeton'
 
-export const jetonAl = () => localStorage.getItem(ANAHTAR)
-export const jetonYaz = (j: string) => localStorage.setItem(ANAHTAR, j)
-export const jetonSil = () => localStorage.removeItem(ANAHTAR)
+/**
+ * Oturum jetonu deposu.
+ *
+ * ⚠️ BURASI UYGULAMAYI KOMPLE ÇÖKERTİYORDU. Üç işlev de `localStorage`'a
+ * KORUMASIZ dokunuyordu. Tarayıcı "tüm site verilerini engelle" ayarındaysa
+ * (ya da kurumsal ilke bunu dayatıyorsa) `localStorage.getItem` erişimin
+ * kendisinde `SecurityError` atar. `durum.tsx` açılışta `jetonAl()`
+ * çağırdığı için hata React ağacının kökünde patlıyor ve ekranda
+ * **bomboş beyaz sayfa** kalıyordu: ne giriş formu, ne hata mesajı, ne
+ * bir açıklama. Kullanıcının sistemin bozuk olduğunu sanmaktan başka
+ * yapabileceği bir şey yoktu.
+ *
+ * `tema.tsx` aynı riski görüp try/catch kullanıyordu; jeton tarafına
+ * uygulanmamıştı.
+ *
+ * Depolama yoksa jeton BELLEKTE tutulur: kullanıcı yine giriş yapıp
+ * çalışabilir, yalnızca sekmeyi kapatınca oturumu düşer. Bu, çalışan bir
+ * uygulamayla hiç açılmayan bir uygulama arasındaki farktır.
+ */
+let bellektekiJeton: string | null = null
+
+export const jetonAl = (): string | null => {
+  try {
+    return localStorage.getItem(ANAHTAR) ?? bellektekiJeton
+  } catch {
+    return bellektekiJeton
+  }
+}
+
+export const jetonYaz = (j: string) => {
+  bellektekiJeton = j
+  try { localStorage.setItem(ANAHTAR, j) } catch { /* bellekte kalır */ }
+}
+
+export const jetonSil = () => {
+  bellektekiJeton = null
+  try { localStorage.removeItem(ANAHTAR) } catch { /* zaten yazılamamıştı */ }
+}
 
 export class ApiHatasi extends Error {
   durum: number
@@ -191,7 +226,15 @@ export const api = {
     const adres = URL.createObjectURL(veri)
     const a = document.createElement('a')
     a.href = adres
-    a.download = `rebuild-vision-rapor.${bicim}`
+    // Dosya adı hangi sahanın, hangi günün raporu olduğunu SÖYLEMELİDİR.
+    // Adın tamamı sabitti: üç sahanın raporunu indiren bir yetkilinin
+    // indirilenler klasöründe "rebuild-vision-rapor(1).csv",
+    // "(2).csv" birikiyor ve hangisinin hangisi olduğu kayboluyordu.
+    // Tarih ayrıca doğrulanmış kayıt kümesinin ne zamanki hâli olduğunu
+    // kaydeder — rapor yarın aynı olmayabilir.
+    const gun = new Date().toISOString().slice(0, 10)
+    const kapsam = alanId != null ? `alan-${alanId}` : 'tum-sahalar'
+    a.download = `rebuild-vision-${kapsam}-${gun}.${bicim}`
     document.body.appendChild(a)
     a.click()
     a.remove()

@@ -106,3 +106,22 @@ export const VARSAYILAN: RolTanimi = {
 export function rolTanimi(rol: Rol | null): RolTanimi {
   return rol ? ROLLER[rol] : VARSAYILAN
 }
+
+/**
+ * Rolün görevi — YALNIZCA o rolün ana sayfasında.
+ *
+ * `gorev` alanı her rol için yazılmıştı ("Ana sayfada gösterilen tek
+ * cümlelik yönlendirme") ama hiçbir bileşen okumuyordu: ölü veriydi.
+ * Kullanıcı giriş yapıp kendi ana ekranına düşüyor ve kendisinden ne
+ * beklendiğini söyleyen tek satırı hiç görmüyordu.
+ *
+ * Cümle yalnızca ana sayfada gösterilir; her ekranda tekrarlanırsa
+ * gürültüye dönüşür ve okunmaz olur.
+ */
+export function sayfaGorevi(
+  rol: Rol | null,
+  sayfa: Exclude<SayfaAdi, 'alan'>,
+): string | undefined {
+  const t = rolTanimi(rol)
+  return t.anaSayfa === sayfa ? t.gorev : undefined
+}

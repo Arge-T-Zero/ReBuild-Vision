@@ -142,7 +142,16 @@ export function TespitKutulari({
             onMouseLeave={() => vurgulandi?.(null)}
             onFocus={() => vurgulandi?.(t.id)}
             onBlur={() => vurgulandi?.(null)}
-            aria-label={`${t.sinif} tespiti, model güveni yüzde ${yuzdeMetni(t.guven_skoru)}`}
+            /* Ekran okuyucu HAM sınıf adını ("dolgu_toprak") okuyordu ve
+               uzmanın düzeltmesini hiç yansıtmıyordu: kutu görsel olarak
+               düzeltilmiş sınıfı gösterirken sesli olarak modelin ilk
+               tahminini söylüyordu. */
+            aria-label={
+              `${siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.gorunen_ad
+                ?? (t.duzeltilen_sinif ?? t.sinif)} tespiti`
+              + `, model güveni yüzde ${yuzdeMetni(t.guven_skoru)}`
+              + (t.duzeltilen_sinif ? ' (uzman düzeltmesi)' : ' (ön tahmin)')
+            }
             className="absolute p-0 min-h-0 focus-visible:z-20 transition-opacity"
             style={{
               left: t.bbox.x * oran,

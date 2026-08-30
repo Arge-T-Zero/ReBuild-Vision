@@ -10,6 +10,7 @@ import { SahaKarti } from '../bilesenler/SahaKarti'
 import { Sayfa } from '../bilesenler/Duzen'
 import type { EnkazAlani, Nokta } from '../types'
 import L from 'leaflet'
+import { sayfaGorevi } from '../roller'
 
 const OLUSTURABILIR = new Set(['yonetici', 'belediye', 'afad'])
 
@@ -43,6 +44,7 @@ export function Alanlar({ acildi }: { acildi: (id: number) => void }) {
       <Baslik
         ustBaslik="Saha yönetimi"
         baslik="Enkaz alanları"
+        gorev={sayfaGorevi(kullanici?.rol ?? null, 'alanlar')}
         aciklama="Rolünüzün görebildiği sahalar listelenir. Yetki kontrolü sunucu tarafında yapılır."
         sag={olusturabilir && !formAcik && (
           <Buton onClick={() => setFormAcik(true)} ikon={<Ikon.Alan boyut={15} />}>
@@ -136,8 +138,11 @@ function AlanFormu({ kapat, olusturuldu }: {
   useEffect(() => {
     katman.clearLayers()
     if (konum) {
-      L.marker([konum.enlem, konum.boylam], { icon: isaretciIkonu('#4da3ff') })
-        .addTo(katman)
+      L.marker([konum.enlem, konum.boylam], {
+        icon: isaretciIkonu('#4da3ff'),
+        title: 'Seçilen merkez konum',
+        alt: 'Seçilen merkez konum',
+      }).addTo(katman)
     }
     if (sinir.length >= 2) {
       L.polygon(sinir.map((n) => [n.enlem, n.boylam] as [number, number]), {
@@ -179,7 +184,7 @@ function AlanFormu({ kapat, olusturuldu }: {
 
   return (
     <Kart className="p-5 mb-6">
-      <h3 className="font-medium mb-4">Yeni enkaz alanı</h3>
+      <h2 className="font-medium mb-4">Yeni enkaz alanı</h2>
       <form onSubmit={gonder} className="grid gap-4 md:grid-cols-2">
         <div className="space-y-4">
           <Alan etiket="Alan adı">

@@ -39,7 +39,7 @@ export function MiktarKarti({
 
   return (
     <div className="border border-kenar rounded-lg p-4 bg-yuzey-2/40">
-      <h4 className="text-sm font-semibold text-metin-2 mb-3">Miktar</h4>
+      <h3 className="text-sm font-semibold text-metin-2 mb-3">Miktar</h3>
 
       {miktar.hesaplandi ? (
         <div>
@@ -170,8 +170,12 @@ function OlcumFormu({ tespitId, acik, ac, eklendi }: {
         </select>
       </Alan>
       <Alan etiket={`Değer (${birim})`}>
+        {/* İpucu Türkçe ondalık ayracıyla yazılır. Kod virgülü zaten
+            kabul ediyordu ama örnek "12.4" diyerek kullanıcıyı noktaya
+            yönlendiriyordu — verilen örnek, kabul edilen biçimle aynı
+            olmalı. */}
         <input value={deger} onChange={(e) => setDeger(e.target.value)}
-          inputMode="decimal" placeholder="örn. 12.4" className={girdiSinifi} />
+          inputMode="decimal" placeholder="örn. 12,4" className={girdiSinifi} />
       </Alan>
       <Alan etiket="Ölçüm yöntemi"
         ipucu="Kim, neyle, nasıl ölçtü? İşlem geçmişine kaydedilir.">

@@ -2,15 +2,17 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import type { ReactNode } from 'react'
 
 /**
- * Tema — koyu (varsayılan) ve açık.
+ * Tema — açık (VARSAYILAN) ve koyu.
  *
- * Açık tema süs değil: sistem GÜNEŞ ALTINDA kullanılacağını iddia ediyor
- * (ana talimat Bölüm 9) ve doğrudan güneşte açık zemin koyu zeminden
- * okunaklıdır. Kullanıcı ortama göre seçer.
+ * VARSAYILAN AÇIK OLMALIDIR. Sistem GÜNEŞ ALTINDA kullanılacağını iddia
+ * ediyor (ana talimat Bölüm 9) ve doğrudan güneşte açık zemin koyu
+ * zeminden okunaklıdır. Kullanıcıyı önce okuyamayacağı bir ekranla
+ * karşılayıp temayı bulmasını beklemek, iddianın tersini yapmaktı.
+ * Koyu tema kapalı alan ve gece için bir adım uzakta duruyor.
  *
  * Tercih `localStorage`'da tutulur; `index.html` içindeki küçük betik onu
  * React yüklenmeden uygular, böylece sayfa açılırken yanıp sönme olmaz.
- * Depolama kapalıysa (gizli sekme, katı tarayıcı ayarı) sessizce koyu
+ * Depolama kapalıysa (gizli sekme, katı tarayıcı ayarı) sessizce açık
  * temada kalır — okuma ve yazma try/catch içindedir.
  */
 
@@ -30,7 +32,7 @@ function kayitliTema(): Tema {
     const t = localStorage.getItem(ANAHTAR)
     if (t === 'light' || t === 'dark') return t
   } catch { /* depolama yok */ }
-  return 'dark'
+  return 'light'
 }
 
 export function TemaSaglayici({ children }: { children: ReactNode }) {
@@ -38,8 +40,14 @@ export function TemaSaglayici({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const kok = document.documentElement
-    if (tema === 'light') kok.setAttribute('data-theme', 'light')
-    else kok.removeAttribute('data-theme')
+    // Öznitelik her iki yönde de AÇIKÇA yazılır. Varsayılan artık açık
+    // olduğu için "özniteliği kaldır = koyu" varsayımı tersine dönerdi;
+    // iki değeri de yazmak bu tuzağı büsbütün kaldırır.
+    kok.setAttribute('data-theme', tema)
+    // Tarayıcı çubuğu sayfa zeminiyle aynı renge gelsin — mobilde koyu
+    // temada beyaz bir şerit kalıyordu.
+    document.querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', tema === 'dark' ? '#000000' : '#f5f6f3')
     try { localStorage.setItem(ANAHTAR, tema) } catch { /* yoksay */ }
   }, [tema])
 

@@ -37,7 +37,7 @@ export function RaporIndir({ alanId }: { alanId?: number }) {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-metin-2 mb-1">Rapor indir</h3>
+      <h2 className="text-sm font-semibold text-metin-2 mb-1">Rapor indir</h2>
       <p className="text-xs text-metin-4 mb-3 leading-relaxed">
         Yalnızca doğrulanmış kayıtlar dışa aktarılır. Ölçüm girilmemiş
         tespitlerde miktar alanı{' '}
