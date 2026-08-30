@@ -5,6 +5,24 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — Tema değişince sayfanın altında koyu bant kalıyordu
+
+**🔴 Düzeltildi**
+- Koyu temada açılıp açık temaya geçildiğinde sayfanın alt kısmında
+  **siyah bir bant** kalıyordu (ters yönde de aynısı, açık bant olarak).
+- Sebep: açılış betiği ilk boyamada parlama olmasın diye `html`e SATIR
+  İÇİ bir zemin rengi yazıyor, ama bu stil bir kez yazılıp bir daha
+  güncellenmiyordu. Satır içi stil CSS'i ezdiği için tema değişse de
+  `html` eski renginde kalıyordu.
+- Bant `body`nin kapsamadığı alandır: `body` yüksekliği `100%`, yani
+  görüntü alanı kadar; giriş ekranı telefonda 954 px olduğu için altta
+  **110 px'lik** bir şerit kalıyor ve orada `html`in zemini görünüyor.
+- Zemin artık `html { background: var(--u-taban) }` kuralından, yani
+  jetondan geliyor; satır içi stil React yüklenince kaldırılıyor.
+  Böylece tek doğruluk kaynağı tema jetonu oluyor.
+- Ölçüldü: telefon ve masaüstünde, iki yönde de `html` ve `body` zemini
+  artık aynı; axe-core 0 ihlal.
+
 ### 30.08.2026 — Saha görseli telefonda da görünüyor
 
 **Eklendi**

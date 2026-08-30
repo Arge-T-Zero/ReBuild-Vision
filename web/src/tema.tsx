@@ -68,6 +68,17 @@ export function TemaSaglayici({ children }: { children: ReactNode }) {
     // olduğu için "özniteliği kaldır = koyu" varsayımı tersine dönerdi;
     // iki değeri de yazmak bu tuzağı büsbütün kaldırır.
     kok.setAttribute('data-theme', tema)
+    // Açılış betiği (`index.html`) ilk boyamada beyaz parlama olmasın
+    // diye `html`e SATIR İÇİ bir zemin yazıyor. O stil bir kez yazılıp
+    // bir daha güncellenmiyordu: koyu temada açılıp açığa geçen
+    // kullanıcıda `html` siyah kalıyor ve `body`nin altındaki şeritte
+    // siyah bir bant olarak görünüyordu.
+    //
+    // Satır içi stil CSS'i ezdiği için burada KALDIRILIR; zemin artık
+    // yalnızca `html { background: var(--u-taban) }` kuralından gelir
+    // ve temayla birlikte kendiliğinden değişir. React çalıştığında CSS
+    // yüklenmiş olduğu için kaldırmak parlamaya yol açmaz.
+    kok.style.removeProperty('background')
     // Tarayıcı çubuğu sayfa zeminiyle aynı renge gelsin — mobilde koyu
     // temada beyaz bir şerit kalıyordu.
     document.querySelector('meta[name="theme-color"]')
