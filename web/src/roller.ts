@@ -80,6 +80,30 @@ export const SAYFA_ETIKETI: Record<Exclude<SayfaAdi, 'alan'>, string> = {
 }
 
 /**
+ * Her ekranın NE İŞE YARADIĞI — tek cümle.
+ *
+ * İlk girişte gösterilen tanıtım bunları okur. Menüde bir sekmenin adını
+ * görmek o sekmenin ne yaptığını söylemiyor: "Kuyruk" nedir, oraya niye
+ * gidilir, kim gider? Kullanıcı bunu deneyerek öğrenmek zorunda
+ * kalıyordu.
+ */
+export const SAYFA_ACIKLAMASI: Record<Exclude<SayfaAdi, 'alan'>, string> = {
+  yukle: 'Sahadan çektiğiniz görüntüleri yükleyip otomatik '
+    + 'sınıflandırmaya sokarsınız. Düşük güvenli tespitler uzman '
+    + 'incelemesine kendiliğinden gider.',
+  alanlar: 'Görebildiğiniz enkaz sahalarının listesi. Bir sahayı açınca '
+    + 'görüntülerini, tespitlerini ve miktar hesabını görürsünüz.',
+  kuyruk: 'Modelin emin olamadığı tespitler burada birikir. Her birini '
+    + 'onaylar, düzeltir ya da belirsiz işaretlersiniz — karar sizindir.',
+  harita: 'Yalnızca uzman tarafından DOĞRULANMIŞ kayıtların haritası. '
+    + 'Doğrulanmamış ön tahminler buraya girmez.',
+  gecmis: 'Sistemdeki her yazma işleminin kaydı: kim, ne zaman, neyi '
+    + 'değiştirdi. Kayıtlar silinemez ve düzenlenemez.',
+  yonetici: 'Kayıt olan hesapları görür, rollerini atar ya da başvuruyu '
+    + 'reddedersiniz. Kullanıcılar kendi rolünü seçemez.',
+}
+
+/**
  * Mobil alt gezinme çubuğunun kısa etiketleri.
  *
  * 360 px ekranda beş sekme yan yana durunca sekme başına ~72 px kalıyor;

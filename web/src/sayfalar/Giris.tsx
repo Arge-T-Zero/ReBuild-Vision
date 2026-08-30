@@ -32,6 +32,25 @@ const KUNYE = 'TEKNOFEST 2026 Sıfır Atık ve Döngüsel Ekonomi Yarışması �
 const PAROLA_ASGARI = 8
 
 /**
+ * Ekranın arka plan görseli — giriş ve kayıt için AYRI.
+ *
+ * İki ekran aynı fotoğrafı paylaşınca kullanıcı yer değiştirdiğini
+ * hissetmiyor; kayıt bir "kip" gibi duruyordu. Farklı görsel, ayrı bir
+ * yere geldiğini söyleyen en ucuz işaret.
+ *
+ * Kayıt ekranındaki görsel ayrıca daha isabetli: ayrıştırılmış malzeme
+ * yığınları (ahşap, beton, tuğla, metal) sistemin ne ürettiğini
+ * gösteriyor — yeni gelen kişi tam da onu merak ediyor.
+ *
+ * Her ikisi de depoda zaten var ve yapay zekâ ile üretilmiştir
+ * (gorseller/README.md); yeni dosya eklenmedi.
+ */
+const GORSEL = {
+  giris: { buyuk: '/gorseller/giris-hero.webp', kucuk: '/gorseller/giris-hero-kucuk.webp' },
+  kayit: { buyuk: '/gorseller/ornek-enkaz-3.webp', kucuk: '/gorseller/ornek-enkaz-3-kucuk.webp' },
+} as const
+
+/**
  * Giriş ekranındaki tema düğmesi.
  *
  * Tema düğmesi yalnızca giriş YAPTIKTAN sonraki üst çubukta vardı. Oysa
@@ -150,6 +169,8 @@ export function Giris() {
   const [kayitModu, setKayitModu] = useState(false)
   const [bilgi, setBilgi] = useState('')
 
+  const gorsel = kayitModu ? GORSEL.kayit : GORSEL.giris
+
   function kipDegistir(kayit: boolean) {
     setKayitModu(kayit)
     setBilgi('')
@@ -168,7 +189,7 @@ export function Giris() {
         {/* Görsel yapay zekâ ile üretilmiştir; gerçek bir afet fotoğrafı
             değildir (Madde 10.7 ile uyumlu, telif sorunu yok). */}
         <img
-          src="/gorseller/giris-hero.webp" alt="" aria-hidden
+          src={gorsel.buyuk} alt="" aria-hidden
           className="giris-gorsel absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
         />
@@ -197,7 +218,7 @@ export function Giris() {
         <div aria-hidden className="lg:hidden relative h-[200px] sm:h-[240px]
           overflow-hidden shrink-0">
           <img
-            src="/gorseller/giris-hero-kucuk.webp" alt=""
+            src={gorsel.kucuk} alt=""
             className="giris-gorsel w-full h-full object-cover"
             fetchPriority="high" width={640} height={478}
           />

@@ -5,6 +5,54 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — İlk giriş turu, büyütülmüş gezinme, kayıt ekranına ayrı görsel
+
+**Eklendi — adım adım ilk giriş turu**
+- Menüde bir sekmenin ADINI görmek ne yaptığını söylemiyordu: "Kuyruk"
+  nedir, oraya niye gidilir, kim gider? Kullanıcı sistemi deneyerek
+  öğrenmek zorundaydı — burası bir afet yönetim aracı, deneyerek
+  öğrenmenin maliyeti yüksek.
+- Tur ilgili menü öğesinin ÜZERİNİ aydınlatır ve yanında tek cümlelik
+  açıklamasını gösterir. Liste yerine tur seçildi: liste "şurada şu var"
+  der ama o şeyin EKRANDA NEREDE olduğunu öğretmez.
+- Hedefler ekran genişliğine göre değişir (masaüstünde üst çubuk, dar
+  ekranda alt çubuk); bileşen görünür olanı **ölçerek** bulur.
+- Tur yalnızca O ROLÜN menüsünü anlatır ve son adımda sistemin sınırını
+  söyler: her çıktı ön tahmindir, nihai kararı sistem vermez. Sahte
+  model servisi etkinse rozeti de ayrı bir adımda anlatılır.
+- Esc atlar, ok tuşları gezinir, odak karta geçer, `role="dialog"`.
+- Bir kez bitirilince ya da atlanınca bir daha gösterilmez; tercih
+  kullanıcı kimliğine göre saklanır.
+
+**🔴 Düzeltildi — tur kartını harita işaretçisi deliyordu**
+- Leaflet katmanları 400–700, harita altlık uyarısı 1000 z-index'inde.
+  Tur 60/61'deydi ve mobilde 4. adımda harita işaretçisi kartın üstüne
+  biniyordu. Tur 2000/2001'e alındı; ölçüldü.
+
+**Değiştirildi — gezinme büyütüldü**
+- Mobil alt çubuk: simge 16 → **22 px**, düğme yüksekliği ~48 → **60 px**.
+  Eldivenli parmakla ve sallanan bir araçta kullanılacak; WCAG 2.5.5'in
+  44 px asgarisi burada taban, hedef değil.
+- Masaüstü üst çubuk: simge 16 → **18 px**, yazı 14 → **15 px**, aktif
+  sekme kalınlaştı. Menü hâlâ 1024–1920 px arasında taşmıyor.
+
+**Değiştirildi — kayıt ekranının arka planı ayrı**
+- İki ekran aynı fotoğrafı paylaşınca kullanıcı yer değiştirdiğini
+  hissetmiyordu; kayıt bir "kip" gibi duruyordu.
+- Kayıt ekranı artık `ornek-enkaz-3` görselini kullanıyor: ayrıştırılmış
+  malzeme yığınları (ahşap, beton, tuğla, metal) sistemin ne ürettiğini
+  gösteriyor. Görsel depoda zaten vardı, yeni dosya eklenmedi.
+
+**Düzeltildi**
+- Tur adım sayacı koyu temada `yuzey-ust` üzerinde tam **4,50** ile
+  sınırda kalıp AA'yı geçemiyordu; bir ton açıldı (5,01).
+
+**Doğrulama**
+- axe-core: telefon + masaüstü × iki tema × üç rol, **tur açıkken ve
+  kapalıyken** = 24 tarama, **0 ihlal, 0 yatay taşma**
+- Tur uçtan uca yürütüldü: 7 adım, iki cihazda da sorunsuz; bitirince
+  kapanıyor, yenileyince tekrar çıkmıyor
+
 ### 30.08.2026 — Mobil giriş ekranı ve ayrı kayıt ekranı
 
 **Doğrulandı — kayıt akışı uçtan uca çalışıyor**
