@@ -17,7 +17,11 @@
       (function () {
         var t = 'light';
         try {
-          var k = localStorage.getItem('rebuild_vision_tema');
+          // `_secim` sonekli anahtar: eskisi kullanıcı seçmese de her
+          // açılışta yazılıyordu ve siteyi bir kez açmış herkeste
+          // "dark" olarak kaldı. Okunsaydı varsayılanı açık yapmak eski
+          // ziyaretçilerde hiçbir şey değiştirmezdi. Bkz. tema.tsx.
+          var k = localStorage.getItem('rebuild_vision_tema_secim');
           if (k === 'light' || k === 'dark') t = k;
         } catch (e) { /* depolama kapalıysa açık temada kalır */ }
         document.documentElement.setAttribute('data-theme', t);

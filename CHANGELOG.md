@@ -22,6 +22,23 @@ kaldırılıp **tarayıcıda ölçülerek** incelendi: 4 rol, 7 sayfa, iki tema,
 - `index.html` açılış betiği ve `theme-color` buna göre güncellendi;
   tema değişince tarayıcı çubuğu da değişiyor.
 
+**🔴 Düzeltildi — varsayılan tema değişikliği ESKİ ZİYARETÇİLERDE ÇALIŞMIYORDU**
+- Eski sürüm `rebuild_vision_tema` anahtarına her açılışta yürürlükteki
+  temayı yazıyordu — kullanıcı hiçbir şey seçmemiş olsa bile. Varsayılan
+  o dönemde koyu olduğu için, siteyi bir kez açmış **herkesin**
+  tarayıcısında `"dark"` yazılı kaldı; bir tercih olarak değil, yan etki
+  olarak.
+- Yeni kod bu anahtarı okuduğu sürece varsayılanı açık yapmak eski
+  ziyaretçilerde hiçbir şey değiştirmiyordu: sistemi daha önce açmış olan
+  jüri üyesi de dâhil herkes yine koyu ekranla karşılaşacaktı. Yani
+  düzeltme, tam da düzeltmesi gereken kişilerde çalışmıyordu.
+- Tercih artık `rebuild_vision_tema_secim` anahtarında ve **yalnızca
+  kullanıcı düğmeye bastığında** yazılıyor; içindeki değer her zaman
+  gerçek bir tercih. Eski anahtar okunmuyor ve temizleniyor.
+- Dört senaryo tarayıcıda ölçüldü: eski ziyaretçi → açık (eski anahtar
+  silindi) · yeni ziyaretçi → açık · düğmeyle seçilen koyu → yenilemede
+  korunuyor · sayfayı açıp dokunmayan → depoya hiçbir şey yazılmıyor.
+
 **🔴 Düzeltildi — depolama engelliyken uygulama HİÇ AÇILMIYORDU**
 - `jetonAl/jetonYaz/jetonSil` `localStorage`'a korumasız dokunuyordu.
   Tarayıcı "tüm site verilerini engelle" ayarındaysa erişimin kendisi
