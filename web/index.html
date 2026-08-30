@@ -5,17 +5,14 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
 
-    <!-- Giriş ekranının arka planı; en büyük görsel öğe olduğu için
-         önceden yüklenir (LCP).
+    <!-- Giriş ekranının arka planı; sayfanın tamamını kaplar ve en büyük
+         görsel öğedir (LCP), o yüzden önceden yüklenir.
 
-         `media` ZORUNLU: önceden bu satır koşulsuzdu ve TELEFONA da
-         170 KB'lık masaüstü sürümünü indirtiyordu — üstelik o sürüm
-         mobilde hiç gösterilmiyordu bile. Her cihaz artık yalnızca
-         gerçekten göstereceği dosyayı çeker. -->
+         Düzen artık ORTALANMIŞ ve her ekran boyutunda aynı; görsel de
+         tek. Önceden ekran boyutuna göre iki ayrı dosya önyükleniyordu,
+         artık gerekmiyor. -->
     <link rel="preload" as="image" href="/gorseller/giris-hero.webp"
-      media="(min-width: 1024px)" fetchpriority="high" />
-    <link rel="preload" as="image" href="/gorseller/giris-hero-kucuk.webp"
-      media="(max-width: 1023.98px)" fetchpriority="high" />
+      fetchpriority="high" />
 
     <!-- Tema, React yüklenmeden uygulanır: sayfa açılırken yanıp sönme olmaz.
          Varsayılan AÇIK temadır (güneş altında okunurluk); kayıtlı bir

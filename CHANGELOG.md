@@ -5,6 +5,47 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — Giriş ekranı ortalandı, kayıt ekranının metni de ayrıldı
+
+**Değiştirildi — düzen ortalandı ve TEK oldu**
+- Önceki düzen ikiye bölünüyordu (solda görsel, sağda form). İki bedeli
+  vardı: dar ekranda sol panel tamamen gizlendiği için **mobil ile
+  masaüstü başka ürünler gibi duruyordu**, ve metin fotoğrafın üzerinde
+  kaldığı için okunurluk perdenin gücüne bağlıydı — perde iki temada
+  aynı işi görmüyordu.
+- Görsel artık sayfanın tamamını kaplar, kart ortada durur ve **kendi
+  zeminine oturur**: kontrast fotoğraftan bağımsız garanti altında,
+  düzen her ekran boyutunda aynı.
+
+**Düzeltildi — "Hesap oluştur" geçişi sıçrıyordu**
+- Tek bir `src` değiştiriliyordu; yeni dosya inene kadar arka plan
+  boşalıyor, geçiş kopuk görünüyordu.
+- İki görsel de yüklü duruyor ve **opaklıkla geçiş** yapıyor (420 ms);
+  kart içeriği de yerinde beliriyor (260 ms). Hareket azaltma tercihi
+  olan kullanıcıda ikisi de kapanır (mevcut global kural).
+
+**Düzeltildi — görsel değişiyordu ama METİN aynı kalıyordu**
+- Kayıt ekranına ayrı fotoğraf konmuştu, başlık sabitti: kullanıcı
+  başka bir yere geldiğini görselden seziyor ama metinden
+  doğrulayamıyordu. Yarım işti.
+- Kayıt ekranının artık kendi başlığı var: *"Ayrıştırılan her malzeme,
+  doğrulanmış bir kayda dönüşür."* Giriş ekranındaki üç kural bloğu
+  kayıt ekranında gösterilmiyor; yerini üç adımlı süreç anlatımı alıyor.
+- "Girişe dön" bağlantısı başlığın ÜSTÜNE alındı; altında kalınca ekran
+  başlığıyla form başlığı arasına sıkışıp okuma sırasını bozuyordu.
+
+**Düzeltildi**
+- Künye hiçbir yer işaretinin içinde değildi (axe: `region`, 16 taramanın
+  tamamında); `footer` içine alındı.
+- Önyükleme sadeleşti: düzen tekleştiği için ekran boyutuna göre iki ayrı
+  dosya önyüklemeye gerek kalmadı.
+
+**Doğrulama**
+- axe-core: 320 / 390 / 768 / 1440 px × iki tema × giriş ve kayıt =
+  **16 tarama, 0 ihlal, 0 yatay taşma**
+- Giriş sonrası ekranlar: telefon + masaüstü × iki tema × üç rol =
+  **0 ihlal, 0 taşma, 0 sayfa hatası**
+
 ### 30.08.2026 — İlk giriş turu, büyütülmüş gezinme, kayıt ekranına ayrı görsel
 
 **Eklendi — adım adım ilk giriş turu**
