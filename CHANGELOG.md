@@ -5,6 +5,49 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — Mobil giriş ekranı ve ayrı kayıt ekranı
+
+**Doğrulandı — kayıt akışı uçtan uca çalışıyor**
+- `POST /auth/kayit` hesabı oluşturuyor, parola **bcrypt** ile
+  özetleniyor (`$2b$12$…`), hesap `beklemede` durumunda açılıyor.
+- Onaylanmamış hesapla giriş **engelleniyor**: "Hesabınız henüz yönetici
+  tarafından onaylanmadı."
+- Yönetici "Rol onayları" ekranında hesabı **görüyor** ve rol atıyor.
+- Arayüzden de sınandı: form gönderildi, veri tabanında satır oluştu.
+
+**Değiştirildi — mobil giriş ekranının sırası**
+- Masaüstünde anlatı solda, form sağda; ikisi aynı anda görünür.
+  Telefonda alt alta gelmek zorundalar ve anlatı üstteyken her gün
+  giriş yapan saha personeli formu görmek için onu her seferinde
+  geçiyordu.
+- Sıra artık: **görsel → kimlik → form** → sahte model uyarısı →
+  tanıtım metni → künye. Arayan açıklamayı buluyor, aramayan doğrudan
+  formla karşılaşıyor.
+- Değer önermeleri mobilde yalnızca başlıktı; **açıklamalarıyla
+  birlikte** geldi — masaüstüyle içerik eşitliği sağlandı.
+
+**Değiştirildi — kayıt artık ayrı bir ekran**
+- Önceden aynı forma bir alan eklenip başlığı değişiyordu; kullanıcı
+  nereye geldiğini anlamıyor, kaydın ardından ne olacağını
+  öğrenmiyordu.
+- Kendi başlığı, "Girişe dön" bağlantısı ve **üç adımlı süreç
+  anlatımı** var: başvuru kuyruğa alınır → yönetici rol atar → onay
+  sonrası giriş yapılır.
+- **Parola tekrarı eklendi.** Tek alanda yazılan bir parolanın yanlış
+  yazıldığı ancak ilk giriş denemesinde anlaşılıyordu — ve o an hesap
+  çoktan onay kuyruğuna girmiş oluyordu.
+- Kurallar yazarken canlı güncelleniyor (asgari 8 karakter, iki parola
+  aynı); koşullar sağlanana kadar gönder düğmesi kapalı. Kurallar
+  sunucudaki `Field(min_length=8)` ile birebir aynı.
+- Kayıt sonucu giriş ekranında karşılıyor: hangi adresle başvurulduğu
+  yazılı.
+
+**Doğrulama**
+- axe-core: telefon / tablet / masaüstü × iki tema × giriş ve kayıt
+  ekranı = **12 kombinasyon, 0 ihlal, 0 yatay taşma**
+- Kayıt formu davranışı ölçüldü: parolalar eşleşmezken düğme kapalı,
+  eşleşince açılıyor, gönderim veri tabanına yazıyor
+
 ### 30.08.2026 — Tema değişince sayfanın altında koyu bant kalıyordu
 
 **🔴 Düzeltildi**
