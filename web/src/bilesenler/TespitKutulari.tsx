@@ -11,6 +11,36 @@ import { yuzdeMetni } from './GuvenSkoru'
  * kutu ÇİZİLMEZ ve durum kullanıcıya söylenir; yanlış yerde kutu
  * göstermektense hiç göstermemek doğrudur.
  */
+/**
+ * Sınıf renginin üzerinde okunacak metin rengi.
+ *
+ * ⚠️ Etiket metni `#0e1116` olarak SABİT KODLANMIŞTI ve üç sınıf renginde
+ * WCAG AA'nın altında kalıyordu (ölçüldü): `yumusak_plastik` 3,82 ·
+ * `konteyner` 3,91 · `dolgu_toprak` 4,14. Etiket, kutunun ne olduğunu
+ * söyleyen tek yazıdır; okunamıyorsa kutu da anlamsızdır.
+ *
+ * Sınıf renkleri `siniflar.json`'dan gelir ve DEĞİŞTİRİLEMEZ (index.css
+ * içindeki kural). Bu yüzden düzeltme metin tarafında: rengin bağıl
+ * parlaklığına göre koyu ya da beyaz seçilir. Ölçüldü: on sınıfın
+ * tamamında en düşük oran 4,57.
+ */
+const ETIKET_KOYU = '#0e1116'
+const ETIKET_ACIK = '#ffffff'
+
+function bagilParlaklik(renk: string): number {
+  const h = renk.replace('#', '')
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/** Eşik 0,19: on sınıf rengiyle ölçülerek belirlendi. */
+function okunurMetin(renk: string): string {
+  return bagilParlaklik(renk) > 0.19 ? ETIKET_KOYU : ETIKET_ACIK
+}
+
 export function TespitKutulari({
   gorselUrl, tespitler, goruntuGenislik, goruntuYukseklik, siniflar,
   secili, secildi, vurgulu, vurgulandi,
@@ -62,7 +92,13 @@ export function TespitKutulari({
    * etiketten iyidir.
    */
   const yerlesim = (() => {
-    const sonuc = new Map<number, { altta: boolean; sagaYasli: boolean }>()
+    // `solOfset` KUTUYA GÖRE piksel: etiket görüntünün dışına taşmasın
+    // diye mutlak konum önce görüntü sınırlarına kırpılır, sonra kutuya
+    // göre ofsete çevrilir. Önceden etiket `left:0` / `right:0` ile
+    // kutuya yapışıyordu ve sağ kenardaki bir kutunun uzun etiketi
+    // görüntüyü aşıyordu: 390 px telefonda sayfa 461 px'e uzayıp YATAY
+    // KAYDIRMAYA düşüyordu (ölçüldü).
+    const sonuc = new Map<number, { altta: boolean; solOfset: number }>()
     if (!olceklenebilir) return sonuc
     const oran = olcu.g / kaynakG
     // Sabitler tarayıcıda ÖLÇÜLEREK kalibre edildi: gerçek etiket
@@ -103,10 +139,12 @@ export function TespitKutulari({
         const y = a.altta ? ky + kyuk + 3 : ky - YUKSEKLIK - 3
         if (!kesisiyor({ x, y, g, y2: y + YUKSEKLIK })) { secim = a; break }
       }
-      const x = secim.sagaYasli ? kx + kg - g : kx
+      const hamX = secim.sagaYasli ? kx + kg - g : kx
+      // Görüntünün içine kırp; etiket görselden geniş olamaz.
+      const x = Math.max(0, Math.min(hamX, Math.max(0, olcu.g - g)))
       const y = secim.altta ? ky + kyuk + 3 : ky - YUKSEKLIK - 3
       yerlesenler.push({ x, y, g, y2: y + YUKSEKLIK })
-      sonuc.set(t.id, secim)
+      sonuc.set(t.id, { altta: secim.altta, solOfset: x - kx })
     }
     return sonuc
   })()
@@ -131,8 +169,9 @@ export function TespitKutulari({
         const soluk = vurgulu != null && !one && !aktif
 
         // Yerleşim yukarıda, çakışma kontrolüyle birlikte hesaplandı.
-        const { altta, sagaYasli } = yerlesim.get(t.id)
-          ?? { altta: false, sagaYasli: false }
+        const { altta, solOfset } = yerlesim.get(t.id)
+          ?? { altta: false, solOfset: 0 }
+        const etiketRengi = okunurMetin(renk)
 
         return (
           <button
@@ -174,9 +213,9 @@ export function TespitKutulari({
                 whitespace-nowrap flex items-center gap-1"
               style={{
                 background: renk,
-                color: '#0e1116',
+                color: etiketRengi,
                 [altta ? 'top' : 'bottom']: 'calc(100% + 3px)',
-                [sagaYasli ? 'right' : 'left']: 0,
+                left: solOfset,
                 zIndex: one ? 12 : aktif ? 6 : 2,
               }}
             >
@@ -187,7 +226,9 @@ export function TespitKutulari({
                   etmemelidir; listedeki rozet burada da bulunmalıdır. */}
               <span
                 className="px-1 rounded-[2px] font-medium tracking-wide"
-                style={{ background: '#0e1116', color: renk, fontSize: 9 }}
+                /* Rozet, etiketin rengini TERSİNE çevirir; oran simetrik
+                   olduğu için iki yönde de aynı ve AA'yı geçer. */
+                style={{ background: etiketRengi, color: renk, fontSize: 9 }}
               >
                 ÖN TAHMİN
               </span>

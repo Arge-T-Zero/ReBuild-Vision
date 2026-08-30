@@ -5,6 +5,70 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 30.08.2026 — Geçmiş renklendirildi, saha araması, kanıt büyüteci
+
+**Eklendi — işlem geçmişi tür bazlı renklendirildi**
+- Karışık bir akışta "hangi kayıt neydi" ancak satır okunarak
+  anlaşılıyordu; elli satırlık bir geçmişte göz hiçbir şey ayırt
+  edemiyordu. Yedi kayıt tipinin her birinin kendi rengi ve ikonu var.
+- Renk **tek başına** anlam taşımaz (Bölüm 9.3): her satırda türün adı
+  yazılı ve ayırt edici bir ikon duruyor. Kayıt tipi renkleri malzeme
+  sınıfı ve durum renklerinden bilinçli olarak ayrı — aynı ekranda üç
+  renk dili olursa hiçbiri okunmaz.
+- Süzgeç düğmeleri aynı renkleri taşıyor; süzgeç artık bir **renk
+  anahtarı** işlevi de görüyor.
+- Kontrast ölçüldü: açık temada en düşük **4,88**, koyu temada **5,58**.
+
+**Değiştirildi — geçmiş metinleri**
+- Her kayıt aynı kalıptan çıkıyordu: "X kaydını Y değiştirdi". Teknik
+  olarak doğru ama hiçbir şey anlatmıyordu — bir tespitin doğrulanmasıyla
+  bir hesaba rol atanması aynı cümleyle görünüyordu. Fiil artık yapılan
+  işi söylüyor: *"… tespiti onayladı"*, *"… saha ölçümü girdi"*,
+  *"… bu hesaba rol atadı"*.
+- **"Tespiti X oluşturdu" düzeltildi:** tespiti insan oluşturmaz, model
+  üretir. Eski cümle tespiti insanın kararıymış gibi gösteriyor ve
+  projenin en temel ayrımını (ön tahmin ≠ karar) geçmişte siliyordu.
+- Kaydolan kişinin `kullanici_id`'si boştur; "Sistem oluşturdu" yerine
+  "Yeni hesap başvurusu alındı" yazıyor.
+- Kayıtlar **güne göre gruplanıyor** (Bugün / Dün / tarih); satırlarda
+  yalnızca saat kalıyor. Elli satırda tam tarihin tekrarı saatleri
+  karşılaştırmayı zorlaştırıyordu.
+
+**Eklendi — enkaz alanı listesinde arama ve süzgeç**
+- Üç sahayla gerek yoktu; elli sahayla liste kullanılamaz hâle gelirdi.
+- Ada **ve sorumluya** göre arama (Türkçe büyük/küçük ve aksan duyarsız),
+  erişim durumu süzgeci, "inceleme bekleyen" süzgeci.
+- Sıralama "inceleme bekleyen önce": listeyi açanın ilk sorusu
+  "nerede iş var" oluyor.
+- Kaç kaydın gizlendiği yazılı — süzgeç açıkken kısa liste görmek
+  sahaların silindiği izlenimi veriyordu.
+- Süzgeç yalnızca üçten fazla saha varsa çıkıyor.
+
+**Eklendi — kuyrukta kanıt büyüteci**
+- Uzman kararını **112 px'lik** bir önizlemeye bakarak veriyordu. Bir
+  malzemenin ahşap mı metal mi olduğu o boyutta çoğu zaman ayırt
+  edilemez; sistemin bütün iddiası ise insanın modelden iyi karar
+  vermesi üzerine kurulu. Kanıta bakılamıyorsa iddia da boşa çıkar.
+- Önizlemeye tıklayınca görüntünün tamamı açılıyor, model kutusu üzerinde
+  işaretli kalıyor. Esc kapatıyor.
+
+**🔴 Düzeltildi — tespit etiketleri okunmuyordu ve sayfayı taşırıyordu**
+- Etiket metni `#0e1116` olarak sabit kodlanmıştı ve **üç sınıf renginde
+  AA'nın altında** kalıyordu: `yumusak_plastik` 3,82 · `konteyner` 3,91 ·
+  `dolgu_toprak` 4,14. Etiket kutunun ne olduğunu söyleyen tek yazıdır.
+- Sınıf renkleri `siniflar.json`'dan gelir ve değiştirilemez; düzeltme
+  metin tarafında yapıldı — rengin bağıl parlaklığına göre koyu ya da
+  beyaz seçiliyor. On sınıfta en düşük oran artık **4,57**.
+- Etiket `left:0`/`right:0` ile kutuya yapışıyordu; sağ kenardaki bir
+  kutunun uzun etiketi görüntüyü aşıyor ve **390 px telefonda sayfayı
+  461 px'e uzatıp yatay kaydırmaya** düşürüyordu. Etiket artık görüntü
+  sınırlarına kırpılıyor.
+- Bu sayfa daha önce hiç taranmamıştı; iki hata da bu turda ortaya çıktı.
+
+**Doğrulama**
+- axe-core: 320 / 390 / 1280 px × iki tema × iki rol × altı ekran +
+  kanıt büyüteci = **84 tarama, 0 ihlal, 0 yatay taşma**
+
 ### 30.08.2026 — Giriş ekranı ortalandı, kayıt ekranının metni de ayrıldı
 
 **Değiştirildi — düzen ortalandı ve TEK oldu**

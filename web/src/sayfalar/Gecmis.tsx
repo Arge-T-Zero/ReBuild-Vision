@@ -12,13 +12,22 @@ import { Sayfa } from '../bilesenler/Duzen'
  * Bu bilgi yalnızca veri tabanında durmaz; burada görünür (Bölüm 4.2).
  */
 
-const SUZGECLER: { deger: string | undefined; etiket: string }[] = [
+/**
+ * Süzgeçler — renkleri listedeki kayıt renkleriyle AYNI.
+ *
+ * Süzgeç düğmesi nötr griyken, kullanıcı "Tespitler"e basıp listede
+ * hangi renklerin kaldığını gözüyle eşleştiremiyordu. Aynı renk her iki
+ * yerde de kullanılınca süzgeç aynı zamanda bir RENK ANAHTARI oluyor.
+ */
+const SUZGECLER: {
+  deger: string | undefined; etiket: string; renk?: string
+}[] = [
   { deger: undefined, etiket: 'Tümü' },
-  { deger: 'tespit', etiket: 'Tespitler' },
-  { deger: 'olcum', etiket: 'Ölçümler' },
-  { deger: 'enkaz_alani', etiket: 'Enkaz alanları' },
-  { deger: 'goruntu', etiket: 'Görüntüler' },
-  { deger: 'kullanici', etiket: 'Kullanıcılar' },
+  { deger: 'tespit', etiket: 'Tespitler', renk: 'var(--u-kayit-tespit)' },
+  { deger: 'olcum', etiket: 'Ölçümler', renk: 'var(--u-kayit-olcum)' },
+  { deger: 'enkaz_alani', etiket: 'Enkaz alanları', renk: 'var(--u-kayit-alan)' },
+  { deger: 'goruntu', etiket: 'Görüntüler', renk: 'var(--u-kayit-goruntu)' },
+  { deger: 'kullanici', etiket: 'Kullanıcılar', renk: 'var(--u-kayit-kullanici)' },
 ]
 
 export function Gecmis() {
@@ -29,7 +38,7 @@ export function Gecmis() {
       <Baslik
         ustBaslik="İzlenebilirlik"
         baslik="İşlem geçmişi"
-        aciklama="Sistemdeki her yazma işlemi — kim, ne zaman, neyi değiştirdi — otomatik olarak kaydedilir. Kayıtlar silinemez ve düzenlenemez."
+        aciklama="Sistemdeki her yazma işlemi — kim, ne zaman, neyi değiştirdi — otomatik olarak kaydedilir. Kayıtlar silinemez ve düzenlenemez. Renkler kayıt türünü gösterir."
       />
 
       <div className="flex gap-1.5 flex-wrap mb-5" role="group"
@@ -41,6 +50,12 @@ export function Gecmis() {
             className="text-sm"
             aria-pressed={suzgec === s.deger}
             onClick={() => setSuzgec(s.deger)}
+            /* Renk noktası yalnızca işarettir; anlamı yanındaki
+               etiket taşır (ana talimat Bölüm 9.3). */
+            ikon={s.renk
+              ? <span aria-hidden className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: s.renk }} />
+              : undefined}
           >
             {s.etiket}
           </Buton>
