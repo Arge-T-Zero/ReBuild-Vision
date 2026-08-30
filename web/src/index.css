@@ -11,10 +11,14 @@
    ama sakin. Dekorasyon yok.
 
    İKİ TEMA:
-   - Koyu (varsayılan) — kapalı alan, gece, düşük ışık
-   - Açık             — GÜNEŞ ALTINDA. Doğrudan güneşte açık zemin koyu
-                        zeminden okunaklıdır; "sahada kullanılır" iddiasının
-                        gereği budur, süs değil.
+   - Açık (VARSAYILAN) — GÜNEŞ ALTINDA. Doğrudan güneşte açık zemin koyu
+                        zeminden okunaklıdır; sistem sahada kullanılacağını
+                        iddia ettiği için varsayılan olan budur.
+   - Koyu             — kapalı alan, gece, düşük ışık. Kullanıcı seçer.
+
+   Varsayılan `:root` içinde tanımlıdır; koyu tema yalnızca
+   `[data-theme="dark"]` altında tanımları EZER. Böylece hiçbir renk
+   yalnızca koşullu bir blokta tanımlanmış olmaz.
 
    RENK KURALLARI:
    1. Renk hiçbir yerde TEK BAŞINA anlam taşımaz — her göstergenin yanında
@@ -25,45 +29,22 @@
       doğrulayıcısından geçmiştir — HER İKİ temada da. Değiştirilmemeli.
    ========================================================================= */
 
-/* --- Koyu tema (varsayılan) --------------------------------------------- */
+/* --- Açık tema (VARSAYILAN) ---------------------------------------------
+
+   Kontrast değerleri axe-core ile ÖLÇÜLDÜ. Önceki takım dört ayrı yerde
+   WCAG AA'yı (4,5:1) geçemiyordu ve bunlar arayüzün en çok kullanılan
+   öğeleriydi:
+
+     birincil düğme  marka #12855a üzerinde metin  4,27
+     kuyruk rozeti   uyarı #96650a %10 zeminde     4,09
+     erişim rozeti   marka #12855a %10 zeminde     4,07
+     yardımcı metin  metin-4 #666f7a / yüzey-3     4,11
+
+   Aşağıdaki değerler bu dört durumun tamamı ≥ 4,5 olacak biçimde
+   yeniden hesaplandı; en düşüğü 4,61'dir. Açık tema artık varsayılan
+   olduğu için bu hesap ertelenebilir bir ayrıntı değildi.
+   ------------------------------------------------------------------- */
 :root {
-  color-scheme: dark;
-
-  --u-taban:        #000000;
-  --u-yuzey:        #12161d;
-  --u-yuzey-2:      #191e27;
-  --u-yuzey-3:      #232a35;
-  --u-yuzey-ust:    #2c3441;
-
-  --u-kenar:        #303845;
-  --u-kenar-net:    #414b5b;
-  --u-kenar-parlak: #5a6675;
-
-  --u-metin:        #f4f7fa;
-  --u-metin-2:      #c7d1dd;
-  --u-metin-3:      #99a5b4;
-  --u-metin-4:      #7b8796;
-
-  /* Marka: Sıfır Atık kimliğiyle örtüşen yeşil. Doğrulama da aynı yeşildir —
-     ürünün işi zaten doğrulamaktır, renk bu hikâyeyi taşır. */
-  --u-marka:        #2fbd82;
-  --u-marka-2:      #55d29c;
-  --u-marka-zemin:  rgba(47, 189, 130, 0.12);
-  --u-marka-kenar:  rgba(47, 189, 130, 0.45);
-
-  --u-olumlu:       #2fbd82;
-  --u-uyari:        #e5a52e;
-  --u-dikkat:       #ef6a4a;
-  --u-bilgi:        #4d9bff;
-
-  --u-golge:         0 1px 3px rgba(0, 0, 0, 0.5);
-  --u-golge-ust:     0 8px 28px rgba(0, 0, 0, 0.6);
-  --u-harita-filtre: invert(1) hue-rotate(180deg) brightness(1.08)
-                     contrast(0.82) saturate(0.45);
-}
-
-/* --- Açık tema ---------------------------------------------------------- */
-:root[data-theme="light"] {
   color-scheme: light;
 
   /* Saf beyaz yerine hafif sıcak kırık beyaz: güneşte göz yormaz. */
@@ -79,22 +60,76 @@
 
   --u-metin:        #0e1319;
   --u-metin-2:      #39434f;
-  --u-metin-3:      #5b6772;
-  --u-metin-4:      #666f7a;
+  --u-metin-3:      #4c5763;
+  --u-metin-4:      #5b6772;
 
-  --u-marka:        #12855a;
-  --u-marka-2:      #0d6b48;
-  --u-marka-zemin:  rgba(18, 133, 90, 0.10);
-  --u-marka-kenar:  rgba(18, 133, 90, 0.40);
+  --u-marka:        #0d6b48;
+  --u-marka-2:      #0a5539;
+  --u-marka-zemin:  rgba(13, 107, 72, 0.10);
+  --u-marka-kenar:  rgba(13, 107, 72, 0.40);
 
-  --u-olumlu:       #12855a;
-  --u-uyari:        #96650a;
-  --u-dikkat:       #bc3f26;
+  --u-olumlu:       #0d6b48;
+  --u-uyari:        #7d5305;
+  --u-dikkat:       #a8371f;
   --u-bilgi:        #1a5fc4;
 
+  /* `ikincil` düğmenin üzerine gelme rengi. Önceden bileşende
+     `hover:bg-[#2a3140]` olarak SABİT KODLANMIŞTI; açık temada düğme
+     imlecin altında koyu laciverte dönüyordu. Renk artık temaya ait. */
+  --u-yuzey-vurgu:  #dfe3db;
+
   --u-golge:         0 1px 2px rgba(16, 24, 32, 0.10);
+  --u-golge-kart:    0 1px 3px rgba(16, 24, 32, 0.09);
   --u-golge-ust:     0 10px 30px rgba(16, 24, 32, 0.16);
+  --u-golge-dugme:   0 1px 2px rgba(16, 24, 32, 0.18);
   --u-harita-filtre: none;
+  /* Harita işaretçisinin çevresindeki halka — zemine göre değişir. */
+  --u-isaretci-halka: #ffffff;
+}
+
+/* --- Koyu tema ---------------------------------------------------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --u-taban:        #000000;
+  --u-yuzey:        #12161d;
+  --u-yuzey-2:      #191e27;
+  --u-yuzey-3:      #232a35;
+  --u-yuzey-ust:    #2c3441;
+
+  --u-kenar:        #303845;
+  --u-kenar-net:    #414b5b;
+  --u-kenar-parlak: #5a6675;
+
+  --u-metin:        #f4f7fa;
+  --u-metin-2:      #c7d1dd;
+  --u-metin-3:      #99a5b4;
+  /* #7b8796 idi: en koyu yüzeyde (yüzey-3) 3,95 ile AA'nın altında
+     kalıyordu — rapor kartındaki biçim açıklamaları orada duruyor.
+     Yeni değer en zorlu eşleşmede (yüzey-üst) 4,50. */
+  --u-metin-4:      #909cab;
+
+  /* Marka: Sıfır Atık kimliğiyle örtüşen yeşil. Doğrulama da aynı yeşildir —
+     ürünün işi zaten doğrulamaktır, renk bu hikâyeyi taşır. */
+  --u-marka:        #2fbd82;
+  --u-marka-2:      #55d29c;
+  --u-marka-zemin:  rgba(47, 189, 130, 0.12);
+  --u-marka-kenar:  rgba(47, 189, 130, 0.45);
+
+  --u-olumlu:       #2fbd82;
+  --u-uyari:        #e5a52e;
+  --u-dikkat:       #ef6a4a;
+  --u-bilgi:        #4d9bff;
+
+  --u-yuzey-vurgu:  #2a3140;
+
+  --u-golge:         0 1px 3px rgba(0, 0, 0, 0.5);
+  --u-golge-kart:    0 1px 3px rgba(0, 0, 0, 0.35);
+  --u-golge-ust:     0 8px 28px rgba(0, 0, 0, 0.6);
+  --u-golge-dugme:   0 1px 2px rgba(0, 0, 0, 0.4);
+  --u-harita-filtre: invert(1) hue-rotate(180deg) brightness(1.08)
+                     contrast(0.82) saturate(0.45);
+  --u-isaretci-halka: #0e1116;
 }
 
 /* --- Tailwind token eşlemesi -------------------------------------------- */
@@ -104,6 +139,7 @@
   --color-yuzey-2:      var(--u-yuzey-2);
   --color-yuzey-3:      var(--u-yuzey-3);
   --color-yuzey-ust:    var(--u-yuzey-ust);
+  --color-yuzey-vurgu:  var(--u-yuzey-vurgu);
 
   --color-kenar:        var(--u-kenar);
   --color-kenar-net:    var(--u-kenar-net);
@@ -133,6 +169,9 @@
   --color-m-beton:           #9085e9;
   --color-m-dolgu_toprak:    #a06a2c;
   --color-m-konteyner:       #6b7280;
+
+  --shadow-kart:  var(--u-golge-kart);
+  --shadow-dugme: var(--u-golge-dugme);
 
   --radius-kart: 12px;
 
@@ -213,3 +252,52 @@ button, a[role="button"], input, select, textarea { min-height: 44px; }
 
 /* Karolar koyu temada karartılır; açık temada olduğu gibi kalır. */
 .harita-koyu .leaflet-tile-pane { filter: var(--u-harita-filtre); }
+
+/* --- Giriş ekranı görseli ------------------------------------------------
+
+   Görselin üzerindeki okunabilirlik katmanı zemin renginden türer, ama
+   İKİ TEMADA AYNI GÜÇTE OLAMAZ. Koyu temada koyu bir perde görseli
+   derinleştirir; açık temada aynı perde beyaz bir sise dönüşüp fotoğrafı
+   yıkar — arayüz açık temada varsayılan olarak açıldığı için ilk izlenim
+   tam da bu yıkanmış görseldi.
+
+   Bu yüzden perdenin gücü jetondan gelir: açık temada zayıf ve dar,
+   koyu temada güçlü. Metnin oturduğu sol taraf her iki temada da
+   okunur kalır (ölçüldü), sağ taraf görseli gerçekten gösterir.
+   ------------------------------------------------------------------- */
+:root {
+  --u-giris-perde:      0.95; /* metnin oturduğu sol kenar */
+  --u-giris-perde-orta: 0.62; /* metin bloğunun bittiği yer */
+  --u-giris-dikey:      0.35; /* alt kenardaki künye için */
+  --u-giris-doygunluk:  1;
+}
+:root[data-theme="dark"] {
+  --u-giris-perde:      1;
+  --u-giris-perde-orta: 0.72;
+  --u-giris-dikey:      0.80;
+  --u-giris-doygunluk:  0.95;
+}
+
+.giris-gorsel { filter: saturate(var(--u-giris-doygunluk)); }
+
+.giris-perde {
+  background:
+    linear-gradient(to top,
+      color-mix(in srgb, var(--u-taban) calc(var(--u-giris-dikey) * 100%), transparent) 0%,
+      transparent 42%),
+    linear-gradient(to right,
+      color-mix(in srgb, var(--u-taban) calc(var(--u-giris-perde) * 100%), transparent) 0%,
+      color-mix(in srgb, var(--u-taban) calc(var(--u-giris-perde-orta) * 100%), transparent) 58%,
+      transparent 92%);
+}
+
+/* Kayabilen üst menü: kaydırma çubuğu gizlenir, sığmayan sekme olup
+   olmadığını `App.tsx` ölçer ve `data-kayar` özniteliğiyle söyler. Sağ
+   kenardaki soluklaşma yalnızca gerçekten taşma varsa çıkar — her zaman
+   açık bırakılsa, her şey sığdığında da son sekmeyi soluklaştırırdı. */
+.menu-kayan { scrollbar-width: none; }
+.menu-kayan::-webkit-scrollbar { display: none; }
+.menu-kayan[data-kayar="evet"] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}

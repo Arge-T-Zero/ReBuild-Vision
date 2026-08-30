@@ -132,4 +132,32 @@ export const Ikon = {
       <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
     </Sarmal>
   ),
+  Goz: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </Sarmal>
+  ),
+  GozKapali: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <path d="M4 5l16 14" />
+      <path d="M9.6 6.2A10.9 10.9 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a18 18 0 0 1-3.3 4" />
+      <path d="M6.4 8.2A17.6 17.6 0 0 0 2 12s3.6 6.5 10 6.5a10.6 10.6 0 0 0 3.9-.7" />
+      <path d="M9.9 10.2a3 3 0 0 0 4.1 4.2" />
+    </Sarmal>
+  ),
+  /** Sahte model servisi rozeti — uyarı üçgeni değil, "laboratuvar" işareti. */
+  Sahte: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <path d="M10 3v6.5L4.6 18a1.8 1.8 0 0 0 1.5 2.8h11.8a1.8 1.8 0 0 0 1.5-2.8L14 9.5V3" />
+      <path d="M8.5 3h7M7.6 14h8.8" />
+    </Sarmal>
+  ),
+  Baglanti: (p: Ozellik) => (
+    <Sarmal {...p}>
+      <path d="M5 12.5a9.5 9.5 0 0 1 14 0M8 16a5 5 0 0 1 8 0" />
+      <circle cx="12" cy="19.5" r="1" />
+      <path d="M3 3l18 18" />
+    </Sarmal>
+  ),
 }

@@ -154,10 +154,18 @@ export function IslemGecmisiListesi({
           aciklama="Bir alan tanımlandığında, görüntü yüklendiğinde, tespit doğrulandığında ya da ölçüm girildiğinde kayıt buraya otomatik düşer. Kayıtlar silinemez ve düzenlenemez." />
   }
 
+  // Kompakt kullanım bir kartın içindedir (sayfa h1 → kart h2 → burası
+  // h3); tam sayfa kullanımında doğrudan h1'in altındadır.
+  const Duzey = kompakt ? 'h3' : 'h2'
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-semibold text-metin-2">{baslik}</h4>
+        {/* `h4` idi ve sayfa başlığı `h1`; arada `h2`/`h3` olmadığı için
+            başlık sırası atlıyordu (axe-core: `heading-order`). Bileşen
+            hem sayfanın tamamında hem tespit panelinde kullanıldığı için
+            düzey sabit `h2` olamaz — çağıran, kendi bağlamına göre söyler. */}
+        <Duzey className="text-sm font-semibold text-metin-2">{baslik}</Duzey>
         <Buton tur="sessiz" className="text-xs !min-h-0 !py-1" onClick={yenile}>
           Yenile
         </Buton>

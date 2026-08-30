@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
+import { useTema } from '../tema'
 import { Alan, Buton, Hata, girdiSinifi } from '../bilesenler/Temel'
+import { Ikon } from '../bilesenler/Ikon'
+import { SahteModelUyarisi } from '../bilesenler/ModelDurumu'
 
 const OZELLIKLER = [
   {
@@ -21,11 +24,57 @@ const OZELLIKLER = [
   },
 ]
 
+const KUNYE = 'TEKNOFEST 2026 Sıfır Atık ve Döngüsel Ekonomi Yarışması · '
+  + 'Takım Arge-T Zero. Sistem yalnızca görünür yüzeye ilişkin ön '
+  + 'değerlendirme yapar ve tehlikeli madde teşhisi yapmaz.'
+
+/**
+ * Giriş ekranındaki tema düğmesi.
+ *
+ * Tema düğmesi yalnızca giriş YAPTIKTAN sonraki üst çubukta vardı. Oysa
+ * temayı en çok isteyecek kişi, ekranı henüz okuyamayan kişidir: güneş
+ * altındaki saha personeli ya da gece nöbetindeki uzman. Tercihini
+ * yapabilmesi için önce giriş yapması gerekiyordu.
+ */
+function TemaDugmesi() {
+  const { tema, temaDegistir } = useTema()
+  return (
+    <Buton
+      tur="ikincil" boyut="kucuk" onClick={temaDegistir}
+      aria-label={tema === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç'}
+      title={tema === 'dark'
+        ? 'Açık tema — güneş altında daha okunur'
+        : 'Koyu tema — düşük ışıkta daha okunur'}
+      ikon={tema === 'dark' ? <Ikon.Gunes boyut={15} /> : <Ikon.Ay boyut={15} />}
+    >
+      {tema === 'dark' ? 'Açık tema' : 'Koyu tema'}
+    </Buton>
+  )
+}
+
+function Marka({ boyut = 'normal' }: { boyut?: 'normal' | 'buyuk' }) {
+  const k = boyut === 'buyuk' ? 36 : 32
+  return (
+    <span className="flex items-center gap-2.5">
+      <span aria-hidden className="rounded-lg bg-marka/15 border border-marka/40
+        grid place-items-center text-marka shrink-0"
+        style={{ width: k, height: k }}>
+        <img src="/logo-isaret.svg" alt="" aria-hidden
+          width={boyut === 'buyuk' ? 20 : 18}
+          height={boyut === 'buyuk' ? 20 : 18} />
+      </span>
+      <span className={`font-semibold tracking-tight
+        ${boyut === 'buyuk' ? 'text-lg' : ''}`}>ReBuild Vision</span>
+    </span>
+  )
+}
+
 export function Giris() {
   const { girisYap, oturumNotu } = useDurum()
   const [kayitModu, setKayitModu] = useState(false)
   const [eposta, setEposta] = useState('')
   const [parola, setParola] = useState('')
+  const [parolaGorunur, setParolaGorunur] = useState(false)
   const [ad, setAd] = useState('')
   const [hata, setHata] = useState('')
   const [bilgi, setBilgi] = useState('')
@@ -54,31 +103,25 @@ export function Giris() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.1fr_minmax(0,460px)]">
-      {/* Sol: kimlik ve iddia — arkada saha görüntüsü */}
-      <div className="hidden lg:flex flex-col justify-between p-12 border-r
+      {/* Sol: kimlik ve iddia — arkada saha görüntüsü.
+          `aside` bilinçli: içerik bir yer işaretine (landmark) ait olmalı;
+          denetimde bu bölüm hiçbir yer işaretinin içinde değildi. */}
+      <aside aria-label="Proje tanıtımı"
+        className="hidden lg:flex flex-col justify-between p-12 border-r
         border-kenar bg-yuzey relative overflow-hidden">
         {/* Görsel yapay zekâ ile üretilmiştir; gerçek bir afet fotoğrafı
             değildir (Madde 10.7 ile uyumlu, telif sorunu yok). */}
         <img
           src="/gorseller/giris-hero.webp" alt="" aria-hidden
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          className="giris-gorsel absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
         />
-        {/* Metnin okunabilirliği için koyudan açığa geçiş katmanı */}
-        {/* Metnin oturduğu sol tarafı koyultan yönlü geçiş; sağ taraf
-            açık kalır, böylece görsel gerçekten görünür. */}
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-r
-          from-taban via-taban/70 to-transparent" />
-        {/* Alt ve üst kenarda içeriği taşıyan hafif koyultma */}
-        <div aria-hidden className="absolute inset-0
-          bg-gradient-to-t from-taban/80 via-transparent to-taban/30" />
-        <span className="flex items-center gap-3 relative">
-          <span aria-hidden className="w-9 h-9 rounded-lg bg-marka/15
-            border border-marka/40 grid place-items-center text-marka">
-            <img src="/logo-isaret.svg" alt="" aria-hidden width={20} height={20} />
-          </span>
-          <span className="font-semibold text-lg tracking-tight">ReBuild Vision</span>
-        </span>
+        {/* Okunabilirlik perdesi. Gücü temaya göre değişir (index.css):
+            koyu temada güçlü, açık temada zayıf — aynı perde açık temada
+            fotoğrafı beyaz bir sise çeviriyordu. */}
+        <div aria-hidden className="giris-perde absolute inset-0" />
+
+        <Marka boyut="buyuk" />
 
         <div className="max-w-lg relative">
           <h1 className="text-3xl font-semibold tracking-tight leading-tight">
@@ -90,7 +133,10 @@ export function Giris() {
             {OZELLIKLER.map((o) => (
               <li key={o.baslik} className="border-l-2 border-kenar-net pl-4">
                 <p className="font-medium text-metin">{o.baslik}</p>
-                <p className="text-sm text-metin-3 mt-1 leading-relaxed">
+                {/* Fotoğrafın üzerinde `metin-3` zayıf kalıyordu; bu
+                    paragraflar düz zeminde değil görselin üstünde
+                    duruyor ve bir ton koyu olmaları gerekiyor. */}
+                <p className="text-sm text-metin-2 mt-1 leading-relaxed">
                   {o.metin}
                 </p>
               </li>
@@ -98,24 +144,40 @@ export function Giris() {
           </ul>
         </div>
 
-        <p className="text-xs text-metin-4 max-w-lg leading-relaxed relative">
-          TEKNOFEST 2026 Sıfır Atık ve Döngüsel Ekonomi Yarışması ·
-          Takım Arge-T Zero. Sistem yalnızca görünür yüzeye ilişkin ön
-          değerlendirme yapar ve tehlikeli madde teşhisi yapmaz.
+        <p className="text-xs text-metin-3 max-w-lg leading-relaxed relative">
+          {KUNYE}
         </p>
-      </div>
+      </aside>
 
       {/* Sağ: form — sayfanın ana içeriği */}
-      <main className="flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-sm">
+      <main className="flex flex-col p-6 sm:p-10">
+        {/* Tema düğmesi her ekran boyutunda, giriş yapmadan erişilebilir. */}
+        <div className="flex justify-end mb-6 lg:mb-0">
+          <TemaDugmesi />
+        </div>
+
+        <div className="w-full max-w-sm mx-auto grow flex flex-col justify-center">
+          {/* Küçük ekranda sol panel gizlendiği için burası BOMBOŞ bir
+              ekrandı: ne proje adı, ne ne yaptığı, ne kimin yaptığı
+              görünüyordu — üstelik sahanın asıl aygıtı telefon.
+              Aşağıdaki blok o boşluğu, masaüstündeki anlatının sıkışmış
+              hâliyle doldurur. */}
           <div className="lg:hidden mb-8">
-            <span className="flex items-center gap-2.5">
-              <span aria-hidden className="w-8 h-8 rounded-md bg-marka/15
-                border border-marka/40 grid place-items-center text-marka">
-                <img src="/logo-isaret.svg" alt="" aria-hidden width={18} height={18} />
-              </span>
-              <span className="font-semibold tracking-tight">ReBuild Vision</span>
-            </span>
+            <Marka />
+            <h1 className="text-xl font-semibold tracking-tight leading-snug mt-5">
+              Enkaz malzemelerinin görüntü tabanlı ön sınıflandırması ve
+              doğrulanabilir kaynak haritası
+            </h1>
+            <ul className="mt-4 space-y-2">
+              {OZELLIKLER.map((o) => (
+                <li key={o.baslik}
+                  className="flex items-start gap-2 text-sm text-metin-2">
+                  <Ikon.Onayla boyut={14}
+                    className="text-marka mt-0.5 shrink-0" />
+                  {o.baslik}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <h2 className="text-xl font-semibold tracking-tight">
@@ -141,10 +203,29 @@ export function Giris() {
             </Alan>
             <Alan etiket="Parola"
               ipucu={kayitModu ? 'En az 8 karakter' : undefined}>
-              <input value={parola} onChange={(e) => setParola(e.target.value)}
-                type="password" className={girdiSinifi}
-                autoComplete={kayitModu ? 'new-password' : 'current-password'}
-                required />
+              {/* Parolayı görebilmek eldivenli parmakla ve güneş altında
+                  yazan biri için konfor değil, gerekliliktir: yanlış
+                  yazdığını ancak "e-posta veya parola hatalı" cevabından
+                  anlıyordu. */}
+              <span className="relative block">
+                <input value={parola} onChange={(e) => setParola(e.target.value)}
+                  type={parolaGorunur ? 'text' : 'password'}
+                  className={`${girdiSinifi} pr-12`}
+                  autoComplete={kayitModu ? 'new-password' : 'current-password'}
+                  required />
+                <button type="button" tabIndex={0}
+                  onClick={() => setParolaGorunur((g) => !g)}
+                  aria-label={parolaGorunur ? 'Parolayı gizle' : 'Parolayı göster'}
+                  aria-pressed={parolaGorunur}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 px-2.5
+                    !min-h-0 h-9 rounded text-metin-3 hover:text-metin
+                    hover:bg-yuzey-2 transition-colors"
+                >
+                  {parolaGorunur
+                    ? <Ikon.GozKapali boyut={17} />
+                    : <Ikon.Goz boyut={17} />}
+                </button>
+              </span>
             </Alan>
 
             {kayitModu && (
@@ -188,6 +269,16 @@ export function Giris() {
                 : 'Hesabım yok — kayıt ol'}
             </button>
           </div>
+
+          {/* Sahte model servisi uyarısı giriş ekranında da görünür:
+              demoyu izleyen kişi sisteme daha bakmadan gerçek bir modelin
+              çalıştığını sanmamalı (ana talimat Bölüm 9.5). */}
+          <div className="mt-6"><SahteModelUyarisi /></div>
+
+          {/* Künye küçük ekranda sol panelle birlikte kaybolmuştu. */}
+          <p className="lg:hidden text-xs text-metin-4 leading-relaxed mt-6">
+            {KUNYE}
+          </p>
         </div>
       </main>
     </div>
