@@ -183,6 +183,14 @@
 /* --- Temel -------------------------------------------------------------- */
 html, body, #root { height: 100%; }
 
+/* `html`in zemini de jetondan gelir.
+ *
+ * ⚠️ `body` yüksekliği 100%, yani GÖRÜNTÜ ALANI kadar; içerik daha
+ * uzunsa (giriş ekranı telefonda 954 px) aşağıda body'nin kapsamadığı
+ * bir şerit kalır ve orada `html`in zemini görünür. O şerit jetona
+ * bağlı olmazsa tema değişince geride kalır. */
+html { background: var(--u-taban); }
+
 body {
   background: var(--u-taban);
   color: var(--u-metin);
