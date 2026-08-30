@@ -16,7 +16,25 @@ import type { ReactNode } from 'react'
  * temada kalır — okuma ve yazma try/catch içindedir.
  */
 
-const ANAHTAR = 'rebuild_vision_tema'
+/**
+ * Tercih anahtarı — ESKİSİNDEN FARKLI OLMAK ZORUNDA.
+ *
+ * ⚠️ Eski sürüm `rebuild_vision_tema` anahtarına her açılışta yürürlükteki
+ * temayı YAZIYORDU; kullanıcı hiçbir şey seçmemiş olsa bile. Varsayılan o
+ * dönemde koyu olduğu için, siteyi bir kez açmış HERKESİN tarayıcısında
+ * `"dark"` yazılı kaldı — bir tercih olarak değil, yan etki olarak.
+ *
+ * O anahtarı okumaya devam etseydik, varsayılanı açık yapmak eski
+ * ziyaretçiler için hiçbir şey değiştirmezdi: sistemi daha önce açmış olan
+ * jüri üyesi de dâhil herkes yine koyu ekranla karşılaşırdı. Yani
+ * düzeltme, tam da düzeltmesi gereken kişilerde çalışmazdı.
+ *
+ * Yeni anahtar YALNIZCA kullanıcı düğmeye bastığında yazılır (aşağıya
+ * bakınız). Böylece içindeki değer her zaman gerçek bir tercihtir; eski
+ * anahtar ise okunmaz ve temizlenir.
+ */
+const ANAHTAR = 'rebuild_vision_tema_secim'
+const ESKI_ANAHTAR = 'rebuild_vision_tema'
 
 export type Tema = 'dark' | 'light'
 
@@ -38,6 +56,12 @@ function kayitliTema(): Tema {
 export function TemaSaglayici({ children }: { children: ReactNode }) {
   const [tema, setTema] = useState<Tema>(kayitliTema)
 
+  // Eski anahtar bir tercih taşımıyor, yalnızca eski varsayılanın izini
+  // taşıyor. Bırakılırsa hiçbir işe yaramadan tarayıcıda durur.
+  useEffect(() => {
+    try { localStorage.removeItem(ESKI_ANAHTAR) } catch { /* yoksay */ }
+  }, [])
+
   useEffect(() => {
     const kok = document.documentElement
     // Öznitelik her iki yönde de AÇIKÇA yazılır. Varsayılan artık açık
@@ -48,13 +72,19 @@ export function TemaSaglayici({ children }: { children: ReactNode }) {
     // temada beyaz bir şerit kalıyordu.
     document.querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', tema === 'dark' ? '#000000' : '#f5f6f3')
-    try { localStorage.setItem(ANAHTAR, tema) } catch { /* yoksay */ }
   }, [tema])
 
-  const temaDegistir = useCallback(
-    () => setTema((t) => (t === 'dark' ? 'light' : 'dark')),
-    [],
-  )
+  // Yazma İŞTE BURADA, açılış etkisinde değil. Depoya yalnızca kullanıcı
+  // düğmeye bastığında dokunulur; böylece kayıtlı değer "varsayılan
+  // buydu" değil, "kullanıcı bunu seçti" anlamına gelir. Eski sürümün
+  // hatası tam olarak bu ayrımı yapmamasıydı.
+  const temaDegistir = useCallback(() => {
+    setTema((t) => {
+      const yeni: Tema = t === 'dark' ? 'light' : 'dark'
+      try { localStorage.setItem(ANAHTAR, yeni) } catch { /* yoksay */ }
+      return yeni
+    })
+  }, [])
 
   return <Ctx.Provider value={{ tema, temaDegistir }}>{children}</Ctx.Provider>
 }
