@@ -5,6 +5,7 @@ import { GezinmeSaglayici } from './gezinme'
 import { Buton } from './bilesenler/Temel'
 import { Ikon } from './bilesenler/Ikon'
 import { ModelRozeti } from './bilesenler/ModelDurumu'
+import { IlkTanitim } from './bilesenler/IlkTanitim'
 import { SAYFA_ETIKETI, SAYFA_KISA_ETIKET, rolTanimi } from './roller'
 import type { SayfaAdi } from './roller'
 import { Giris } from './sayfalar/Giris'
@@ -22,13 +23,23 @@ import { Yonetici } from './sayfalar/Yonetici'
 
 type Konum = { ad: Exclude<SayfaAdi, 'alan'> } | { ad: 'alan'; id: number }
 
-const SAYFA_IKONU: Record<Exclude<SayfaAdi, 'alan'>, React.ReactNode> = {
-  yukle: <Ikon.Yukle />,
-  alanlar: <Ikon.Alan />,
-  kuyruk: <Ikon.Kuyruk />,
-  harita: <Ikon.Harita />,
-  gecmis: <Ikon.Gecmis />,
-  yonetici: <Ikon.Kullanici />,
+// Üst çubuk (masaüstü) ve alt çubuk (dar ekran) aynı ikonları FARKLI
+// boyutta kullanır: dokunmatikte simge parmakla hedeflenir, imleçle
+// değil. Alt çubukta 22 px, üstte 18 px.
+const SAYFA_IKON_BILESENI: Record<
+  Exclude<SayfaAdi, 'alan'>, (p: { boyut: number }) => React.ReactElement
+> = {
+  yukle: Ikon.Yukle,
+  alanlar: Ikon.Alan,
+  kuyruk: Ikon.Kuyruk,
+  harita: Ikon.Harita,
+  gecmis: Ikon.Gecmis,
+  yonetici: Ikon.Kullanici,
+}
+
+function sayfaIkonu(s: Exclude<SayfaAdi, 'alan'>, boyut: number) {
+  const B = SAYFA_IKON_BILESENI[s]
+  return <B boyut={boyut} />
 }
 
 function TemaDugmesi() {
@@ -155,14 +166,19 @@ function Kabuk() {
                 aria-current={konum.ad === s ? 'page' : undefined}
                 aria-label={SAYFA_ETIKETI[s]}
                 title={SAYFA_ETIKETI[s]}
+                /* İlk giriş turu hedefi. Aynı değer alt çubukta da var;
+                   tur, görünür olanı ÖLÇEREK seçer. */
+                data-tanitim={s}
                 onClick={() => setKonum({ ad: s })}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md
-                  text-sm whitespace-nowrap transition-colors !min-h-0
+                /* Sekmeler büyütüldü: 14 px yazı + 16 px ikon bir kamu
+                   aracı için küçüktü, tıklama hedefi de dardı. */
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-md
+                  text-[15px] whitespace-nowrap transition-colors !min-h-0
                   ${aktif(s)
-                    ? 'bg-yuzey-3 text-metin'
+                    ? 'bg-yuzey-3 text-metin font-medium'
                     : 'text-metin-3 hover:text-metin hover:bg-yuzey-2'}`}
               >
-                {SAYFA_IKONU[s]}
+                {sayfaIkonu(s, 18)}
                 <span aria-hidden>{SAYFA_KISA_ETIKET[s]}</span>
               </button>
             ))}
@@ -202,16 +218,21 @@ function Kabuk() {
         }}>
           {tanim.menu.map((s) => (
             <li key={s}>
+              {/* Dokunma hedefi büyütüldü: simge 16 → 22 px, yükseklik
+                  ~48 → ~58 px. Eldivenli parmakla ve sallanan bir araçta
+                  kullanılacak; WCAG 2.5.5'in 44 px asgarisi burada
+                  taban, hedef değil. */}
               <button
                 aria-current={konum.ad === s ? 'page' : undefined}
+                data-tanitim={s}
                 onClick={() => setKonum({ ad: s })}
                 className={`w-full flex flex-col items-center justify-center
-                  gap-1 py-2 text-[11px] leading-none transition-colors
+                  gap-1.5 py-2.5 text-xs leading-none transition-colors
                   ${aktif(s)
-                    ? 'text-marka'
+                    ? 'text-marka font-medium'
                     : 'text-metin-3 hover:text-metin'}`}
               >
-                {SAYFA_IKONU[s]}
+                {sayfaIkonu(s, 22)}
                 <span className="truncate max-w-full px-0.5">
                   {SAYFA_KISA_ETIKET[s]}
                 </span>
@@ -241,6 +262,11 @@ function Kabuk() {
         {konum.ad === 'yonetici' && <Yonetici />}
         </Suspense>
       </main>
+
+      {/* Tur SAYFA İÇERİĞİNİN DIŞINDA durur: menü öğelerini aydınlatıyor
+          ve adım değiştikçe sayfa da değişiyor; bir sayfanın içine
+          konsaydı her geçişte yeniden kurulup baştan başlardı. */}
+      <IlkTanitim git={gezinme.git} />
 
       <footer className="border-t border-kenar mt-10">
         <div className="max-w-[1240px] mx-auto px-5 sm:px-6 py-4">
