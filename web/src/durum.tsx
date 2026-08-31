@@ -74,6 +74,10 @@ export function DurumSaglayici({ children }: { children: ReactNode }) {
     jetonSil()
     setKullanici(null)
     setOturumNotu('')
+    // Adres de sıfırlanır: çıkıştan sonra `/alan/3` adresinde kalmak,
+    // geri düğmesine basınca kullanıcıyı giremeyeceği bir yola
+    // götürüyordu.
+    try { window.history.replaceState(null, '', '/') } catch { /* yoksay */ }
   }, [])
 
   const siniflar = new Map((siniflarHam?.siniflar ?? []).map((s) => [s.ad, s]))

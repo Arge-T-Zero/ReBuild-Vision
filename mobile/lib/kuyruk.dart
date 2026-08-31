@@ -66,6 +66,30 @@ class Kuyruk {
     await _yaz(liste);
   }
 
+  /// Sunucunun reddettiği kayıtlara GEREKÇEYİ yazar.
+  ///
+  /// Reddedilen kayıt kuyrukta kalır — silinmesi kullanıcının kararıdır,
+  /// veri kaybı sessizce yapılmaz. Ama neden reddedildiği kayıtla
+  /// birlikte saklanmalıdır: eşitleme uygulamayı kapatıp açtıktan sonra
+  /// da denenir ve kullanıcı o anda bir bildirim görmez. Gerekçe kaydın
+  /// üstünde durursa, kullanıcı Ölçüm ekranını açtığında sorunu görür.
+  Future<void> gerekceleriYaz(Map<String, String> gerekceler) async {
+    if (gerekceler.isEmpty) return;
+    final liste = await hepsi();
+    for (var i = 0; i < liste.length; i++) {
+      final g = gerekceler[liste[i].yerelKimlik];
+      if (g != null) liste[i] = liste[i].notlu(g);
+    }
+    await _yaz(liste);
+  }
+
+  /// Tek bir kaydı kuyruktan siler — kullanıcı isteğiyle.
+  ///
+  /// Sunucunun kalıcı olarak reddettiği bir kaydın (yanlış birim, hatalı
+  /// değer) kuyrukta sonsuza kadar kalması anlamsızdır; kullanıcı onu
+  /// atıp doğrusunu girebilmelidir. Silme yalnızca elle yapılır.
+  Future<void> tekSil(String yerelKimlik) => sil({yerelKimlik});
+
   /// Eşitlenen kayıtları kuyruktan siler.
   ///
   /// Sunucu "yazıldı" ya da "yinelenen" dediyse kayıt kuyruktan çıkar;
@@ -104,6 +128,14 @@ class KuyrukKaydi {
   final String yontem;
   final DateTime olusturma;
 
+  /// Sunucu bu kaydı reddettiyse gerekçesi; aksi hâlde `null`.
+  ///
+  /// Kuyrukta bekleyen kayıt ile REDDEDİLEN kayıt aynı şey değildir:
+  /// birincisi bağlantı bekler, ikincisi kullanıcının müdahalesini.
+  /// Ayrım ekranda görünmeden kullanıcı hangisinin hangisi olduğunu
+  /// bilemez ve reddedilen kayıt sonsuza kadar kuyrukta kalır.
+  final String? sunucuNotu;
+
   KuyrukKaydi({
     required this.yerelKimlik,
     required this.tespitId,
@@ -112,7 +144,19 @@ class KuyrukKaydi {
     required this.birim,
     required this.yontem,
     required this.olusturma,
+    this.sunucuNotu,
   });
+
+  KuyrukKaydi notlu(String not) => KuyrukKaydi(
+        yerelKimlik: yerelKimlik,
+        tespitId: tespitId,
+        tur: tur,
+        deger: deger,
+        birim: birim,
+        yontem: yontem,
+        olusturma: olusturma,
+        sunucuNotu: not,
+      );
 
   Map<String, dynamic> jsona() => {
         'yerel_kimlik': yerelKimlik,
@@ -122,6 +166,7 @@ class KuyrukKaydi {
         'birim': birim,
         'yontem': yontem,
         'olusturma': olusturma.toIso8601String(),
+        if (sunucuNotu != null) 'sunucu_notu': sunucuNotu,
       };
 
   factory KuyrukKaydi.jsondan(Map<String, dynamic> j) => KuyrukKaydi(
@@ -132,6 +177,7 @@ class KuyrukKaydi {
         birim: j['birim'] as String,
         yontem: j['yontem'] as String,
         olusturma: DateTime.parse(j['olusturma'] as String),
+        sunucuNotu: j['sunucu_notu'] as String?,
       );
 
   /// Sunucunun `/esitleme/olcum` uç noktasının beklediği biçim.

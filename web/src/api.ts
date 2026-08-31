@@ -109,7 +109,29 @@ async function istek<T>(yol: string, secenek: RequestInit = {}): Promise<T> {
     basliklar.set('Content-Type', 'application/json')
   }
 
-  const yanit = await fetch(`${TABAN}${yol}`, { ...secenek, headers: basliklar })
+  /**
+   * ⚠️ `fetch` AĞ HATASINDA yanıt döndürmez, fırlatır — ve fırlattığı
+   * `TypeError`ın mesajı tarayıcının kendi dilindedir: "Failed to fetch".
+   * Bu dize kullanıcıya olduğu gibi çıkıyordu.
+   *
+   * Tamamen Türkçe bir kamu arayüzünde İngilizce bir tarayıcı hatası
+   * göstermek zaten kabul edilemezdi; üstelik bu, kullanıcının EN SIK
+   * göreceği hata: sunucu ücretsiz katmanda uyuduğu için ilk istek
+   * düşebiliyor. Yani en olası hata, en anlaşılmaz mesajı veriyordu.
+   *
+   * Mesaj ne olduğunu VE ne yapılacağını söyler.
+   */
+  let yanit: Response
+  try {
+    yanit = await fetch(`${TABAN}${yol}`, { ...secenek, headers: basliklar })
+  } catch {
+    throw new ApiHatasi(
+      0,
+      'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip yeniden '
+      + 'deneyin. Sunucu uzun süredir kullanılmadıysa ilk istek bir '
+      + 'dakikaya kadar sürebilir.',
+    )
+  }
 
   // Jeton GÖNDERİLDİĞİ hâlde 401 geldiyse oturum düşmüştür. Jeton
   // gönderilmediğinde gelen 401 (hatalı parolayla giriş denemesi) bu

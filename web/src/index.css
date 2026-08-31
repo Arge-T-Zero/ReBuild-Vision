@@ -43,6 +43,18 @@
    Aşağıdaki değerler bu dört durumun tamamı ≥ 4,5 olacak biçimde
    yeniden hesaplandı; en düşüğü 4,61'dir. Açık tema artık varsayılan
    olduğu için bu hesap ertelenebilir bir ayrıntı değildi.
+
+   BEŞİNCİ DURUM SONRADAN ÇIKTI. `--u-yuzey-vurgu` (#dfe3db) o hesaba
+   dahil değildi; jeton, `ikincil` düğmenin üzerine gelme rengi olarak
+   sonradan eklenmişti ve en KOYU açık-tema yüzeyi olduğu hâlde metin
+   jetonlarıyla ölçülmemişti. Rapor indirme panelindeki yardımcı metin
+   ("Excel · Türkçe ayraç ve UTF-8") orada 4,45 ölçüldü — eşiğin 0,05
+   altında. `--u-metin-4` #5b6772'den #566270'e karartıldı.
+
+   metin-4 artık BÜTÜN açık-tema yüzeylerinde geçiyor; en düşüğü 4,78:
+     yuzey #ffffff 6,22 · taban 5,73 · yuzey-2 5,52 · yuzey-3 5,03 ·
+     yuzey-vurgu 4,78
+   Koyu temada zaten geçiyordu (en düşük: yuzey-vurgu 4,67).
    ------------------------------------------------------------------- */
 :root {
   color-scheme: light;
@@ -61,7 +73,7 @@
   --u-metin:        #0e1319;
   --u-metin-2:      #39434f;
   --u-metin-3:      #4c5763;
-  --u-metin-4:      #5b6772;
+  --u-metin-4:      #566270;
 
   --u-marka:        #0d6b48;
   --u-marka-2:      #0a5539;

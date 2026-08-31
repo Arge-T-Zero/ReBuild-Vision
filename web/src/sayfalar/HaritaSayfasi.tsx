@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import { Harita, isaretciIkonu } from '../lib/leaflet/Harita'
@@ -71,12 +71,15 @@ export function HaritaSayfasi() {
   const [katman] = useState(() => L.layerGroup())
   const [seciliSiniflar, setSeciliSiniflar] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
+  const yenile = useCallback(() => {
+    setHata('')
     api.alanlar().then(setAlanlar).catch((h) => setHata(h.message))
     api.harita()
       .then((h) => { setDagilim(h.malzeme_dagilimi); setNot(h.not) })
-      .catch((h) => setHata(h.message))
+      .catch((h) => { setHata(h.message); setDagilim([]) })
   }, [])
+
+  useEffect(() => { yenile() }, [yenile])
 
   useEffect(() => {
     if (!harita) return
@@ -156,7 +159,14 @@ export function HaritaSayfasi() {
         aciklama={not}
       />
 
-      {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
+      {hata && (
+        <div className="mb-4">
+          <Hata mesaj={hata} />
+          <Buton tur="ikincil" className="mt-3" onClick={yenile}>
+            Yeniden dene
+          </Buton>
+        </div>
+      )}
 
       {dagilim !== null && dagilim.length > 0 && (
         <Kart className="mb-5 grid grid-cols-3 divide-x divide-kenar">

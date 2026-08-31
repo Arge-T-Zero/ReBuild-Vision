@@ -33,6 +33,16 @@ cihazın normal dosya sisteminde durur; güvenli depo büyük ikili dosyalar
 için tasarlanmamıştır. Fotoğrafların da şifrelenmesi ayrı bir çözüm
 gerektirir ve bu sürümde yapılmamıştır.
 
+## Tema
+
+Varsayılan **açık tema**. Gündüz, güneş altında, eldivenli bir saha
+personelinin okuyacağı ekran budur. Koyu tema kaldırılmadı — gece
+çalışmasında ve pil ömründe gerçek bir yararı var — ama artık bir
+tercih, tek seçenek değil. Düğme hem giriş ekranında hem üst çubukta;
+seçim güvenli depoda saklanır.
+
+Palet web arayüzüyle birebir aynıdır (`lib/tema.dart` ↔ `web/src/index.css`).
+
 ## Yinelenen kayıt nasıl engelleniyor
 
 Her ölçüm cihazda üretilen bir `yerel_kimlik` taşır ve sunucuda bu alan
@@ -44,6 +54,21 @@ hesabını bozardı.
 
 Sunucu satır satır sonuç döner (`yazildi` / `yinelenen` / `hata`);
 uygulama yalnızca `hata` alanları kuyrukta tutar.
+
+### Birim sözleşmesi
+
+Ekranda gösterilen birim ile sunucuya gönderilen birim **bilerek
+farklıdır**: kullanıcı `m²` görür, sunucu `m2` alır. İkisi
+`lib/olcum_turu.dart` içinde yan yana durur ve `test/olcum_turu_test.dart`
+sunucunun sözleşmesini (`api/app/schemas.py` → `TURUN_BIRIMI`) doğrular.
+
+Bu ayrım bir hatanın ardından yazıldı: alan ölçümleri sunucuya `m²`
+olarak gidiyor, reddediliyordu. Eşitleme toplu çalıştığı için kuyrukta
+tek bir alan ölçümü bulunduğu anda **bütün parti düşüyor**, o cihaz bir
+daha hiç eşitlenemiyordu — üstelik uygulama bunu ağ hatası sanıp
+"sonra denenecek" diyordu. İki uçlu düzeltildi: istemci doğru birimi
+gönderiyor, sunucu da bozuk bir satır yüzünden partiyi düşürmüyor
+(sahadaki güncellenmemiş telefonlar için).
 
 ## Çalıştırma
 
@@ -69,7 +94,8 @@ Varsayılan: `https://rebuild-vision-api.onrender.com`
 | `lib/main.dart` | Uygulama girişi, oturum kontrolü |
 | `lib/api.dart` | Sunucu istemcisi ve veri sınıfları |
 | `lib/kuyruk.dart` | Şifreli çevrimdışı kuyruk |
-| `lib/tema.dart` | Renkler — web arayüzüyle birebir aynı |
+| `lib/tema.dart` | Açık/koyu palet — web arayüzüyle birebir aynı |
+| `lib/olcum_turu.dart` | Ölçüm türü, görünen birim, sunucu birimi |
 | `lib/ekran/giris.dart` | Giriş |
 | `lib/ekran/kabuk.dart` | Alt gezinme, bağlantı durumu, eşitleme |
 | `lib/ekran/yukle.dart` | Fotoğraf çekme/seçme + konum |
@@ -80,11 +106,13 @@ Varsayılan: `https://rebuild-vision-api.onrender.com`
 Web arayüzündekilerle aynıdır:
 
 1. Her model çıktısında **"ÖN TAHMİN"** etiketi
-2. Güven skoru **yuvarlanmaz**
-3. Malzeme renkleri `siniflar.json` ile birebir aynı — doğrulayıcıdan
+2. Sahte model servisi etkinken yükleme sonucunda **"SAHTE MODEL
+   SERVİSİ"** uyarısı — sahtelik hiçbir yerde gizlenmez
+3. Güven skoru **yuvarlanmaz**
+4. Malzeme renkleri `siniflar.json` ile birebir aynı — doğrulayıcıdan
    geçmiş palet
-4. Kapsam uyarısı ekranda yazılı
-5. Dokunma hedefleri en az 52px — eldivenli kullanım
+5. Kapsam uyarısı ekranda yazılı
+6. Dokunma hedefleri en az 52px — eldivenli kullanım
 
 **Çevrimdışı olmak bir hata değildir**, sahada beklenen durumdur. Bu
 yüzden kırmızı hata değil, nötr/uyarı tonunda gösterilir.
@@ -99,3 +127,16 @@ yüzden kırmızı hata değil, nötr/uyarı tonunda gösterilir.
 
 Kaynak kod tamamdır; APK üretimi yalnızca araç zinciri kurulumu
 gerektirir (`flutter doctor`).
+
+## Bilinen eksikler
+
+Dürüst beyan — bunlar henüz yapılmadı:
+
+- **Kayıt ol ekranı yok.** Hesap açma yalnızca web arayüzünden yapılır;
+  telefondan başvurulamaz.
+- **Parolayı göster/gizle yok.** Web arayüzünde var.
+- **Fotoğraflar şifreli değil.** Yalnızca ölçüm kayıtları ve oturum
+  jetonu güvenli depoda tutulur (yukarıdaki sınır beyanı).
+- **Enkaz alanı tanımlama, doğrulama kuyruğu ve harita ekranları yok.**
+  Mobil uygulama saha personelinin iki işine odaklanır: görüntü yükleme
+  ve ölçüm girme. Diğer roller web arayüzünü kullanır.

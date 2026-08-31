@@ -154,9 +154,9 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
         </Kart>
       ) : (
         <div className="space-y-6">
-          {goruntuler.map((g) => (
+          {goruntuler.map((g, i) => (
             <GoruntuKarti
-              key={g.id} goruntu={g} siniflar={siniflar}
+              key={g.id} goruntu={g} sira={i + 1} siniflar={siniflar}
               secili={seciliTespit} secildi={setSeciliTespit}
               olcebilir={OLCEBILIR.has(kullanici?.rol ?? '')}
               rol={kullanici?.rol ?? ''}
@@ -250,8 +250,11 @@ function AlanKunyesi({ alan }: { alan: EnkazAlani }) {
   )
 }
 
-function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
+function GoruntuKarti({
+  goruntu, sira, siniflar, secili, secildi, olcebilir, rol,
+}: {
   goruntu: Goruntu
+  sira: number
   siniflar: Map<string, { renk: string; gorunen_ad: string; malzeme_mi: boolean }>
   secili: number | null
   secildi: (id: number) => void
@@ -264,6 +267,32 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
 
   return (
     <Kart className="p-4">
+      {/*
+        ⚠️ GÖRÜNTÜLERİN KİMLİĞİ YOKTU. Her kart yalnızca "Tespitler"
+        yazıyordu; beş görüntülü bir sahada ekran okuyucunun başlık
+        listesi "Tespitler, Tespitler, Tespitler…" diye okunuyor ve
+        hangi fotoğrafta olunduğu anlaşılamıyordu.
+
+        Aynı yerde bir izlenebilirlik eksiği de vardı: `cekim_tarihi` ve
+        `cihaz` API'den geliyor, tipte duruyor ve HİÇBİR EKRANDA
+        gösterilmiyordu. Görüntünün ne zaman ve neyle çekildiği, bu
+        projede tespitin dayanağının bir parçasıdır — kararı sonradan
+        denetleyecek kişinin ilk soracağı şeydir.
+      */}
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3
+        pb-3 border-b border-kenar">
+        <h2 className="text-sm font-semibold">
+          <span className="sayisal">{sira}</span>. görüntü
+        </h2>
+        <p className="text-xs text-metin-3">
+          {goruntu.cekim_tarihi
+            ? `Çekim: ${new Date(goruntu.cekim_tarihi).toLocaleString('tr-TR')}`
+            : 'Çekim tarihi görüntüde kayıtlı değil'}
+          {goruntu.cihaz ? ` · ${goruntu.cihaz}` : ''}
+          {' · '}
+          Yüklenme: {new Date(goruntu.olusturma_tarihi).toLocaleDateString('tr-TR')}
+        </p>
+      </div>
       <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr] items-start">
         <div>
           <TespitKutulari
@@ -282,7 +311,7 @@ function GoruntuKarti({ goruntu, siniflar, secili, secildi, olcebilir, rol }: {
 
         <div className="lg:sticky lg:top-20">
           <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-sm font-semibold text-metin-2">Tespitler</h2>
+            <h3 className="text-sm font-semibold text-metin-2">Tespitler</h3>
             <span className="text-xs text-metin-4">
               <span className="sayisal">{goruntu.tespitler.length}</span> kayıt ·
               hepsi ön tahmin

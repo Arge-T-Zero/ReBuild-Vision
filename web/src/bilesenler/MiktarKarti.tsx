@@ -27,6 +27,22 @@ function sayi(d: number | null | undefined): string {
   return d.toLocaleString('tr-TR', { maximumFractionDigits: 3 })
 }
 
+/**
+ * Ölçüm türünün ekranda görünen adı.
+ *
+ * ⚠️ HAM VERİ EKRANA SIZIYORDU. Girilen ölçümler listesi `o.tur` alanını
+ * doğrudan basıyor ve kullanıcı "12,4 ton · agirlik · Saha kantar ölçümü"
+ * görüyordu: küçük harfli, şapkasız, veri tabanı enum'unun ta kendisi.
+ * Formdaki açılır listede aynı şey "Ağırlık (ton)" diye düzgün yazılıydı —
+ * yani kullanıcı kendi seçtiği etiketi kaydettikten sonra bir başkası
+ * hâline gelmiş görüyordu.
+ */
+const OLCUM_TURU: Record<string, string> = {
+  agirlik: 'Ağırlık',
+  hacim: 'Hacim',
+  alan: 'Görünür alan',
+}
+
 export function MiktarKarti({
   miktar, olcumler, olcumEklenebilir, olcumEklendi,
 }: {
@@ -36,6 +52,21 @@ export function MiktarKarti({
   olcumEklendi: () => void
 }) {
   const [formAcik, setFormAcik] = useState(false)
+  /**
+   * Ölçüm kaydedildi bildirimi.
+   *
+   * ⚠️ KAYDIN İŞE YARADIĞINA DAİR HİÇBİR İŞARET YOKTU. Kullanıcı ölçümü
+   * kaydettiğinde form kapanıyor, kartın tepesindeki "miktar hesaplanmadı"
+   * cümlesi HARFİ HARFİNE AYNI kalıyordu. Tek değişiklik, kartın altında
+   * sessizce beliren bir satırdı. Doğrulanmamış bir tespitte miktar zaten
+   * hesaplanmayacağı için, ölçümü giren saha personeli haklı olarak
+   * "kaydedilmedi mi?" diye düşünüp aynı ölçümü tekrar giriyordu.
+   *
+   * Kural değişmiyor — doğrulanmamış tespitte miktar üretilmez. Değişen,
+   * kullanıcıya İKİ ŞEYİ birden söylemek: ölçümün kaydedildiğini ve
+   * miktarın çıkması için sırada ne olduğunu.
+   */
+  const [kaydedildi, setKaydedildi] = useState(false)
 
   return (
     <div className="border border-kenar rounded-lg p-4 bg-yuzey-2/40">
@@ -67,9 +98,21 @@ export function MiktarKarti({
           <p className="text-xs text-metin-3 mt-1.5">
             Sistem, dayanağı olmayan bir miktar tahmini üretmez.
           </p>
+          {kaydedildi && (
+            <p role="status" className="mt-3 text-xs text-olumlu bg-olumlu/10
+              border border-olumlu/30 rounded-md px-3 py-2.5 leading-relaxed">
+              <strong className="font-semibold">Ölçüm kaydedildi.</strong>{' '}
+              {olcumler.length > 0
+                ? 'Aşağıdaki listede görünüyor ve işlem geçmişine düştü. '
+                : ''}
+              Miktarın hesaplanabilmesi için bu tespitin ayrıca bir uzman
+              tarafından doğrulanması gerekir — ölçümünüz o an devreye
+              girecek.
+            </p>
+          )}
           {olcumEklenebilir && !formAcik && (
             <Buton tur="ikincil" className="mt-3" onClick={() => setFormAcik(true)}>
-              Ölçüm ekle
+              {olcumler.length > 0 ? 'Yeni ölçüm ekle' : 'Ölçüm ekle'}
             </Buton>
           )}
         </div>
@@ -84,7 +127,7 @@ export function MiktarKarti({
                 <span className="tabular-nums font-medium">
                   {sayi(o.deger)} {o.birim}
                 </span>
-                {' · '}{o.tur}{' · '}{o.yontem}
+                {' · '}{OLCUM_TURU[o.tur] ?? o.tur}{' · '}{o.yontem}
               </li>
             ))}
           </ul>
@@ -96,7 +139,9 @@ export function MiktarKarti({
           tespitId={miktar.tespit_id}
           acik={formAcik}
           ac={() => setFormAcik(true)}
-          eklendi={() => { setFormAcik(false); olcumEklendi() }}
+          eklendi={() => {
+            setFormAcik(false); setKaydedildi(true); olcumEklendi()
+          }}
         />
       )}
     </div>

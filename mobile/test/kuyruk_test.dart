@@ -41,4 +41,31 @@ void main() {
       'yerel_kimlik', 'tespit_id', 'tur', 'deger', 'birim', 'yontem',
     });
   });
+
+  group('reddedilen kayıt', () {
+    test('gerekçe kaydın üstünde saklanır ve JSON turunda korunur', () {
+      final n = ornek().notlu("'alan' ölçümünün birimi 'm2' olmalı");
+      final geri = KuyrukKaydi.jsondan(n.jsona());
+      expect(geri.sunucuNotu, "'alan' ölçümünün birimi 'm2' olmalı",
+          reason: 'Eşitleme uygulama kapalıyken de denenir; bildirim '
+              'kaybolur, gerekçe kayıtla birlikte kalmalıdır');
+      expect(geri.deger, n.deger);
+      expect(geri.yerelKimlik, n.yerelKimlik);
+    });
+
+    test('gerekçe eşitleme gövdesine SIZMAZ', () {
+      final n = ornek().notlu('bir gerekçe');
+      expect(n.esitlemeIcin().containsKey('sunucu_notu'), isFalse,
+          reason: 'Sunucu şeması bu alanı beklemiyor; gönderilirse '
+              'istek reddedilir');
+      expect(n.esitlemeIcin().keys.toSet(), {
+        'yerel_kimlik', 'tespit_id', 'tur', 'deger', 'birim', 'yontem',
+      });
+    });
+
+    test('notu olmayan kayıt JSON gövdesine boş alan koymaz', () {
+      expect(ornek().jsona().containsKey('sunucu_notu'), isFalse);
+      expect(KuyrukKaydi.jsondan(ornek().jsona()).sunucuNotu, isNull);
+    });
+  });
 }

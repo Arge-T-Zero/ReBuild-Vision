@@ -27,9 +27,28 @@ export function TehlikeliKarti({
   const [not, setNot] = useState('')
   const [hata, setHata] = useState('')
   const [bekliyor, setBekliyor] = useState(false)
+  /**
+   * Kayıtlar çekilemedi mi?
+   *
+   * ⚠️ BU KART SESSİZCE KAYBOLUYORDU. `catch(() => {})` hatayı yutuyor,
+   * `veri` null kalıyor ve `if (!veri) return null` bileşeni ekrandan
+   * tamamen siliyordu. Sonuç: ağ koptuğunda ya da uç nokta hata
+   * verdiğinde tespit sayfasında "Tehlikeli madde incelemesi" başlığı
+   * HİÇ GÖRÜNMÜYORDU.
+   *
+   * Bu, arayüzdeki en pahalı sessiz arıza türüdür: kullanıcı eksik bir
+   * bölümü fark edemez, "demek ki bu tespit için tehlikeli madde kaydı
+   * söz konusu değil" diye okur. Oysa kayıt VAR olabilir. Yokluğun
+   * güvenlik anlamına gelmediğini yazan bir kart, yükleyemediğinde de
+   * bunu söylemek zorundadır.
+   */
+  const [cekilemedi, setCekilemedi] = useState(false)
 
   const yenile = useCallback(() => {
-    api.tehlikeliKayitlar(tespitId).then(setVeri).catch(() => {})
+    setCekilemedi(false)
+    api.tehlikeliKayitlar(tespitId)
+      .then(setVeri)
+      .catch(() => setCekilemedi(true))
   }, [tespitId])
 
   useEffect(() => { yenile() }, [yenile])
@@ -66,6 +85,27 @@ export function TehlikeliKarti({
     } finally {
       setBekliyor(false)
     }
+  }
+
+  if (cekilemedi) {
+    return (
+      <div className="border border-kenar rounded-lg p-4 bg-yuzey-2/40">
+        <h3 className="text-sm font-semibold text-metin-2 mb-1">
+          Tehlikeli madde incelemesi
+        </h3>
+        <p role="alert" className="text-xs text-dikkat leading-relaxed">
+          <strong className="font-semibold">
+            İnceleme kayıtları yüklenemedi.
+          </strong>{' '}
+          Bu tespite ait tehlikeli madde kaydı olup olmadığı ŞU AN
+          BİLİNMİYOR — bu ekranın boş kalması kayıt bulunmadığı anlamına
+          gelmez.
+        </p>
+        <Buton tur="ikincil" className="mt-3 text-sm" onClick={yenile}>
+          Yeniden dene
+        </Buton>
+      </div>
+    )
   }
 
   if (!veri) return null

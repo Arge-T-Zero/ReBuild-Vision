@@ -34,7 +34,9 @@ from ..core.permissions import OLCUM_GIREBILIR
 from ..db import oturum
 from ..deps import rol_gerekli
 from ..models import Kullanici, Olcum, Tespit
-from ..schemas import EsitlemeIstek, EsitlemeSonucu, EsitlemeSatirSonucu
+from ..schemas import (
+    EsitlemeIstek, EsitlemeSonucu, EsitlemeSatirSonucu, olcum_kusuru,
+)
 
 router = APIRouter(prefix="/esitleme", tags=["çevrimdışı eşitleme"])
 
@@ -66,6 +68,19 @@ async def olcum_esitle(
                 yerel_kimlik=satir.yerel_kimlik,
                 durum="yinelenen",
                 aciklama="Bu kayıt daha önce eşitlenmiş; tekrar yazılmadı.",
+            ))
+            continue
+
+        # Birim/üst sınır kuralı burada, SATIR DÜZEYİNDE uygulanır.
+        # Şemada uygulanırsa (eskiden öyleydi) tek bozuk satır bütün
+        # partiyi 422 ile düşürür ve sağlam ölçümler de yazılmaz —
+        # gerekçenin tamamı schemas.EsitlemeSatiri docstring'inde.
+        kusur = olcum_kusuru(satir.tur, satir.birim, satir.deger)
+        if kusur:
+            sonuclar.append(EsitlemeSatirSonucu(
+                yerel_kimlik=satir.yerel_kimlik,
+                durum="hata",
+                aciklama=kusur,
             ))
             continue
 

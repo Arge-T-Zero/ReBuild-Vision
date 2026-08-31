@@ -64,7 +64,19 @@ export function Kuyruk() {
         )}
       />
 
-      {hata && <div className="mb-4"><Hata mesaj={hata} /></div>}
+      {/* Hata gösteren her ekran ÇIKIŞ YOLU da sunmalı. Kuyrukta hata
+          mesajı vardı ama yeniden deneme yoktu; kullanıcının tek
+          seçeneği sayfayı yenilemekti — ve sayfa yenilenince yaptığı
+          işi kaybediyordu. */}
+      {hata && (
+        <div className="mb-4">
+          <Hata mesaj={hata} />
+          <Buton tur="ikincil" className="mt-3"
+            onClick={() => { setHata(''); setKayitlar(null); yenile() }}>
+            Yeniden dene
+          </Buton>
+        </div>
+      )}
 
       {/* `role="status"` ile duyurulur: ekran okuyucu kullanan uzman da
           kararının kaydedildiğini duyar. */}

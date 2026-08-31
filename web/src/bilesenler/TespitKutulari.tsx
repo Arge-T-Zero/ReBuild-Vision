@@ -207,8 +207,31 @@ export function TespitKutulari({
             }}
           >
             {/* Yer seçimi `yerlesim` içinde çakışma kontrolüyle yapıldı.
-                Vurgulanan etiket zIndex ile öne gelir. */}
-            <span
+                Vurgulanan etiket zIndex ile öne gelir.
+
+                ⚠️ SOLUK KUTUNUN ETİKETİ ARTIK ÇİZİLMİYOR — ÖNCEDEN
+                OKUNAMAZ HÂLDE EKRANDA DURUYORDU.
+
+                `opacity: 0.35` düğmenin tamamına uygulanıyor, yani
+                etiketin hem zemini hem yazısı fotoğrafa doğru soluyordu.
+                Ölçülen sonuç: `#0e1116` yazı `#3987e5` zeminde 0,35
+                opaklıkla `#abacad` / `#bad5f6` olarak render ediliyor ve
+                kontrast **1,5**'e düşüyordu (eşik 4,5). Aynı şey dolgu
+                toprak etiketinde 1,57, ahşapta 1,45.
+
+                Bu geçici bir durum değildi: `soluk`, listede herhangi bir
+                satırın üzerine gelindiği ANDA doğru olur — yani uzmanın
+                kuyruk üzerinde çalıştığı sürenin neredeyse tamamında.
+                Ekranda okunamayacak kadar soluk ama yer kaplayan dokuz
+                etiket duruyordu.
+
+                Doğru davranış, yazıyı soldurmak değil KALDIRMAKTIR:
+                geri çekilen tespidin kutusu (konum + sınıf rengi) yerinde
+                kalır, etiketi çizilmez. Hiçbir bilgi kaybolmaz — vurgulu
+                ve seçili tespitlerin etiketleri tam okunaklı durur, imleç
+                çekilince hepsi geri gelir — ve fotoğrafın üstü de
+                gerçekten sadeleşir. */}
+            {!soluk && <span
               className="absolute px-1.5 py-0.5 rounded text-xs font-semibold
                 whitespace-nowrap flex items-center gap-1"
               style={{
@@ -232,7 +255,7 @@ export function TespitKutulari({
               >
                 ÖN TAHMİN
               </span>
-            </span>
+            </span>}
           </button>
         )
       })}
