@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { DurumSaglayici, useDurum } from './durum'
 import { TemaSaglayici, useTema } from './tema'
 import { GezinmeSaglayici } from './gezinme'
@@ -22,6 +22,56 @@ import { Gecmis } from './sayfalar/Gecmis'
 import { Yonetici } from './sayfalar/Yonetici'
 
 type Konum = { ad: Exclude<SayfaAdi, 'alan'> } | { ad: 'alan'; id: number }
+
+/**
+ * ADRES YÖNLENDİRMESİ.
+ *
+ * ⚠️ Uygulamanın hiç adresi yoktu: bütün ekranlar `/` üzerinde duruyor,
+ * gezinme yalnızca React durumunda tutuluyordu. Üç sonucu vardı ve
+ * üçü de bir kamu aracı için ağırdır:
+ *
+ *  1. TARAYICI GERİ DÜĞMESİ KULLANICIYI UYGULAMADAN ATIYORDU. Ölçüldü:
+ *     alan detayındayken geri → `about:blank`. Telefonda geri hareketi
+ *     ana gezinme yöntemidir; saha personeli bir kez kaydırınca
+ *     uygulamadan çıkıyordu.
+ *  2. Bir sahanın bağlantısı PAYLAŞILAMIYORDU. "Şu sahaya bak" demek
+ *     kurumlar arası çalışmanın en sık ihtiyacı; adres hep aynıydı.
+ *  3. Sayfa yenilenince kullanıcı bulunduğu yeri kaybediyordu.
+ *
+ * Yönlendirme için kütüphane EKLENMEDİ: History API doğrudan
+ * kullanılıyor. Yeni bir bağımlılık, projenin lisans denetiminden
+ * geçmesi gereken bir kalem daha demek olurdu (docs/lisans-analizi.md).
+ *
+ * Derin bağlantı üretimde `vercel.json` içindeki yeniden yazma kuralıyla
+ * çalışır (`/((?!api/).*) → /index.html`).
+ */
+const YOL: Record<Exclude<SayfaAdi, 'alan'>, string> = {
+  yukle: '/yukle',
+  alanlar: '/alanlar',
+  kuyruk: '/kuyruk',
+  harita: '/harita',
+  gecmis: '/gecmis',
+  yonetici: '/roller',
+}
+
+function konumYolu(k: Konum): string {
+  return k.ad === 'alan' ? `/alan/${k.id}` : YOL[k.ad]
+}
+
+/**
+ * Adresten konum. Rolün menüsünde olmayan bir sayfaya derin bağlantı
+ * gelirse ana sayfaya düşer — adres çubuğuna yazılan bir yol, sunucudaki
+ * yetki kontrolünün yerine geçmez ama arayüzde de boş ekran açmamalı.
+ */
+function yolKonumu(yol: string, menu: Exclude<SayfaAdi, 'alan'>[],
+  anaSayfa: Exclude<SayfaAdi, 'alan'>): Konum {
+  const alan = yol.match(/^\/alan\/(\d+)$/)
+  if (alan) return { ad: 'alan', id: Number(alan[1]) }
+  const giris = (Object.keys(YOL) as Exclude<SayfaAdi, 'alan'>[])
+    .find((s) => YOL[s] === yol)
+  if (giris && menu.includes(giris)) return { ad: giris }
+  return { ad: anaSayfa }
+}
 
 // Üst çubuk (masaüstü) ve alt çubuk (dar ekran) aynı ikonları FARKLI
 // boyutta kullanır: dokunmatikte simge parmakla hedeflenir, imleçle
@@ -65,8 +115,39 @@ function TemaDugmesi() {
 function Kabuk() {
   const { kullanici, yukleniyor, durum, cikisYap } = useDurum()
   const tanim = rolTanimi(kullanici?.rol ?? null)
-  const [konum, setKonum] = useState<Konum>({ ad: tanim.anaSayfa })
+  const [konum, setKonumIc] = useState<Konum>({ ad: tanim.anaSayfa })
   const menuRef = useRef<HTMLElement>(null)
+  // Açılıştaki adres. Kullanıcı bilgisi sonradan geldiği için derin
+  // bağlantı ancak rol belli olunca çözülebilir; o ana kadar saklanır.
+  const ilkYol = useRef(window.location.pathname)
+
+  const konumaGit = useCallback((k: Konum, degistir = false) => {
+    setKonumIc(k)
+    const yol = konumYolu(k)
+    if (window.location.pathname === yol) return
+    if (degistir) window.history.replaceState(null, '', yol)
+    else window.history.pushState(null, '', yol)
+  }, [])
+
+  // Geri/ileri düğmesi. Adres değişince ekran onu izler.
+  useEffect(() => {
+    const t = rolTanimi(kullanici?.rol ?? null)
+    const dinleyici = () => setKonumIc(
+      yolKonumu(window.location.pathname, t.menu, t.anaSayfa),
+    )
+    window.addEventListener('popstate', dinleyici)
+    return () => window.removeEventListener('popstate', dinleyici)
+  }, [kullanici?.rol])
+
+  // Sekme başlığı ekranı söyler. Tek bir "ReBuild Vision" başlığı,
+  // birden çok sekme açan bir kullanıcıya hangisinin ne olduğunu
+  // söylemiyordu.
+  useEffect(() => {
+    const ad = konum.ad === 'alan' ? 'Enkaz alanı' : SAYFA_ETIKETI[konum.ad]
+    document.title = kullanici
+      ? `${ad} · ReBuild Vision`
+      : 'Giriş · ReBuild Vision'
+  }, [konum, kullanici])
 
   // Menü gerçekten taşıyor mu? Taşıyorsa sağ kenara soluklaşma konur.
   // Sabit bir soluklaşma, her şey sığdığında da son sekmeyi
@@ -83,11 +164,16 @@ function Kabuk() {
     return () => g.disconnect()
   }, [tanim.menu.length])
 
-  // Rol belli olduğunda o rolün ana sayfasına git: saha personeli doğrudan
-  // görüntü yükleme ekranına, uzman inceleme kuyruğuna düşer.
+  // Rol belli olduğunda: derin bağlantı varsa ORAYA, yoksa o rolün ana
+  // sayfasına. Saha personeli doğrudan görüntü yükleme ekranına, uzman
+  // inceleme kuyruğuna düşer.
   useEffect(() => {
-    if (kullanici) setKonum({ ad: rolTanimi(kullanici.rol).anaSayfa })
-  }, [kullanici?.id, kullanici?.rol])
+    if (!kullanici) return
+    const t = rolTanimi(kullanici.rol)
+    konumaGit(yolKonumu(ilkYol.current, t.menu, t.anaSayfa), true)
+    // Bir kez çözüldükten sonra rol değişimi ana sayfaya götürsün.
+    ilkYol.current = '/'
+  }, [kullanici?.id, kullanici?.rol, konumaGit])
 
   if (yukleniyor) {
     return (
@@ -103,8 +189,8 @@ function Kabuk() {
     konum.ad === ad || (ad === 'alanlar' && konum.ad === 'alan')
 
   const gezinme = {
-    git: (s: Exclude<SayfaAdi, 'alan'>) => setKonum({ ad: s }),
-    alanaGit: (id: number) => setKonum({ ad: 'alan', id }),
+    git: (s: Exclude<SayfaAdi, 'alan'>) => konumaGit({ ad: s }),
+    alanaGit: (id: number) => konumaGit({ ad: 'alan', id }),
     // Menüsünde olmayan bir sayfaya yönlendirmek anlamsız olurdu.
     erisilebilir: (s: Exclude<SayfaAdi, 'alan'>) => tanim.menu.includes(s),
   }
@@ -169,7 +255,7 @@ function Kabuk() {
                 /* İlk giriş turu hedefi. Aynı değer alt çubukta da var;
                    tur, görünür olanı ÖLÇEREK seçer. */
                 data-tanitim={s}
-                onClick={() => setKonum({ ad: s })}
+                onClick={() => konumaGit({ ad: s })}
                 /* Sekmeler büyütüldü: 14 px yazı + 16 px ikon bir kamu
                    aracı için küçüktü, tıklama hedefi de dardı. */
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-md
@@ -225,7 +311,7 @@ function Kabuk() {
               <button
                 aria-current={konum.ad === s ? 'page' : undefined}
                 data-tanitim={s}
-                onClick={() => setKonum({ ad: s })}
+                onClick={() => konumaGit({ ad: s })}
                 className={`w-full flex flex-col items-center justify-center
                   gap-1.5 py-2.5 text-xs leading-none transition-colors
                   ${aktif(s)
@@ -250,11 +336,11 @@ function Kabuk() {
         }>
         {konum.ad === 'yukle' && <Yukle />}
         {konum.ad === 'alanlar' && (
-          <Alanlar acildi={(id) => setKonum({ ad: 'alan', id })} />
+          <Alanlar acildi={(id) => konumaGit({ ad: 'alan', id })} />
         )}
         {konum.ad === 'alan' && (
           <AlanDetay alanId={konum.id}
-            geri={() => setKonum({ ad: tanim.anaSayfa })} />
+            geri={() => konumaGit({ ad: tanim.anaSayfa })} />
         )}
         {konum.ad === 'kuyruk' && <Kuyruk />}
         {konum.ad === 'harita' && <HaritaSayfasi />}

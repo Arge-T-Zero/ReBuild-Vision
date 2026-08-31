@@ -6,8 +6,16 @@ import '../tema.dart';
 class GirisEkrani extends StatefulWidget {
   final Api api;
   final void Function(Kullanici) girisYapildi;
+  final bool koyuTema;
+  final Future<void> Function() temaDegistir;
 
-  const GirisEkrani({super.key, required this.api, required this.girisYapildi});
+  const GirisEkrani({
+    super.key,
+    required this.api,
+    required this.girisYapildi,
+    required this.koyuTema,
+    required this.temaDegistir,
+  });
 
   @override
   State<GirisEkrani> createState() => _GirisDurumu();
@@ -50,6 +58,25 @@ class _GirisDurumu extends State<GirisEkrani> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Tema düğmesi giriş ekranında da durur: kullanıcının ilk gördüğü
+      // ekran budur ve tercihini oturum açmadan önce yapabilmelidir.
+      // Web arayüzünde de aynı yerde.
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: widget.koyuTema ? 'Açık temaya geç' : 'Koyu temaya geç',
+            onPressed: () => widget.temaDegistir(),
+            icon: Icon(
+              widget.koyuTema
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+              size: 20,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -69,17 +96,17 @@ class _GirisDurumu extends State<GirisEkrani> {
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.layers_outlined,
+                    child: Icon(Icons.layers_outlined,
                         color: Renk.marka, size: 22),
                   ),
                   const SizedBox(height: 24),
-                  const Text('ReBuild Vision',
+                  Text('ReBuild Vision',
                       style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w700,
                           color: Renk.metin)),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Saha uygulaması — çevrimdışı çalışır',
                     style: TextStyle(color: Renk.metin3, fontSize: 14),
                   ),
@@ -109,7 +136,7 @@ class _GirisDurumu extends State<GirisEkrani> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(_hata,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Renk.dikkat, fontSize: 13)),
                     ),
                   ],
@@ -119,7 +146,7 @@ class _GirisDurumu extends State<GirisEkrani> {
                     child: Text(_bekliyor ? 'Giriş yapılıyor…' : 'Giriş yap'),
                   ),
                   const SizedBox(height: 28),
-                  const Text(
+                  Text(
                     'Model çıktıları ön tahmindir. Sistem tehlikeli madde '
                     'teşhisi yapmaz ve yalnızca görünür yüzeyi değerlendirir.',
                     style: TextStyle(

@@ -220,23 +220,40 @@ TURUN_BIRIMI = {
 OLCUM_UST_SINIR = 100_000.0
 
 
+def olcum_kusuru(tur: OlcumTuru, birim: str, deger: float) -> str | None:
+    """İki kuralı tek yerde uygular; kusur varsa Türkçe açıklamasını döner.
+
+    Ayrı bir fonksiyon olmasının sebebi, aynı kuralın İKİ FARKLI ŞEKİLDE
+    uygulanması gerekmesidir:
+
+    - `/olcum` (tek kayıt, arayüzden): kusur isteği REDDEDER. Kullanıcı
+      ekranın başındadır, hatayı görüp düzeltebilir.
+    - `/esitleme/olcum` (toplu, sahadaki telefondan): kusur yalnızca O
+      SATIRI düşürür, partiyi değil. Gerekçe aşağıda.
+    """
+    beklenen = TURUN_BIRIMI[tur]
+    if birim != beklenen:
+        return (
+            f"'{tur.value}' ölçümünün birimi '{beklenen}' olmalı, "
+            f"'{birim}' gönderildi."
+        )
+    if deger > OLCUM_UST_SINIR:
+        return (
+            f"Ölçüm değeri tek bir tespit için fazla yüksek "
+            f"({deger:g} {beklenen}). Üst sınır "
+            f"{OLCUM_UST_SINIR:g} {beklenen}. Değeri kontrol edin."
+        )
+    return None
+
+
 class OlcumDogrulamasi:
-    """`OlcumIstek` ve `EsitlemeSatiri` için ortak doğrulama."""
+    """`OlcumIstek` için doğrulama — kusurlu istek reddedilir."""
 
     @model_validator(mode="after")
     def _olcum_tutarli(self):
-        beklenen = TURUN_BIRIMI[self.tur]
-        if self.birim != beklenen:
-            raise ValueError(
-                f"'{self.tur.value}' ölçümünün birimi '{beklenen}' olmalı, "
-                f"'{self.birim}' gönderildi."
-            )
-        if self.deger > OLCUM_UST_SINIR:
-            raise ValueError(
-                f"Ölçüm değeri tek bir tespit için fazla yüksek "
-                f"({self.deger:g} {beklenen}). Üst sınır "
-                f"{OLCUM_UST_SINIR:g} {beklenen}. Değeri kontrol edin."
-            )
+        kusur = olcum_kusuru(self.tur, self.birim, self.deger)
+        if kusur:
+            raise ValueError(kusur)
         return self
 
 
@@ -248,8 +265,39 @@ class OlcumIstek(Model, OlcumDogrulamasi):
     yontem: str
 
 
-class EsitlemeSatiri(Model, OlcumDogrulamasi):
-    """Çevrimdışı kuyruktan gelen tek ölçüm."""
+class EsitlemeSatiri(Model):
+    """Çevrimdışı kuyruktan gelen tek ölçüm.
+
+    ⚠️ BU SINIF BİLİNÇLİ OLARAK `OlcumDogrulamasi` KULLANMAZ.
+
+    Kullanıyordu ve bu, eşitlemenin bütün tasarımını çökertiyordu.
+    Pydantic gövdeyi satır satır değil BİR BÜTÜN olarak doğrular: tek bir
+    satır kuralı çiğnediğinde istek 422 ile reddedilir ve partideki
+    SAĞLAM KAYITLAR DA YAZILMAZ. Ölçülen davranış — 3 sağlam + 1 bozuk
+    kayıt gönderildiğinde:
+
+        HTTP 422, yazılan: 0
+
+    Oysa bu uç noktanın sözü tam tersiydi; `EsitlemeSonucu`nun kendi
+    döküman satırı "Kısmi başarı normaldir" diyor, `api.dart` "yirmi
+    kayıttan üçü geçersizse diğerleri yazılır" diye yazıyor. Satır satır
+    sonuç dönen bütün mekanizma, şema doğrulaması yüzünden hiç
+    çalışmıyordu.
+
+    Sonucu sahada şuydu: kuyruğa bir kez kusurlu kayıt girdiğinde (mobil
+    uygulama alan ölçümlerinde 'm²' gönderiyordu — bkz. K-0xx) o cihazın
+    kuyruğu BİR DAHA HİÇ BOŞALMIYORDU. Her eşitleme denemesi 422 alıyor,
+    uygulama bunu ağ hatası sanıp "kayıtlar cihazda güvende, sonra
+    denenecek" diyor ve sağlam ölçümler de sonsuza kadar gönderilmemiş
+    kalıyordu.
+
+    Çevrimdışı eşitleme uç noktası, tanımı gereği SÜRÜMLERİ FARKLI
+    cihazlardan veri alır: sahadaki telefon güncellenmemiş olabilir. Eski
+    bir istemcinin ürettiği tek bozuk satır, o cihazdaki bütün ölçümleri
+    rehin alamaz. Kural kalkmadı — `olcum_kusuru()` ile satır düzeyinde
+    uygulanıyor ve kusurlu satır `durum: "hata"` olarak geri bildiriliyor
+    (bkz. routers/esitleme.py).
+    """
     # Cihazda üretilir (UUID). Yinelenen yazımı engelleyen anahtar budur.
     yerel_kimlik: Annotated[str, StringConstraints(min_length=8, max_length=64)]
     tespit_id: int

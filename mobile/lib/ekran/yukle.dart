@@ -133,7 +133,7 @@ class _YukleDurumu extends State<YukleEkrani> {
           ),
 
         const SizedBox(height: 4),
-        const Text('Enkaz alanı',
+        Text('Enkaz alanı',
             style: TextStyle(
                 color: Renk.metin2, fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
@@ -172,12 +172,12 @@ class _YukleDurumu extends State<YukleEkrani> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.place_outlined, size: 15, color: Renk.metin4),
+              Icon(Icons.place_outlined, size: 15, color: Renk.metin4),
               const SizedBox(width: 6),
               Text(
                 '${_konum!.latitude.toStringAsFixed(5)}, '
                 '${_konum!.longitude.toStringAsFixed(5)}',
-                style: const TextStyle(
+                style: TextStyle(
                     color: Renk.metin4,
                     fontSize: 12,
                     fontFeatures: [FontFeature.tabularFigures()]),
@@ -192,10 +192,10 @@ class _YukleDurumu extends State<YukleEkrani> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('${_dosyalar.length} fotoğraf seçildi',
-                  style: const TextStyle(color: Renk.metin2, fontSize: 13)),
+                  style: TextStyle(color: Renk.metin2, fontSize: 13)),
               TextButton(
                 onPressed: () => setState(_dosyalar.clear),
-                child: const Text('Temizle',
+                child: Text('Temizle',
                     style: TextStyle(fontSize: 12, color: Renk.metin3)),
               ),
             ],
@@ -243,7 +243,7 @@ class _YukleDurumu extends State<YukleEkrani> {
         ],
 
         const SizedBox(height: 28),
-        const Text(
+        Text(
           'Sistem yalnızca görünür yüzeye ilişkin ön değerlendirme yapar; '
           'enkaz altı içerik değerlendirilmez.',
           style: TextStyle(color: Renk.metin4, fontSize: 11, height: 1.5),
@@ -263,6 +263,20 @@ class _SonucKarti extends StatelessWidget {
     final tespitler =
         goruntuler.expand((g) => (g['tespitler'] as List? ?? [])).toList();
     final kuyruga = sonuc['inceleme_kuyruguna_dusen'] as int? ?? 0;
+    // ⚠️ BU ALAN SUNUCUDAN GELİYOR VE OKUNMUYORDU.
+    //
+    // `/goruntu/yukle` yanıtı `sahte_model_servisi` alanını döner; bu
+    // ekran yanıtın tamamını elinde tutup alanı hiç açmıyordu. Yani
+    // sistem SAHTE model servisiyle çalışırken telefonda bunu söyleyen
+    // tek bir işaret yoktu: kullanıcı "sert_plastik %87,3 · ÖN TAHMİN"
+    // görüyor ve bunu gerçek bir modelin çıktısı sanıyordu.
+    //
+    // Ana talimat Bölüm 9.5 açık: "sahtelik hiçbir yerde gizlenmez."
+    // Web arayüzünde bu rozet var (bilesenler/ModelDurumu.tsx); mobilde
+    // yoktu. "ÖN TAHMİN" etiketi bunun yerini tutmaz — o, gerçek bir
+    // modelin çıktısının da ön tahmin olduğunu söyler; buradaki ise
+    // ortada model bile olmadığıdır.
+    final sahteModel = sonuc['sahte_model_servisi'] == true;
 
     return Card(
       child: Padding(
@@ -270,10 +284,20 @@ class _SonucKarti extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (sahteModel) ...[
+              _Not(
+                renk: Renk.uyari,
+                ikon: Icons.science_outlined,
+                metin: 'SAHTE MODEL SERVİSİ etkin. Aşağıdaki sınıflar, '
+                    'güven skorları ve kutular UYDURMADIR; gerçek bir '
+                    'modelin çıktısı değildir. Model henüz eğitilmemiştir.',
+              ),
+              const SizedBox(height: 12),
+            ],
             Text(
               '${goruntuler.length} görüntü işlendi · '
               '${tespitler.length} tespit bulundu',
-              style: const TextStyle(
+              style: TextStyle(
                   color: Renk.metin, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
@@ -282,7 +306,7 @@ class _SonucKarti extends StatelessWidget {
                   ? 'Düşük güvenli $kuyruga tespit otomatik olarak uzman '
                       'incelemesine gitti.'
                   : 'Uzman incelemesi gerektiren tespit çıkmadı.',
-              style: const TextStyle(
+              style: TextStyle(
                   color: Renk.metin3, fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 12),
@@ -306,7 +330,7 @@ class _SonucKarti extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(sinif,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Renk.metin2, fontSize: 13)),
                     ),
                     // Güven skoru yuvarlanmaz (ana talimat Bölüm 9.2).
@@ -327,7 +351,7 @@ class _SonucKarti extends StatelessWidget {
                         color: Renk.yuzey3,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text('ÖN TAHMİN',
+                      child: Text('ÖN TAHMİN',
                           style: TextStyle(
                               color: Renk.metin3,
                               fontSize: 9,

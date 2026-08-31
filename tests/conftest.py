@@ -19,6 +19,11 @@ sys.path.insert(0, str(DEPO_KOKU))
 TEST_VT = os.environ.get("TEST_VERITABANI", "rebuild_vision_test")
 PG_BIN = os.environ.get("PG_BIN", "/opt/homebrew/opt/postgresql@17/bin")
 PG_PORT = os.environ.get("PGPORT", "5433")
+# Alembic yolu da PG_BIN gibi ortamdan geçersiz kılınabilir. Sabit mutlak
+# yol, depoyu farklı bir makinede (CI, jüri değerlendirmesi, Linux
+# geliştirme kabı) çalıştıran herkesi kilitliyordu; PG_BIN zaten
+# geçersiz kılınabilirken bu satırın kalması bir tutarsızlıktı.
+ALEMBIC = os.environ.get("ALEMBIC", str(DEPO_KOKU / "api/.venv/bin/alembic"))
 TEST_URL = f"postgresql+asyncpg://localhost:{PG_PORT}/{TEST_VT}"
 
 # Uygulama modülleri içe aktarılmadan ÖNCE ayarlanmalı: config.py bunu okur.
@@ -75,7 +80,7 @@ def _test_veritabani():
 
     ortam = {**os.environ, "VERITABANI_URL": TEST_URL}
     s = subprocess.run(
-        [str(DEPO_KOKU / "api/.venv/bin/alembic"),
+        [ALEMBIC,
          "-c", str(DEPO_KOKU / "api/alembic.ini"), "upgrade", "head"],
         cwd=DEPO_KOKU, env=ortam, capture_output=True, text=True,
     )

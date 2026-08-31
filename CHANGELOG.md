@@ -5,6 +5,206 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 31.08.2026 — Jüri gözüyle web denetimi; mobil eşitleme hatası ve açık tema
+
+Bu tur iki bölümden oluşuyor: web arayüzünün hakem bakışıyla baştan sona
+gözden geçirilmesi ve mobil uygulamanın ilk gerçek denetimi.
+
+---
+
+## Web
+
+**Eklendi — adres çubuğu artık ekranı gösteriyor (en büyük bulgu)**
+- Uygulamanın **hiç URL yönlendirmesi yoktu.** Her ekran
+  `http://localhost:5173/` adresindeydi. Ölçülen sonuç: enkaz alanı
+  detayındayken tarayıcının **Geri** düğmesine basmak kullanıcıyı
+  `about:blank` sayfasına atıyor, yani **uygulamadan tamamen çıkarıyordu.**
+- Bir ekranın bağlantısı paylaşılamıyor, yer imi konulamıyor, sayfa
+  yenilendiğinde bulunulan yer kayboluyordu. Bir kamu sisteminde
+  "şu sahaya bak" demenin yolu ekran görüntüsü göndermek olamaz.
+- History API ile çözüldü; yönlendirme kütüphanesi **kullanılmadı**
+  (lisans disiplini — Madde 5.5). Her ekranın adresi ve `<title>`'ı var:
+  `/alanlar`, `/kuyruk`, `/harita`, `/gecmis`, `/roller`, `/yukle`,
+  `/alan/:id`.
+- Derin bağlantı doğrulandı: oturum açılmamışken `/alan/1` giriş formunu
+  gösterip girişten sonra doğru sayfaya iniyor; `saha` rolüyle `/roller`
+  adresine gidildiğinde yetkili olunan sayfaya düşüyor.
+
+**Düzeltildi — reddedilen hesap başvurusu geri alınamıyordu**
+- Yönetici ekranında **"Başvuruyu reddet" tek tıkla ve geri dönüşsüzdü.**
+  `/auth/bekleyenler` yalnızca `beklemede` durumundaki hesapları döner;
+  reddedilen kayıt listeden çıkar ve **onu geri getiren hiçbir ekran
+  yoktur.** Yanlışlıkla dokunulan bir düğme gerçek bir kamu personelini
+  sistemden kalıcı olarak kilitliyordu.
+- Onaylama tarafı zaten rol seçimi istediği için kazara tıklamaya
+  kapalıydı; asimetri buradaydı. Yıkıcı olan taraf artık ikinci bir adım
+  istiyor ve sonucun kalıcı olduğunu yazıyor.
+
+**Düzeltildi — tehlikeli madde kartı sessizce kayboluyordu**
+- `catch(() => {})` hatayı yutuyor, kart ekrandan **tamamen
+  siliniyordu.** Ağ koptuğunda tespit sayfasında "Tehlikeli madde
+  incelemesi" başlığı hiç görünmüyor, kullanıcı bunu "kayıt yok" diye
+  okuyordu. Oysa kayıt var olabilirdi.
+- Yokluğun güvenlik anlamına gelmediğini yazan bir kart, yükleyemediğinde
+  de bunu söylemek zorundadır. Artık hata durumu ve yeniden deneme var.
+
+**Düzeltildi — ölçüm kaydedildiğine dair hiçbir işaret yoktu**
+- Kullanıcı ölçümü kaydettiğinde kartın tepesindeki "miktar hesaplanmadı"
+  cümlesi harfi harfine aynı kalıyordu. Doğrulanmamış tespitte miktar
+  zaten üretilmeyeceği için saha personeli "kaydedilmedi mi?" diye düşünüp
+  aynı ölçümü tekrar giriyordu.
+- Kural değişmedi; artık kaydın alındığı ve miktarın çıkması için sırada
+  **uzman doğrulaması** olduğu yazılı.
+- Uçtan uca ölçüldü: iki ölçüm → uzman onayı → miktar **8,75 – 12,4 ton**
+  belirsizlik aralığıyla, yöntemi ve katsayı kaynağı yazılı olarak
+  hesaplandı.
+
+**Düzeltildi — ham veri ekrana sızıyordu**
+- Girilen ölçümler listesi veri tabanı enum'unu doğrudan basıyordu:
+  *"12,4 ton · agirlik · Saha kantar ölçümü"*. Kullanıcı formda "Ağırlık
+  (ton)" seçip kaydettikten sonra onu küçük harfli, şapkasız görüyordu.
+
+**Eklendi — görüntülerin kimliği ve çekim künyesi**
+- Bir sahadaki beş görüntü kartının hepsi yalnızca "Tespitler" diyordu;
+  ekran okuyucunun başlık listesi *"Tespitler, Tespitler, Tespitler…"*
+  diye okunuyor, hangi fotoğrafta olunduğu anlaşılmıyordu. Her kartın
+  artık kendi başlığı var.
+- Aynı yerde bir izlenebilirlik eksiği vardı: `cekim_tarihi` ve `cihaz`
+  API'den geliyor, tipte duruyor ve **hiçbir ekranda gösterilmiyordu.**
+  Görüntünün ne zaman ve neyle çekildiği, kararı sonradan denetleyecek
+  kişinin ilk soracağı şeydir.
+
+**Düzeltildi — geri çekilen tespit etiketleri okunmaz hâlde ekranda kalıyordu**
+- Enkaz alanı görüntüsünde bir tespit listede vurgulandığında diğer
+  kutular `opacity: 0.35` ile geri çekiliyordu. Opaklık düğmenin
+  tamamına uygulandığı için etiketlerin **yazısı da** fotoğrafa doğru
+  soluyordu. Ölçüldü: `#0e1116` yazı `#3987e5` zeminde `#abacad` /
+  `#bad5f6` olarak render ediliyor, kontrast **1,5** (eşik 4,5). Dolgu
+  toprak 1,57, ahşap 1,45.
+- Geçici bir durum değildi: listede **herhangi bir satırın üzerine
+  gelindiği anda** doğru olur — yani uzmanın kuyrukta çalıştığı sürenin
+  neredeyse tamamında. Ekranda, okunamayacak kadar soluk ama yer kaplayan
+  dokuz etiket duruyordu.
+- Yazıyı soldurmak yerine **kaldırıldı**: geri çekilen tespidin kutusu
+  (konum + sınıf rengi) yerinde kalır, etiketi çizilmez. Bilgi kaybı yok
+  — vurgulu ve seçili etiketler tam okunaklı, imleç çekilince hepsi geri
+  geliyor — üstelik fotoğrafın üstü gerçekten sadeleşiyor.
+
+**Düzeltildi — en açık metin jetonu en koyu yüzeyde kalıyordu**
+- `--u-yuzey-vurgu` (#dfe3db) açık temanın kontrast hesabına dahil
+  değildi; jeton `ikincil` düğmenin üzerine gelme rengi olarak sonradan
+  eklenmiş, metin jetonlarıyla hiç ölçülmemişti. Rapor indirme
+  panelindeki yardımcı metin orada **4,45** ölçüldü — eşiğin 0,05 altında.
+- `--u-metin-4` #5b6772'den #566270'e karartıldı. Jeton artık bütün
+  açık-tema yüzeylerinde geçiyor; en düşüğü 4,78. Mobil paleti de
+  eşitlendi.
+
+**Düzeltildi — ağ hatası İngilizce görünüyordu**
+- Sunucuya ulaşılamadığında tarayıcının ham `Failed to fetch` metni
+  ekrana basılıyordu. Yerine ne olduğunu ve ne yapılacağını söyleyen
+  Türkçe bir mesaj kondu; sunucunun uyku modundan uyanması bir dakika
+  sürebileceği de yazılı.
+- Kuyruk, harita, geçmiş, yönetici ve alan listesi ekranlarına
+  **"Yeniden dene"** düğmesi ve `role="alert"` eklendi — hata
+  durumundan çıkışı olmayan ekran kalmadı.
+
+---
+
+## Mobil (Flutter)
+
+Mobil uygulama bu turda ilk kez uçtan uca denetlendi.
+
+**Düzeltildi — ⚠️ eşitleme kuyruğu kalıcı olarak kilitleniyordu**
+- Bu projedeki en ciddi kusurdu. Uygulama alan ölçümlerinin birimini
+  sunucuya **`m²`** olarak gönderiyordu; sunucu `m2` bekliyor
+  (`TURUN_BIRIMI`). Birim türetmesi `m³ → m3` düzeltmesini yapıyor,
+  **`m² → m2` düzeltmesini yapmıyordu.**
+- Etkisi tek bir kaydın kaybolmasıyla sınırlı değildi. Şema doğrulaması
+  gövdeyi bir bütün olarak denetlediği için **tek bozuk satır bütün
+  partiyi 422 ile düşürüyordu.** Ölçüldü: 3 sağlam + 1 bozuk kayıt
+  gönderildiğinde `HTTP 422, yazılan: 0`.
+- Uygulama bunu ağ hatası sanıp *"kayıtlar cihazda güvende, sonra
+  denenecek"* diyordu. Yani kuyruğa bir kez alan ölçümü girdiğinde o
+  cihaz **bir daha hiç eşitlenemiyordu** ve kimse nedenini
+  öğrenemiyordu.
+- Üç uçtan düzeltildi:
+  1. İstemci artık doğru birimi gönderiyor. Eşleme ekrandan bağımsız,
+     **sınanabilir** bir yere taşındı (`lib/olcum_turu.dart`) ve
+     `test/olcum_turu_test.dart` sunucunun sözleşmesini doğruluyor.
+  2. Sunucu tarafında birim ve üst sınır kuralı artık **satır
+     düzeyinde** uygulanıyor; bozuk satır `durum: "hata"` olarak geri
+     bildiriliyor, parti düşmüyor. Ölçüldü: aynı gövde artık
+     `HTTP 200, yazılan: 3, hatalı: 2`. Bu, uç noktanın kendi
+     dokümantasyonunun ("kısmi başarı normaldir") ilk kez gerçekten
+     çalışması demek — çevrimdışı eşitleme tanımı gereği **sürümleri
+     farklı** cihazlardan veri alır.
+  3. Uygulama artık sunucunun **reddini** ağ kopmasından ayırıyor ve
+     reddin gerekçesini gösteriyor.
+
+**Eklendi — ölçüm üst sınırı istemcide de kontrol ediliyor**
+- Sunucu 100.000 üstünü zaten reddediyordu, ama kayıt önce çevrimdışı
+  kuyruğa giriyor: red saatler sonra, sahadan dönülmüşken geliyordu.
+  Yazım hatası artık kuyruğa hiç girmiyor. Web arayüzünde bu kontrol
+  zaten vardı.
+
+**Eklendi — açık tema (varsayılan) ve tema seçimi**
+- Uygulama `theme: koyuTema()` ile **koyu temaya sabitlenmişti**; ne açık
+  palet ne de bir seçenek vardı. Web arayüzü açık temaya çevrildikten
+  sonra aynı sistemin iki yüzü birbirini tutmuyordu.
+- Açık palet web'deki `:root` ile birebir aynı. Koyu tema kaldırılmadı —
+  gece çalışmasında ve pil ömründe gerçek yararı var — ama artık bir
+  tercih. Düğme hem giriş ekranında hem üst çubukta; seçim güvenli
+  depoda saklanıyor.
+- Koyu paletteki `metin4` jetonu web'de AA'nın altında kaldığı için
+  `#909cab`'e çıkarılmıştı; mobil de aynı değeri aldı.
+- Marka rengi zemin olduğunda üzerine gelen metin rengi jetonlaştırıldı:
+  sabit kalsaydı açık temada koyu yeşil düğmenin üstüne kırık beyaz
+  gelir ve yazı okunmazdı.
+
+**Eklendi — "SAHTE MODEL SERVİSİ" uyarısı**
+- Yükleme yanıtı `sahte_model_servisi` alanını dönüyor, ekran onu
+  **hiç okumuyordu.** Sistem sahte model servisiyle çalışırken telefonda
+  bunu söyleyen tek bir işaret yoktu: kullanıcı *"sert_plastik %87,3 ·
+  ÖN TAHMİN"* görüp gerçek bir modelin çıktısı sanıyordu.
+- Ana talimat Bölüm 9.5 açık: sahtelik hiçbir yerde gizlenmez. Web
+  arayüzünde rozet vardı, mobilde yoktu. "ÖN TAHMİN" etiketi bunun
+  yerini tutmaz — o, gerçek bir modelin çıktısının da ön tahmin
+  olduğunu söyler; buradaki ise ortada model bile olmadığıdır.
+
+**Eklendi — reddedilen kayıt kuyrukta işaretleniyor ve silinebiliyor**
+- Kuyrukta **bekleyen** kayıt ile sunucunun **reddettiği** kayıt aynı
+  görünüyordu: ikisi de aynı saat ikonu, aynı renk. Oysa biri bağlantı
+  bekler, diğeri kullanıcının müdahalesini — tekrar denemek sonsuza
+  kadar aynı sonucu verir.
+- Reddedilen kayıt artık kırmızı ikon ve **gerekçesiyle** görünüyor;
+  gerekçe kayıtla birlikte şifreli depoda saklanıyor, yani uygulama
+  kapanıp açılsa da kayboluyor değil. Yalnızca reddedilen kayıtta silme
+  düğmesi var — henüz gönderilmemiş bir ölçümün yanına silme düğmesi
+  koymak kazara veri kaybını davet ederdi.
+
+**Eklendi — mobil README'ye "Bilinen eksikler" bölümü**
+- Kayıt ol ekranı, parola göster/gizle, fotoğraf şifrelemesi ve saha
+  tanımlama/doğrulama/harita ekranlarının bulunmadığı açıkça yazıldı.
+
+**⚠️ Derleyiciyle doğrulanmadı**
+- Bu ortamda Flutter/Dart araç zinciri kurulu değil (SDK indirmesi ağ
+  ilkesince engelli). Mobil değişiklikler elle gözden geçirildi ve
+  sözdizimi denetimden geçirildi, ancak `flutter analyze` ve
+  `flutter test` **çalıştırılamadı**; geliştirme makinesinde
+  koşturulmalıdır.
+
+---
+
+## Test altyapısı
+
+**Düzeltildi — testler yalnızca tek bir makinede çalışıyordu**
+- `tests/conftest.py` Alembic'i sabit mutlak yoldan çağırıyordu
+  (`api/.venv/bin/alembic`). `PG_BIN` zaten ortamdan geçersiz
+  kılınabilirken bu satırın sabit kalması bir tutarsızlıktı ve depoyu
+  farklı bir makinede (CI, jüri değerlendirmesi, Linux kabı) çalıştıran
+  herkesi kilitliyordu. Artık `ALEMBIC` ortam değişkeniyle
+  değiştirilebiliyor.
+
 ### 30.08.2026 — Geçmiş renklendirildi, saha araması, kanıt büyüteci
 
 **Eklendi — işlem geçmişi tür bazlı renklendirildi**

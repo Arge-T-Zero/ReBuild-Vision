@@ -18,6 +18,8 @@ class Kabuk extends StatefulWidget {
   final Kuyruk kuyruk;
   final Kullanici kullanici;
   final VoidCallback cikisYapildi;
+  final bool koyuTema;
+  final Future<void> Function() temaDegistir;
 
   const Kabuk({
     super.key,
@@ -25,6 +27,8 @@ class Kabuk extends StatefulWidget {
     required this.kuyruk,
     required this.kullanici,
     required this.cikisYapildi,
+    required this.koyuTema,
+    required this.temaDegistir,
   });
 
   @override
@@ -85,25 +89,64 @@ class _KabukDurumu extends State<Kabuk> {
     try {
       final s = await widget.api.esitle(bekleyen);
       await widget.kuyruk.sil(s.silinecek);
+      // Reddedilen kayıtlara gerekçe yazılır: bildirim kaybolur, kayıt
+      // kalır. Kullanıcı Ölçüm ekranını açtığında sorunu orada görür.
+      await widget.kuyruk.gerekceleriYaz(s.gerekceler);
       await _kuyrukSay();
       if (!mounted) return;
+
+      // Reddedilen kayıt varsa GEREKÇESİ söylenir ve bildirim ekranda
+      // daha uzun kalır: bu, kullanıcının bir şey yapması gereken tek
+      // durumdur. Eskiden yalnızca "N kayıt kuyrukta kaldı" yazıyor,
+      // neden kaldığı hiçbir yerde görünmüyordu.
+      if (s.hatali > 0) {
+        final ilk = s.gerekceler.values.isNotEmpty
+            ? s.gerekceler.values.first
+            : 'Sunucu kaydı kabul etmedi.';
+        _bildir(
+          '${s.yazilan} kayıt gönderildi. '
+          '${s.hatali} kayıt sunucuya yazılamadı: $ilk'
+          '${s.hatali > 1 ? " (ve ${s.hatali - 1} kayıt daha)" : ""} '
+          'Bu kayıtlar Ölçüm sekmesindeki listede gerekçesiyle '
+          'işaretlendi; düzeltip yeniden girmeniz gerekir.',
+          uzun: true,
+        );
+        return;
+      }
+
       _bildir(
         '${s.yazilan} kayıt gönderildi'
-        '${s.yinelenen > 0 ? ", ${s.yinelenen} zaten vardı" : ""}'
-        '${s.hatali > 0 ? ", ${s.hatali} kayıt kuyrukta kaldı" : ""}.',
+        '${s.yinelenen > 0 ? ", ${s.yinelenen} zaten vardı" : ""}.',
       );
+    } on ApiHatasi catch (h) {
+      // ⚠️ AYRIM ÖNEMLİ. Eskiden her başarısızlık "sonra denenecek" diye
+      // geçiştiriliyordu. Sunucunun kaydı REDDETMESİ ile AĞIN KOPMASI
+      // aynı şey değildir: ilki kendiliğinden düzelmez, tekrar denemek
+      // sonsuza kadar aynı sonucu verir. Kullanıcı hangisiyle karşı
+      // karşıya olduğunu bilmelidir.
+      if (!sessiz) {
+        _bildir('Sunucu kayıtları kabul etmedi: ${h.mesaj}', uzun: true);
+      }
     } catch (_) {
+      // Buraya yalnızca gerçek ağ/bağlantı arızaları düşer — sahada
+      // beklenen durum. Bu bir hata değildir, bu yüzden dili sakin.
       if (!sessiz) {
         _bildir('Gönderilemedi. Kayıtlar cihazda güvende, sonra denenecek.');
       }
     }
   }
 
-  void _bildir(String m) {
+  void _bildir(String m, {bool uzun = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(m)));
+      ..showSnackBar(SnackBar(
+        content: Text(m),
+        // Kullanıcının bir şey yapması gereken bildirim, okunacak kadar
+        // durmalıdır; varsayılan 4 saniye iki satırlık bir gerekçeye
+        // yetmiyor.
+        duration: Duration(seconds: uzun ? 10 : 4),
+      ));
   }
 
   @override
@@ -124,6 +167,21 @@ class _KabukDurumu extends State<Kabuk> {
         title: const Text('ReBuild Vision',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
         actions: [
+          IconButton(
+            // Tema seçimi uygulamada HİÇ YOKTU; koyu tema tek seçenekti.
+            // Gündüz güneş altında çalışan saha personeli için bu bir
+            // kullanılabilirlik sorunuydu.
+            tooltip: widget.koyuTema
+                ? 'Açık temaya geç'
+                : 'Koyu temaya geç',
+            onPressed: () => widget.temaDegistir(),
+            icon: Icon(
+              widget.koyuTema
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+              size: 20,
+            ),
+          ),
           IconButton(
             tooltip: 'Çıkış',
             onPressed: widget.cikisYapildi,
@@ -146,7 +204,7 @@ class _KabukDurumu extends State<Kabuk> {
         backgroundColor: Renk.yuzey,
         indicatorColor: Renk.marka.withValues(alpha: 0.18),
         destinations: [
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.photo_camera_outlined),
             selectedIcon: Icon(Icons.photo_camera, color: Renk.marka),
             label: 'Görüntü',
@@ -159,7 +217,7 @@ class _KabukDurumu extends State<Kabuk> {
               textColor: Renk.taban,
               child: const Icon(Icons.straighten_outlined),
             ),
-            selectedIcon: const Icon(Icons.straighten, color: Renk.marka),
+            selectedIcon: Icon(Icons.straighten, color: Renk.marka),
             label: 'Ölçüm',
           ),
         ],

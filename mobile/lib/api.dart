@@ -18,6 +18,7 @@ class Api {
   );
 
   static const _jetonAnahtari = 'rebuild_vision_jeton';
+  static const _temaAnahtari = 'rebuild_vision_tema';
 
   final http.Client _istemci;
   final FlutterSecureStorage _depo;
@@ -34,6 +35,31 @@ class Api {
 
   Future<String?> jeton() => _depo.read(key: _jetonAnahtari);
   Future<void> jetonSil() => _depo.delete(key: _jetonAnahtari);
+
+  /// Tema tercihi. Seçim YAPILMADIYSA açık tema (`false`) döner.
+  ///
+  /// Depoya yalnızca kullanıcı düğmeye bastığında yazılır. Web tarafında
+  /// tam bu ayrım atlanmıştı: uygulama her açılışta seçilmemiş varsayılanı
+  /// da diske yazıyordu, bu yüzden varsayılan sonradan değiştirildiğinde
+  /// eski kullanıcılar hâlâ koyu temayla açılıyordu. Aynı hataya burada
+  /// düşülmemesi için okuma/yazma bilinçli olarak ayrı.
+  Future<bool> temaKoyuMu() async {
+    try {
+      return (await _depo.read(key: _temaAnahtari)) == 'koyu';
+    } catch (_) {
+      // Güvenli depo okunamıyorsa (nadir; cihaz kilidi, bozuk anahtar)
+      // uygulama açılmalıdır — tema bir tercihtir, engel değil.
+      return false;
+    }
+  }
+
+  Future<void> temaKaydet({required bool koyu}) async {
+    try {
+      await _depo.write(key: _temaAnahtari, value: koyu ? 'koyu' : 'acik');
+    } catch (_) {
+      // Yazılamazsa tercih o oturum için geçerli kalır; uygulama çökmez.
+    }
+  }
 
   Future<Map<String, String>> _basliklar({bool govdeVar = false}) async {
     final j = await jeton();
@@ -250,11 +276,21 @@ class EsitlemeSonucu {
   /// Yinelenen de silinir çünkü sunucuda zaten vardır.
   final Set<String> silinecek;
 
+  /// Reddedilen kayıtların GEREKÇESİ — `yerel_kimlik` → açıklama.
+  ///
+  /// ⚠️ SUNUCU BUNU DÖNÜYORDU VE UYGULAMA ATIYORDU. Yalnızca sayı
+  /// okunuyor, kullanıcıya "3 kayıt kuyrukta kaldı" deniyordu. Neden
+  /// kaldığı — birim yanlış mı, tespit silinmiş mi, değer mi olağandışı —
+  /// hiçbir yerde yazmıyordu. Saha personeli, düzeltebileceği bir kaydı
+  /// düzeltemeden bırakıyor; kayıt her eşitlemede yeniden reddediliyordu.
+  final Map<String, String> gerekceler;
+
   EsitlemeSonucu({
     required this.yazilan,
     required this.yinelenen,
     required this.hatali,
     required this.silinecek,
+    this.gerekceler = const {},
   });
 
   factory EsitlemeSonucu.jsondan(Map<String, dynamic> j) {
@@ -267,6 +303,11 @@ class EsitlemeSonucu {
           .where((s) => s['durum'] == 'yazildi' || s['durum'] == 'yinelenen')
           .map((s) => s['yerel_kimlik'] as String)
           .toSet(),
+      gerekceler: {
+        for (final s in satirlar)
+          if (s['durum'] == 'hata' && s['aciklama'] != null)
+            s['yerel_kimlik'] as String: s['aciklama'] as String,
+      },
     );
   }
 }

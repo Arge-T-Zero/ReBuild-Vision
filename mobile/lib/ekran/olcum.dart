@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../api.dart';
 import '../kuyruk.dart';
+import '../olcum_turu.dart';
 import '../tema.dart';
 
 /// Ölçüm girişi + çevrimdışı kuyruk — P2, madde 8, 9 ve 10.
@@ -32,12 +33,6 @@ class OlcumEkrani extends StatefulWidget {
 }
 
 class _OlcumDurumu extends State<OlcumEkrani> {
-  static const _turler = {
-    'agirlik': ('Ağırlık', 'ton'),
-    'hacim': ('Hacim', 'm³'),
-    'alan': ('Görünür alan', 'm²'),
-  };
-
   final _deger = TextEditingController();
   final _yontem = TextEditingController();
 
@@ -89,6 +84,16 @@ class _OlcumDurumu extends State<OlcumEkrani> {
     if (mounted) setState(() => _bekleyen = k);
   }
 
+  /// Sayıyı Türkçe biçimde yazar: ondalık ayracı virgül.
+  ///
+  /// Kuyruk listesi `double`'ı doğrudan basıyordu: kullanıcı virgülle
+  /// "12,4" giriyor, kaydedince "12.4" görüyordu — tam sayılar ise
+  /// "8.0" diye. Web arayüzünde aynı biçimlendirme zaten yapılıyor.
+  static String _sayi(double d) {
+    final tam = d == d.roundToDouble();
+    return (tam ? d.toStringAsFixed(0) : d.toString()).replaceAll('.', ',');
+  }
+
   /// Cihazda benzersiz kimlik üretir.
   ///
   /// Ağ koptuğunda istemci isteği tekrarlar ama sonucu bilemez; sunucu bu
@@ -109,6 +114,13 @@ class _OlcumDurumu extends State<OlcumEkrani> {
       setState(() => _hata = 'Ölçüm değeri sıfırdan büyük bir sayı olmalı.');
       return;
     }
+    if (deger > olcumUstSiniri) {
+      setState(() => _hata =
+          'Bu değer tek bir tespit için olağandışı yüksek '
+          '(${_deger.text.trim()} ${olcumTurleri[_tur]!.gorunenBirim}). '
+          'Girdiğiniz sayıyı kontrol edin.');
+      return;
+    }
     if (_yontem.text.trim().isEmpty) {
       // Yöntem izlenebilirlik için zorunlu: ölçümün nasıl yapıldığı
       // bilinmeden miktarın dayanağı da bilinemez.
@@ -121,7 +133,7 @@ class _OlcumDurumu extends State<OlcumEkrani> {
       tespitId: _seciliTespit!,
       tur: _tur,
       deger: deger,
-      birim: _turler[_tur]!.$2 == 'm³' ? 'm3' : _turler[_tur]!.$2,
+      birim: olcumTurleri[_tur]!.sunucuBirimi,
       yontem: _yontem.text.trim(),
       olusturma: DateTime.now(),
     ));
@@ -147,11 +159,11 @@ class _OlcumDurumu extends State<OlcumEkrani> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('Ölçüm gir',
+        Text('Ölçüm gir',
             style: TextStyle(
                 fontSize: 18, fontWeight: FontWeight.w700, color: Renk.metin)),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Ölçüm girilmeyen tespitlerde sistem miktar hesaplamaz — '
           'tahmin uydurmaz. Girilen ölçüm belirsizlik aralığıyla sonuç verir.',
           style: TextStyle(color: Renk.metin3, fontSize: 12, height: 1.5),
@@ -209,10 +221,10 @@ class _OlcumDurumu extends State<OlcumEkrani> {
         const SizedBox(height: 14),
 
         SegmentedButton<String>(
-          segments: _turler.entries
+          segments: olcumTurleri.entries
               .map((e) => ButtonSegment(
                     value: e.key,
-                    label: Text(e.value.$1, style: const TextStyle(fontSize: 12)),
+                    label: Text(e.value.ad, style: const TextStyle(fontSize: 12)),
                   ))
               .toList(),
           selected: {_tur},
@@ -228,7 +240,7 @@ class _OlcumDurumu extends State<OlcumEkrani> {
           controller: _deger,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
-            labelText: 'Değer (${_turler[_tur]!.$2})',
+            labelText: 'Değer (${olcumTurleri[_tur]!.gorunenBirim})',
             hintText: 'örn. 12,4',
           ),
         ),
@@ -247,7 +259,7 @@ class _OlcumDurumu extends State<OlcumEkrani> {
         if (_hata.isNotEmpty) ...[
           const SizedBox(height: 12),
           Text(_hata,
-              style: const TextStyle(color: Renk.dikkat, fontSize: 13)),
+              style: TextStyle(color: Renk.dikkat, fontSize: 13)),
         ],
 
         const SizedBox(height: 18),
@@ -267,7 +279,7 @@ class _OlcumDurumu extends State<OlcumEkrani> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Kuyrukta ${_bekleyen.length} kayıt',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: Renk.metin2, fontWeight: FontWeight.w600)),
               if (widget.cevrimici)
                 TextButton(
@@ -280,29 +292,73 @@ class _OlcumDurumu extends State<OlcumEkrani> {
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Kayıtlar cihazda şifreli olarak saklanır; uygulama kapansa da '
             'kaybolmaz.',
             style: TextStyle(color: Renk.metin4, fontSize: 11, height: 1.4),
           ),
           const SizedBox(height: 10),
-          ..._bekleyen.map((k) => Card(
-                child: ListTile(
-                  dense: true,
-                  leading: const Icon(Icons.schedule,
-                      size: 18, color: Renk.metin4),
-                  title: Text(
-                    'Tespit #${k.tespitId} · ${k.deger} ${k.birim}',
-                    style: const TextStyle(fontSize: 13, color: Renk.metin2),
-                  ),
-                  subtitle: Text(
-                    k.yontem,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 11, color: Renk.metin4),
-                  ),
+          // ⚠️ REDDEDİLEN KAYIT İLE BEKLEYEN KAYIT AYNI GÖRÜNÜYORDU.
+          // İkisi de "saat" ikonuyla, aynı renkte listeleniyordu. Oysa
+          // biri bağlantı bekler, diğeri kullanıcının müdahalesini —
+          // sunucu onu kalıcı olarak reddetmiştir ve bir daha denemek
+          // sonsuza kadar aynı sonucu verir. Reddedilen kayıt artık
+          // gerekçesiyle işaretli ve silinebilir.
+          ..._bekleyen.map((k) {
+            final reddedildi = k.sunucuNotu != null;
+            return Card(
+              child: ListTile(
+                dense: true,
+                // Reddedilen kayıtta alt satır iki satıra çıkar; ListTile
+                // bunu bilmezse taşma çizer.
+                isThreeLine: reddedildi,
+                leading: Icon(
+                  reddedildi ? Icons.error_outline : Icons.schedule,
+                  size: 18,
+                  color: reddedildi ? Renk.dikkat : Renk.metin4,
                 ),
-              )),
+                title: Text(
+                  'Tespit #${k.tespitId} · ${_sayi(k.deger)} ${k.birim}',
+                  style: TextStyle(fontSize: 13, color: Renk.metin2),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      k.yontem,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: Renk.metin4),
+                    ),
+                    if (reddedildi)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Sunucu kabul etmedi: ${k.sunucuNotu}',
+                          style: TextStyle(
+                              fontSize: 11, color: Renk.dikkat, height: 1.35),
+                        ),
+                      ),
+                  ],
+                ),
+                // Silme YALNIZCA reddedilen kayıtta. Bekleyen bir kaydın
+                // yanına silme düğmesi koymak, henüz gönderilmemiş bir
+                // ölçümün kazara yok edilmesini davet ederdi.
+                trailing: reddedildi
+                    ? IconButton(
+                        tooltip: 'Bu kaydı kuyruktan sil',
+                        icon: Icon(Icons.delete_outline,
+                            size: 20, color: Renk.metin3),
+                        onPressed: () async {
+                          await widget.kuyruk.tekSil(k.yerelKimlik);
+                          await _kuyrugu();
+                          await widget.kuyrukDegisti();
+                        },
+                      )
+                    : null,
+              ),
+            );
+          }),
         ],
       ],
     );

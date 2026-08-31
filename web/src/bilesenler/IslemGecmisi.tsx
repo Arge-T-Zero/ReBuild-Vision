@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import { useDurum } from '../durum'
 import type { IslemGecmisi as Kayit, SinifTanimi } from '../types'
-import { BosDurum, Buton } from './Temel'
+import { BosDurum, Buton, Hata } from './Temel'
 import { Ikon } from './Ikon'
 
 /**
@@ -244,7 +244,19 @@ export function IslemGecmisiListesi({
 
   useEffect(() => { yenile() }, [yenile])
 
-  if (hata) return <p className="text-xs text-dikkat">{hata}</p>
+  // Hata çıplak bir `p` idi: `role="alert"` taşımadığı için ekran
+  // okuyucuya DUYURULMUYORDU ve yeniden deneme yolu da yoktu.
+  // Uygulamanın geri kalanıyla aynı bileşen kullanılır.
+  if (hata) {
+    return (
+      <div>
+        <Hata mesaj={hata} />
+        <Buton tur="ikincil" boyut="kucuk" className="mt-2.5" onClick={yenile}>
+          Yeniden dene
+        </Buton>
+      </div>
+    )
+  }
   if (kayitlar === null) {
     return <p className="text-xs text-metin-3">Geçmiş yükleniyor…</p>
   }
