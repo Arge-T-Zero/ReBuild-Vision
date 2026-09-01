@@ -1,0 +1,92 @@
+# Sürekli tümleştirme — testler her itmede otomatik koşar.
+#
+# Neden: depoda 130 sunucu + 13 mobil testi vardı ve hiçbiri otomatik
+# çalışmıyordu. Test yazıp koşturmamak, testin verdiği güvenceyi
+# insanın hatırlamasına bırakır. Jüri de deponun yeşil olduğunu
+# görebilmelidir.
+name: Testler
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  sunucu:
+    name: API ve kurallar (Python)
+    runs-on: ubuntu-latest
+
+    services:
+      # PostGIS gerekli: enkaz alanı sınırları coğrafi tiptir.
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Bağımlılıklar
+        run: |
+          python -m venv api/.venv
+          api/.venv/bin/pip install -q -r api/requirements-dev.txt
+          api/.venv/bin/pip install -q -r model-mock/requirements.txt
+
+      - name: Testler
+        env:
+          PG_BIN: /usr/lib/postgresql/16/bin
+          PGPORT: "5432"
+          PGPASSWORD: postgres
+          PGUSER: postgres
+          ALEMBIC: api/.venv/bin/alembic
+        run: api/.venv/bin/python -m pytest tests -q
+
+  web:
+    name: Web arayüzü (TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+      # `tsc -b` derlemenin parçası: tip hatası yayına çıkamaz.
+      - run: npm run build
+
+  mobil:
+    name: Saha uygulaması (Flutter)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
