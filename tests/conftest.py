@@ -24,7 +24,24 @@ PG_PORT = os.environ.get("PGPORT", "5433")
 # geliştirme kabı) çalıştıran herkesi kilitliyordu; PG_BIN zaten
 # geçersiz kılınabilirken bu satırın kalması bir tutarsızlıktı.
 ALEMBIC = os.environ.get("ALEMBIC", str(DEPO_KOKU / "api/.venv/bin/alembic"))
-TEST_URL = f"postgresql+asyncpg://localhost:{PG_PORT}/{TEST_VT}"
+
+# Bağlantı kimliği ortamdan gelir.
+#
+# ⚠️ BAĞLANTI ADRESİ SABİT KODLANMIŞTI ve CI'da tüm testler patlıyordu.
+# Geliştirme makinesinde veri tabanı yerelde, geliştiricinin kendi
+# adıyla açılmış bir rolle çalışıyor; orada kullanıcı adı vermeye gerek
+# yok. CI'da ise veri tabanı AYRI BİR KAPSAYICIDA ve yalnızca `postgres`
+# rolü var — asyncpg kimlik verilmediğinde işletim sistemi kullanıcısıyla
+# (`runner`) bağlanmaya çalışıyor ve sunucu "role does not exist" diyor.
+#
+# Varsayılanlar bilinçli olarak BUGÜNKÜ davranışı korur: `PGUSER`
+# tanımlı değilse adres eskisiyle birebir aynı üretilir, yani
+# geliştirme makinesinde hiçbir şey değişmez.
+PG_HOST = os.environ.get("PGHOST", "localhost")
+PG_KULLANICI = os.environ.get("PGUSER", "")
+PG_PAROLA = os.environ.get("PGPASSWORD", "")
+_KIMLIK = f"{PG_KULLANICI}:{PG_PAROLA}@" if PG_KULLANICI else ""
+TEST_URL = f"postgresql+asyncpg://{_KIMLIK}{PG_HOST}:{PG_PORT}/{TEST_VT}"
 
 # Uygulama modülleri içe aktarılmadan ÖNCE ayarlanmalı: config.py bunu okur.
 os.environ["VERITABANI_URL"] = TEST_URL
