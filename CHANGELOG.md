@@ -5,6 +5,82 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 01.09.2026 — Şartname denetimi; lisans kararı verildi
+
+Şartnamenin güncel metni **ilk kez birincil kaynak olarak** okundu. Depo
+bugüne kadar dokuz maddeye atıf yapıyor ama metnin kendisi hiç
+görülmemişti.
+
+**Doğrulandı — mevcut atıfların hepsi doğru**
+- 5.5, 5.2, 2.6.2, 5.4, 9.1, 10.3, 10.5, 10.6, 10.7 — dokuzu da metni
+  doğru alıntılıyor. Bugüne kadar test edilmemiş bir varsayımdı.
+
+**Karar verildi — proje AGPL-3.0 ile lisanslandı (K-020)**
+- `LICENSE` beş gündür "KARARI BEKLEMEDE" notu taşıyordu. Bekleme
+  gerekçesi, Madde 5.5'in kopyaleft bileşene kapalı olabileceği
+  ihtimaliydi. **Metin bunun tersini söylüyor:**
+  - **Madde 10.4** AGPL'i *adıyla anıyor* ve kuralı "kullanma" değil
+    **"ayrıca belirtilecektir"** olarak koyuyor.
+  - **Madde 9.2** açık kaynak kullanımını beklenen durum sayıyor.
+  - **Madde 10.10** devri ve **lisanslamayı** ayrıca imzalanacak bir
+    protokole bırakıyor — 5.5'teki devir mutlak ve anında değil.
+- `LICENSE`'a FSF'nin resmi AGPL-3.0 metni (661 satır, §13 dahil)
+  birebir yazıldı; ezberden yazılmadı, metin değiştirilmedi.
+- Ürün `ultralytics` içerdiği sürece AGPL-3.0 **tek tutarlı seçenektir**:
+  MIT yazmak §13'ü karşılamaz, boş bırakmak teslimde Madde 10.4'ü
+  karşılamaz.
+- Karar mentör teyidine açıktır ve geri alınabilir — Seçenek C'ye
+  (izin verici model) geçiş için mimari zaten hazır.
+
+**Eklendi — `docs/yapay-zeka-beyani.md` (Madde 10.5)**
+- Madde yedi kalem beyan istiyordu; depoda **son üçü hiç yoktu**
+  (çıktı doğrulama yöntemi, hata/yanlılık riski, açıklanabilirlik
+  yaklaşımı — "açıklanabilir" ve "yanlılık" kelimeleri depoda sıfır
+  eşleşme veriyordu). Malzemesi zaten vardı, beyan olarak yazılmamıştı.
+- Açıklanabilirlik bölümü, **yapılmayanları da** gerekçesiyle sayıyor:
+  ısı haritası ve doğal dil gerekçe üretimi bilinçli olarak yok —
+  kalibre edilmemiş bir modelde ikisi de hak edilmemiş bir anlayış
+  hissi verir.
+
+**Eklendi — `docs/cevresel-etki.md` (Madde 10.9)**
+- Bu madde depoda **hiç kapsanmamıştı**; "çevresel" kelimesi hiçbir
+  belgede geçmiyordu. Finalde %30, ön elemede %35 ağırlıklı kritere
+  dokunuyor.
+- Belge **hiçbir çevresel fayda sayısı iddia etmiyor** — ne ton, ne
+  yüzde, ne karbon. Bunun yerine dört göstergenin hesap yöntemini,
+  beş varsayımı (ikisi kırmızı) ve eksik girdileri kaynağıyla listeliyor.
+- Ölçülen gerçek durum: **9 malzeme sınıfından yalnızca 4'ü** kaynaklı
+  katsayıya sahip (ahşap, metal, tekstil, karton). **Beton kapalı** —
+  EPA tek nokta değer veriyor, aralık vermiyor; aralık uydurulmadı.
+  Yani miktar göstergesi bugün enkazın ana kütlesini kapsamıyor.
+
+**Eklendi — `docs/mimari.md` Bölüm 7 (Madde 10.8)**
+- Maddenin yedi kaleminden altısı zaten yazılıydı; eksik olan
+  **ölçeklenebilirlik yaklaşımı**ydı ("ölçeklenebilir" kelimesi depoda
+  sıfır eşleşme).
+- Açık standart uyumu doğrulandı, iddia edilmedi: OpenAPI **3.1.0**
+  (`/openapi.json` 200), geometri **EPSG:4326**, GeoJSON koordinat
+  sırası ve CSV Excel uyumu testli, oturum tablosu yok (JWT durumsuz).
+- **OGC API yok** — Madde 10.8'in beklediği coğrafi standart; açıkça
+  boşluk olarak yazıldı.
+- Ölçeklendiğinde ilk kırılacak dört yer sayıldı. Yük testi
+  yapılmadığı için **hiçbir kapasite sayısı beyan edilmiyor.**
+- "Bilinen mimari boşluklar" tablosu güncellendi: Docker, mobil
+  uygulama ve model servisi artık var; tablo bunları hâlâ eksik
+  gösteriyordu.
+
+**Bulundu — şartnamenin kendi içinde üç tutarsızlık**
+- Sunum süresi: Madde 2.6.2 **5 dakika**, Madde 5.4 **7+3 dakika**
+  (deponun daha önce bulduğu çelişki güncel sürümde de duruyor).
+- Finalist sayısı: Madde 4 "en fazla **15 takım**", Madde 5.3 "ilk
+  **10 proje**".
+- Takvim sırası: Tablo 1'de final sunumu (09.09), finalistlerin
+  açıklanmasından (11.09) **önce** görünüyor.
+- Üçü de mentör sorularına eklendi (`docs/lisans-analizi.md` Bölüm 7,
+  soru 5-7); katsayı ve emisyon faktörü soruları da eklendi (8-9).
+
+---
+
 ### 01.09.2026 — Gerçek model servisi, sürekli tümleştirme
 
 **Eklendi — `model-service/` (Kaggle ağırlıklarının ineceği yer)**

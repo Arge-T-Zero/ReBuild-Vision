@@ -154,15 +154,39 @@ demo sırasında yanlışlıkla "gerçek model çalışıyor" izlenimi verilmez.
 
 ## Lisans
 
-⚠️ Proje lisansı **henüz belirlenmemiştir.** Ultralytics YOLO11'in AGPL-3.0
-lisansı ile şartname Madde 5.5'in ("kullanım hakları ve sahipliği Kuruma
-bedelsiz olarak devredilecektir") arasındaki gerilim çözülmeden bir lisans
-metni yazılmayacaktır. Ayrıntı: [`LICENSE`](LICENSE) ve
-[`docs/lisans-analizi.md`](docs/lisans-analizi.md).
+Proje **AGPL-3.0** ile lisanslanmıştır — bkz. [`LICENSE`](LICENSE).
+
+Copyright (C) 2026 Takım Arge-T Zero
+
+**Neden AGPL-3.0:** Ürün, AGPL-3.0 lisanslı Ultralytics YOLO11'i
+kullanır. AGPL §13 ağ üzerinden hizmet sunmayı da kopyaleft tetikleyicisi
+saydığı için, aynı programı oluşturan kodun izin verici bir lisansla
+sunulması hukuken tutarsız olurdu.
+
+Şartname **Madde 10.4** GPL/AGPL'li bileşenlerin kullanımını yasaklamaz,
+**ayrıca beyan edilmesini** ister; bu beyan
+[`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 3'tedir. Karar
+kaydı: `docs/karar-kaydi.md` **K-020**.
 
 Kullanılan tüm üçüncü taraf bileşenlerin lisansları
 [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2'de eksiksiz
 listelenmiştir.
+
+---
+
+## Şartname uyumu
+
+Teslim paketinde istenen belgeler (Madde 10.3) ve beyan yükümlülükleri:
+
+| Madde | Konu | Belge |
+|---|---|---|
+| 9.1 · 10.6 · 10.7 | Veri hakları, silme, KVKK | [`docs/veri-politikasi.md`](docs/veri-politikasi.md) |
+| 10.3 | Kurulum ve çalıştırılabilirlik | [`docs/kurulum.md`](docs/kurulum.md) · [`docs/kullanici-kilavuzu.md`](docs/kullanici-kilavuzu.md) · [`docker/`](docker/) |
+| 10.3 · 10.4 | Kütüphane ve lisans listesi | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) |
+| 10.3 | Demo videosu | [`docs/demo-video.md`](docs/demo-video.md) |
+| **10.5** | **Yapay zekâ beyanı** | [`docs/yapay-zeka-beyani.md`](docs/yapay-zeka-beyani.md) |
+| 10.8 | Teknik mimari, veri modeli, ölçeklenebilirlik | [`docs/mimari.md`](docs/mimari.md) · [`docs/veri-modeli.md`](docs/veri-modeli.md) |
+| **10.9** | **Çevresel etki doğrulama** | [`docs/cevresel-etki.md`](docs/cevresel-etki.md) |
 
 ---
 

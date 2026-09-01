@@ -163,12 +163,95 @@ sınıflar (şu an `konteyner`) miktar ve harita hesaplarına girmez.
 
 ---
 
-## 7. Bilinen mimari boşluklar
+## 7. Ölçeklenebilirlik ve entegrasyon — Madde 10.8
+
+> **Madde 10.8:** "Projelerin teknik mimarisinde kullanılan bileşenler,
+> veri akışı, API yapısı, kullanıcı rolleri, veri tabanı tasarımı,
+> entegrasyon noktaları ve ölçeklenebilirlik yaklaşımı açıkça dokümante
+> edilecektir. Kamu sistemlerine entegrasyon potansiyeli bulunan
+> projelerde açık standartlara, REST API/OGC API benzeri servis
+> yaklaşımına ve taşınabilir veri formatlarına öncelik verilmesi
+> beklenir."
+
+Maddenin yedi kaleminden altısı bu belgenin önceki bölümlerinde ve
+`docs/veri-modeli.md`'de yazılıdır. Bu bölüm kalan kalemi —
+**ölçeklenebilirlik yaklaşımı** — ve entegrasyon beklentisini ele alır.
+
+### 7.1. Açık standartlar ve taşınabilir formatlar
+
+| Beklenti | Durum |
+|---|---|
+| **REST API** | ✅ FastAPI · OpenAPI 3.1 şeması `/docs` ve `/openapi.json` üzerinden otomatik yayımlanır |
+| **Taşınabilir veri formatı** | ✅ Rapor **GeoJSON**, **CSV** (BOM'lu, Excel/Türkçe ayraç uyumlu) ve **JSON** olarak dışa aktarılır |
+| **Coğrafi standart** | ✅ Geometri **PostGIS**'te, **EPSG:4326** ile saklanır; GeoJSON çıktısı RFC 7946 koordinat sırasına uyar (boylam, enlem) |
+| **Kimlik** | ✅ JWT — standart taşıyıcı jeton; dış kimlik servisine bağımlılık yok |
+| **OGC API** | ⚠️ **yok.** GeoJSON çıktısı OGC API - Features'a geçişi kolaylaştırır ama uç nokta bu standarda göre tasarlanmadı. Kamu entegrasyonu gündeme gelirse eklenecek ilk şey budur |
+
+Hiçbir tescilli (proprietary) veri formatı kullanılmaz. Dışa aktarılan
+her dosya, sistem olmadan da okunabilir.
+
+### 7.2. Ölçeklenebilirlik yaklaşımı
+
+Mimari, üç bileşeni **birbirinden bağımsız ölçeklenebilir** biçimde
+ayırır. Bu ayrım ölçeklenebilirlik için tasarlanmadı — AGPL sınırı için
+tasarlandı (Bölüm 2) — ama sonucu ölçeklenebilirliktir:
+
+```
+web/  ──HTTP──>  api/  ──HTTP──>  model-service/
+ statik            durumsuz          GPU'ya bağlı
+ (CDN)             (yatay)           (ayrı ölçek)
+```
+
+| Katman | Ölçekleme biçimi | Neden mümkün |
+|---|---|---|
+| **web/** | Statik dosya — CDN | Sunucu tarafı çalışma yok |
+| **api/** | **Yatay** — kopya ekleyerek | Durumsuz: oturum sunucuda tutulmaz (JWT), yüklenen dosya paylaşılan depoya yazılır |
+| **model-service/** | **Ayrı** ölçek | Darboğaz burasıdır; GPU'ya bağlıdır ve API'den bağımsız çoğaltılabilir |
+| **PostgreSQL/PostGIS** | Dikey + okuma kopyası | Yazma tek düğüm; raporlama okuma kopyasından beslenebilir |
+
+**Kritik nokta:** Yük dengeleyici arkasına ikinci bir `api/` kopyası
+koymak için kod değişikliği gerekmez — API durumsuzdur. Asıl darboğaz
+model çıkarımıdır ve o zaten ayrı bir süreçtedir; `MODEL_SERVICE_URL`
+bir kuyruğa ya da yük dengeleyiciye çevrilerek çoğaltılabilir.
+
+### 7.3. Ölçeklendiğinde ilk kırılacak yerler — dürüst beyan
+
+Bunlar bugün darboğaz değil çünkü sistem tek makinede ve demo yüküyle
+çalışıyor. Gerçek yükte ilk buralar kırılır:
+
+| Yer | Sorun | Çözüm yönü |
+|---|---|---|
+| **Yüklenen görüntüler** | `api/yuklenenler/` yerel diskte; ikinci bir API kopyası dosyayı göremez | Nesne depolama (S3 uyumlu) |
+| **Çıkarım eşzamanlılığı** | `/predict` senkron; uzun süren istek bağlantıyı tutar | İş kuyruğu + asenkron sonuç |
+| **Rapor üretimi** | Rapor istek anında hesaplanır; saha sayısı arttıkça yavaşlar | Önbellek ya da zamanlanmış üretim |
+| **İşlem geçmişi** | Tek tablo, sınırsız büyür | Tarih bazlı bölümleme (partition) |
+
+Hiçbiri için bugün ölçüm yoktur — **"şu kadar eşzamanlı kullanıcıyı
+kaldırır" gibi bir sayı beyan edilmemektedir.** Yük testi yapılmamıştır.
+
+### 7.4. Kamu sistemlerine entegrasyon noktaları
+
+| Nokta | Bugün | Entegrasyonda |
+|---|---|---|
+| Kimlik | Yerel JWT | Kurum kimlik sağlayıcısı (OIDC) eklenebilir; kimlik katmanı tek dosyada izole |
+| Coğrafi veri | GeoJSON dışa aktarım | OGC API - Features (7.1) |
+| Atık sınıfı | `siniflar.json` tek kaynak | Atık kodu eşlemesi bu dosyaya eklenir |
+| Model | `MODEL_SERVICE_URL` | Kurumun kendi modeli aynı sözleşmeyle takılabilir |
+
+Son satır önemlidir: model servisi sözleşmesi
+(`tests/test_model_servisi_sozlesmesi.py`) sabitlenmiştir. Kurum kendi
+modelini bu sözleşmeye uygun bir servis olarak sunarsa, sistemin geri
+kalanında **tek satır değişmez.**
+
+---
+
+## 8. Bilinen mimari boşluklar
 
 | Boşluk | Etki | Durum |
 |---|---|---|
-| Docker paketi yok | Madde 10.3 karşılanmıyor | 🔴 K-009, hedef 03.09 |
 | Uzmana/firmaya saha atama akışı yok | Uzman görünürlüğü **iş üzerinden** türetiliyor: inceleme bekleyen ya da kendi doğruladığı tespiti içeren sahaları görür. Yıkım firması ve tesis operatörü yalnızca ilişkili sahalarını görür | 🟡 ara çözüm |
-| Mobil uygulama yok | P2 | ⏳ 31.08–02.09 |
-| Katsayı tablosu boş | Hacim→ağırlık dönüşümü yapılamıyor | 🟡 kaynak bekliyor |
-| Gerçek model bağlı değil | Sahte servis kullanılıyor | ⏳ 03.09 |
+| Katsayı tablosu kısmen dolu | 9 malzeme sınıfından **4'ü** kaynaklı; beton dahil 5'i kapalı — hacim→ağırlık dönüşümü ana kütlede yapılamıyor | 🔴 kaynak bekliyor (`docs/cevresel-etki.md` Bölüm 5) |
+| Model ağırlığı yüklü değil | `model-service/` hazır ve sözleşmesi test edilmiş; eğitim çıktısı bekleniyor. O zamana kadar sahte servis kullanılıyor ve arayüzde işaretli | ⏳ eğitim sürüyor |
+| OGC API yok | Kamu coğrafi veri entegrasyonu için beklenen standart (Madde 10.8) | 🟡 GeoJSON geçişi kolaylaştırıyor |
+| Nesne depolama yok | Yatay ölçeklemede görüntüler paylaşılamaz (Bölüm 7.3) | 🟡 tek makinede sorun değil |
+| Yük testi yapılmadı | Ölçeklenebilirlik iddiası ölçülmemiştir | 🟡 beyan edilmiyor |

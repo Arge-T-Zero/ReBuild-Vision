@@ -37,7 +37,7 @@ konuşulur · *veri* = kod değil içerik.
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |
 |---|---|---|---|---|
 | ultralytics (YOLO11) | 8.4.x | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
-| model ağırlıkları (özgün eğitim) | — | karar bekliyor | model dosyası | proje içi |
+| model ağırlıkları (özgün eğitim) | — | **AGPL-3.0** (proje lisansıyla aynı) ⚠️ | model dosyası | proje içi |
 
 ### 2.2. Veri tabanı
 
@@ -228,6 +228,50 @@ eksiğini kapatan tamamlayıcı bir belge olarak duruyor.
 
 **Ekibin şu anki tercihi: A**, mentör görüşmesinde teyit edilmek üzere.
 
+### 3.3.1. ✅ Şartnamenin güncel metni gerilimi büyük ölçüde çözüyor
+
+**Güncelleme — 01.09.2026.** Şartnamenin güncel metni ilk kez birincil
+kaynak olarak okundu. Yukarıdaki analiz, Madde 5.5'in kopyaleft bileşene
+kapalı olabileceği ihtimali üzerine kuruluydu. **Metin bunun tersini
+söylüyor.**
+
+**Madde 10.4 — Açık Kaynak ve Lisans Uygunluğu:**
+
+> "Katılımcılar, projelerinde kullandıkları tüm açık kaynak yazılım,
+> model, veri seti, API, kütüphane ve üçüncü taraf bileşenlerin
+> lisanslarını beyan etmek zorundadır. **GPL, AGPL**, ticari kullanımı
+> sınırlı, attribution gerektiren veya kapalı lisanslı bileşenlerin
+> kullanımı **ayrıca belirtilecektir.** Lisans ihlalinden doğacak tüm
+> hukuki sorumluluk katılımcılara aittir."
+
+Madde AGPL'i **adıyla anıyor** ve kuralı *kullanma* değil **bildir**
+olarak koyuyor. Yani Bakanlık kopyaleft bileşen kullanılacağını
+öngörmüş; Seçenek A'nın önündeki temel engel metinsel dayanağını
+kaybediyor.
+
+İki madde daha aynı yöne işaret ediyor:
+
+**Madde 9.2:** *"Açık kaynak içerikler kullanılmışsa, lisanslara
+uygunluk sorumluluğu Katılımcı'ya aittir."* — açık kaynak kullanımı
+beklenen bir durum olarak ele alınmış.
+
+**Madde 10.10 — İdarenin Kullanım Hakkı:**
+
+> "Projenin Bakanlık sistemlerinde kullanılması, **devri,
+> lisanslanması**, bakım-destek süreci ve ticarileştirilmesi **ayrıca
+> imzalanacak protokol ile düzenlenir.**"
+
+Bu, Bölüm 3.2'deki en sert yorumu yumuşatıyor: Madde 5.5'teki devir
+mutlak ve anında bir hak geçişi değil; ayrıntısı **protokole**
+bırakılmış. Madde 9.2 de dereceye giren projeler için ayrı protokol
+öngörüyor.
+
+**Kalan sınır — gizlenmiyor.** Madde 5.5'in lafzı hâlâ mutlaktır ve ekip
+hukukçu değildir. Ultralytics'in telif hakkı Ultralytics'te kalır;
+devredilebilecek olan yalnızca ekibin kendi yazdığı kodun haklarıdır.
+Mentöre sorulacak sorular (Bölüm 7) **kaldırılmadı** — ama artık "ne
+yapalım?" değil, **"okumamız doğru mu?"** sorusudur.
+
 ### 3.4. Teknik hafifletme — süreç izolasyonu
 
 AGPL yayılımını *hukuken kesin olarak* engellemez, ama sınırı belirginleştirir
@@ -319,19 +363,25 @@ kararla yalnızca YOLO11 ve PostGIS'e indirilmiştir.
 
 ---
 
-## 6. `LICENSE` dosyası — karar bekliyor
+## 6. `LICENSE` dosyası — ✅ AGPL-3.0 (01.09.2026)
 
-Depodaki `LICENSE` dosyasına **henüz nihai bir lisans yazılmamıştır.**
+Proje **AGPL-3.0** ile lisanslanmıştır. `LICENSE` dosyası, Free Software
+Foundation'ın resmi AGPL-3.0 metnini (661 satır, §13 *Remote Network
+Interaction* dahil) **birebir** içerir; metin değiştirilmemiştir.
 
-Gerekçe: Bölüm 3.3'teki seçenek doğrudan `LICENSE` içeriğini belirler.
-Seçenek A benimsenirse projenin kendisi **AGPL-3.0** ile lisanslanmalıdır;
-MIT yazmak hukuken tutarsız olur — AGPL'li bir bileşenle aynı programı
-oluşturan kodu MIT ile sunmak AGPL §13'ü karşılamaz.
+**Karar gerekçesi:** Bölüm 3.3.1 — şartnamenin güncel metni (Madde 10.4,
+9.2, 10.10) kopyaleft bileşen kullanımını beyan şartına bağlıyor,
+yasaklamıyor. Tam kayıt: `docs/karar-kaydi.md` **K-020**.
 
-Bu nedenle `LICENSE` dosyası şu an bir **karar bekleme notu** içeriyor.
-Mentör görüşmesinden sonra tek seferde doldurulacak ve
-`docs/karar-kaydi.md`'ye tarihli olarak işlenecektir. Karar verilmeden
-yer tutucu bir lisans metni yazmak, yanlış bir taahhüt üretme riski taşır.
+**Neden başka bir şey değil:** Ürün `ultralytics` içerdiği sürece
+AGPL-3.0 tek tutarlı seçenektir. MIT yazmak AGPL §13'ü karşılamaz ve
+yanlış bir taahhüt üretir; boş bırakmak ise teslim anında Madde 10.4'ü
+karşılamaz.
+
+**Geri alınabilirlik:** Mentör Madde 5.5'i farklı yorumlarsa Seçenek B
+(Enterprise lisans) veya C (izin verici modele geçiş) açıktır. C için
+mimari zaten hazırdır: model ayrı süreçte çalışır, `api/` onu yalnızca
+HTTP ile çağırır — model değişimi tek bir servisi etkiler (Bölüm 3.4).
 
 ---
 
@@ -341,9 +391,16 @@ yer tutucu bir lisans metni yazmak, yanlış bir taahhüt üretme riski taşır.
 getiriyor. Aşağıdaki sorular **ilk görüşmede** sorulacak; cevaplar
 `docs/karar-kaydi.md`'ye tarihli olarak yazılacaktır.
 
-1. Madde 5.5'teki "sahiplik devri", AGPL-3.0 lisanslı bir bileşen içeren
-   ürün için nasıl yorumlanmalıdır? Kurum, devraldığı ürünü AGPL koşullarıyla
-   işletmeyi kabul ediyor mu?
+> **Güncelleme — 01.09.2026.** Şartnamenin güncel metni okundu (Bölüm
+> 3.3.1). Sorular **kaldırılmadı** ama nitelikleri değişti: artık "ne
+> yapalım?" değil, **"okumamız doğru mu?"** sorularıdır. Proje bu arada
+> AGPL-3.0 ile lisanslandı (K-020); mentör farklı yorumlarsa karar geri
+> alınabilir.
+
+1. Madde 10.4 GPL/AGPL'li bileşenlerin "ayrıca belirtilmesini" istiyor,
+   kullanımını yasaklamıyor. Madde 10.10 da devir ve lisanslamayı ayrı
+   bir protokole bırakıyor. **Buradan, Madde 5.5'in AGPL'li bir bileşene
+   kapalı olmadığı sonucunu çıkarmamız doğru mu?**
 2. Madde 5.5, bileşenlerin üçüncü taraf lisanslarını mı kapsıyor, yoksa
    yalnızca takımın kendi yazdığı kodun haklarını mı?
 3. Kopyaleft bileşen kullanımı değerlendirmede olumsuz bir unsur mudur?
@@ -352,6 +409,24 @@ getiriyor. Aşağıdaki sorular **ilk görüşmede** sorulacak; cevaplar
    yoksa ayrı bir form/şablon var mı?
 5. (İlgili) Madde 2.6.2 sunum süresini 5 dakika, Madde 5.4 ise 7+3 dakika
    olarak veriyor. Hangisi esastır?
+
+**Şartnamenin güncel metninde bulunan iki tutarsızlık daha** (01.09.2026):
+
+6. **Finalist sayısı:** Madde 4 "en fazla **15 takım** / 75 kişi" diyor,
+   Madde 5.3 ise "ilk **10 proje** seçilecektir" diyor. Hangisi geçerli?
+7. **Takvim sırası:** Tablo 1'de 09.09.2026 "Proje Sunumu (Final)",
+   11.09.2026 "Finalistlerin Açıklanması" olarak sıralanmış — final
+   sunumu, finalistler açıklanmadan önce görünüyor. Sıralama doğru mu?
+
+**Çevresel etki (Madde 10.9) için — `docs/cevresel-etki.md` Bölüm 5:**
+
+8. Bakanlık'ın yayımlanmış bir **hacim→ağırlık dönüşüm katsayısı**
+   tablosu var mı? Varsa EPA değerlerinin yerine öncelikle o
+   kullanılmalıdır (şu an 9 malzeme sınıfından yalnızca 4'ü kaynaklı;
+   **beton kapalı**).
+9. Karbon azaltım potansiyeli için kullanılabilecek **emisyon faktörü**
+   kaynağı var mı? Bu olmadan Madde 10.9'un o kalemi hesaplanamaz ve
+   sayı uydurulmayacaktır.
 
 ---
 
