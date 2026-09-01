@@ -43,6 +43,26 @@ seçim güvenli depoda saklanır.
 
 Palet web arayüzüyle birebir aynıdır (`lib/tema.dart` ↔ `web/src/index.css`).
 
+## Telefon ve tablet
+
+Uygulama **her iki cihaz sınıfında** çalışır. Eşik 600 dp
+(`lib/duzen.dart`):
+
+| | Telefon (< 600 dp) | Tablet (≥ 600 dp) |
+|---|---|---|
+| Gezinme | Alt çubuk (`NavigationBar`) | Yan ray (`NavigationRail`) |
+| İçerik genişliği | Ekranın tamamı | Ortalanmış, en fazla 560 dp |
+
+Eşik ve genişlik sınırı bir hatanın ardından kondu: uygulama yalnızca
+telefon için yazılmıştı ve tablette "esniyordu". Ölçülen sonuç,
+1194×834 bir tablette: açılır liste **1160 px**, içerik 834 px
+yüksekliğin yalnızca üst ~280 px'i, alt gezinme iki sekmeyi tüm
+genişliğe yayıyor. 1160 px'lik bir form alanı kullanılamaz — göz,
+etiketten değere kadar ekranın yarısını kat eder.
+
+Doğrulama Flutter'ın web hedefiyle 390 / 834 / 1194 px'te ekran
+görüntüsü alınarak yapılır.
+
 ## Yinelenen kayıt nasıl engelleniyor
 
 Her ölçüm cihazda üretilen bir `yerel_kimlik` taşır ve sunucuda bu alan
@@ -95,6 +115,7 @@ Varsayılan: `https://rebuild-vision-api.onrender.com`
 | `lib/api.dart` | Sunucu istemcisi ve veri sınıfları |
 | `lib/kuyruk.dart` | Şifreli çevrimdışı kuyruk |
 | `lib/tema.dart` | Açık/koyu palet — web arayüzüyle birebir aynı |
+| `lib/duzen.dart` | Telefon/tablet eşiği ve içerik genişliği |
 | `lib/olcum_turu.dart` | Ölçüm türü, görünen birim, sunucu birimi |
 | `lib/ekran/giris.dart` | Giriş |
 | `lib/ekran/kabuk.dart` | Alt gezinme, bağlantı durumu, eşitleme |

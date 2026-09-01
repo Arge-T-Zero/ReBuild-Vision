@@ -86,7 +86,14 @@ class _GirisDurumu extends State<GirisEkrani> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
+                  // ⚠️ `CrossAxisAlignment.stretch` ALT ÖGELERİN GENİŞLİĞİNİ
+                  // EZİYOR. Bu kutu `width: 44` yazmasına rağmen 420 px'e
+                  // yayılıyor, logo 44x44 kare yerine geniş bir şerit
+                  // olarak çiziliyordu — giriş ekranının ilk göze çarpan
+                  // ögesinde. `Align` sarmalayıcısı esnetmeyi keser.
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
@@ -98,6 +105,7 @@ class _GirisDurumu extends State<GirisEkrani> {
                     ),
                     child: Icon(Icons.layers_outlined,
                         color: Renk.marka, size: 22),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text('ReBuild Vision',
