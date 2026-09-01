@@ -48,9 +48,13 @@ jobs:
       - name: Testler
         env:
           PG_BIN: /usr/lib/postgresql/16/bin
+          # PGHOST şart: veri tabanı ayrı bir kapsayıcıda ve TCP'de.
+          # Verilmezse psql/createdb Unix soketi arar, runner'da öyle bir
+          # sunucu yoktur ve tüm testler kurulum aşamasında patlar.
+          PGHOST: localhost
           PGPORT: "5432"
-          PGPASSWORD: postgres
           PGUSER: postgres
+          PGPASSWORD: postgres
           ALEMBIC: api/.venv/bin/alembic
         run: api/.venv/bin/python -m pytest tests -q
 

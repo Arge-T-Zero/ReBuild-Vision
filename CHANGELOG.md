@@ -41,6 +41,21 @@ GG.AA.YYYY.
   pytest (PostGIS servisiyle), `npm run build` (tsc dahil),
   `flutter analyze` + `flutter test`.
 
+**Düzeltildi — test bağlantı adresi sabit kodlanmıştı**
+- İlk CI koşusunda sunucu işi düştü: `createdb` çıkış kodu 1, ardından
+  138 testin tamamı kurulum aşamasında hata verdi.
+- Sebep: `conftest.py` bağlantı adresini kimlik bilgisi olmadan
+  üretiyordu. Geliştirme makinesinde veri tabanı yerelde ve
+  geliştiricinin kendi adıyla açılmış bir rolle çalıştığı için kullanıcı
+  adı vermeye gerek yok; CI'da ise veri tabanı **ayrı bir kapsayıcıda**
+  ve yalnızca `postgres` rolü var. asyncpg işletim sistemi kullanıcısıyla
+  bağlanmaya çalışıyor, sunucu `role does not exist` diyordu. `psql` ve
+  `createdb` de Unix soketi arıyordu — runner'da öyle bir sunucu yok.
+- `PGHOST`, `PGUSER`, `PGPASSWORD` artık ortamdan okunuyor.
+  **Varsayılanlar bugünkü davranışı korur:** `PGUSER` tanımlı değilse
+  adres eskisiyle birebir aynı üretilir, geliştirme makinesinde hiçbir
+  şey değişmez. İki yapılandırma da yerelde doğrulandı.
+
 ---
 
 ### 01.09.2026 — Mobil tablet düzeni; Flutter derlemesi doğrulandı
