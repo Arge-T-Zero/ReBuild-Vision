@@ -186,7 +186,7 @@ Doğrulama kontrol listesi: `docker/README.md`.
 
 ---
 
-## K-010 · `LICENSE` dosyası karar bekliyor
+## K-010 · `LICENSE` dosyası karar bekliyor ✅ KAPANDI (01.09.2026, bkz. K-020)
 
 - **Tarih:** 27.08.2026
 - **Karar:** `LICENSE` dosyasına henüz lisans metni yazılmadı; dosya bir
@@ -195,8 +195,49 @@ Doğrulama kontrol listesi: `docker/README.md`.
   hizmet sunmayı kopyaleft tetikleyicisi sayıyor. Bu, Madde 5.5 ile
   çözülmemiş bir gerilim oluşturuyor. Gerilim çözülmeden MIT yazmak hukuken
   tutarsız olur.
-- **Durum:** 🟡 **BEKLEMEDE** — ilk mentör görüşmesinde sorulacak
-  (`docs/lisans-analizi.md` Bölüm 7, soru 1-3).
+- **Durum:** ✅ **KAPANDI.** Şartnamenin güncel metni okunduğunda Madde
+  10.4'ün AGPL'i **adıyla anıp beyan şartına bağladığı** görüldü.
+  Bekleme gerekçesi ortadan kalktı; karar K-020'de verildi.
+
+---
+
+## K-020 · Proje lisansı: AGPL-3.0
+
+- **Tarih:** 01.09.2026
+- **Karar:** Proje **AGPL-3.0** ile lisanslandı. `LICENSE` dosyasına
+  FSF'nin resmi AGPL-3.0 metni (661 satır, §13 dahil) **birebir**
+  yazıldı; metin değiştirilmedi.
+- **Gerekçe — üç şey aynı yöne işaret ediyor:**
+
+  1. **Madde 10.4 AGPL'i yasaklamıyor, beyan şartına bağlıyor:**
+     *"GPL, AGPL, ticari kullanımı sınırlı, attribution gerektiren veya
+     kapalı lisanslı bileşenlerin kullanımı ayrıca belirtilecektir."*
+     Bakanlık kopyaleft bileşen kullanılacağını öngörmüş ve kuralı
+     "kullanma" değil "bildir" olarak koymuş.
+  2. **Madde 9.2:** *"Açık kaynak içerikler kullanılmışsa, lisanslara
+     uygunluk sorumluluğu Katılımcı'ya aittir"* — açık kaynak bekleniyor.
+  3. **Madde 10.10:** *"Projenin Bakanlık sistemlerinde kullanılması,
+     devri, lisanslanması, bakım-destek süreci ve ticarileştirilmesi
+     ayrıca imzalanacak protokol ile düzenlenir."* Madde 5.5'teki devir
+     mutlak ve anında değil; ayrıntısı protokole bırakılmış.
+
+- **Neden AGPL-3.0, neden başka bir şey değil:** Ürün `ultralytics`
+  içerdiği sürece AGPL-3.0 **tek tutarlı seçenektir.** MIT yazmak,
+  AGPL'li bir bileşenle aynı programı oluşturan kodu izin verici
+  lisansla sunmak olurdu — AGPL §13'ü karşılamaz ve yanlış bir taahhüt
+  üretir. Boş bırakmak ise teslim anında Madde 10.4'ü karşılamaz.
+- **Kalan sınır — dürüst beyan:** Madde 5.5'in lafzı hâlâ mutlaktır
+  ("kullanım hakları ve sahiplikleri Kuruma bedelsiz olarak
+  devredilecektir"). Ultralytics'in telif hakkı Ultralytics'te kalır;
+  devredilebilecek olan yalnızca ekibin kendi yazdığı kodun haklarıdır.
+  Bu, gizlenen değil beyan edilen bir sınırdır.
+- **Geri alınabilirlik:** Karar mentör görüşmesinde teyide açıktır.
+  Mentör Madde 5.5'i farklı yorumlarsa iki yol vardır: Ultralytics
+  Enterprise lisansı (ücretli) ya da izin verici lisanslı bir modele
+  geçiş. İkincisi için mimari **zaten hazırdır** — model ayrı bir
+  süreçte çalışır ve `api/` onu yalnızca HTTP ile çağırır, yani model
+  değişimi tek bir servisi etkiler.
+- **Durum:** ✅ Uygulandı. Ayrıntı: `docs/lisans-analizi.md` Bölüm 3 ve 6.
 
 ---
 
