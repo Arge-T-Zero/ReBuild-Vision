@@ -5,6 +5,41 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 01.09.2026 — Mobil tablet düzeni; Flutter derlemesi doğrulandı
+
+**Eklendi — uygulama artık tablette de düzgün**
+- Uygulama yalnızca telefon için yazılmıştı; `yukle.dart` ve
+  `olcum.dart` düz `ListView` idi, hiçbir genişlik sınırı yoktu.
+  Ölçüldü, 1194×834 tablette: "Alan seçin…" açılır listesi **1160 px**
+  genişliğinde, içerik 834 px yüksekliğin yalnızca üst ~280 px'ini
+  kaplıyor, alt gezinme iki sekmeyi tüm genişliğe yayıyor.
+- Sorun estetik değil: 1160 px'lik bir form alanı kullanılamaz (göz,
+  etiketten değere kadar ekranın yarısını kat eder) ve o genişlikte
+  metin satırı 200 karakteri aşıyor — rahat okuma 60-75 karakterdir.
+- `lib/duzen.dart` eklendi: 600 dp eşiği ve 560 dp içerik genişliği.
+  Dar ekranda hiçbir şey değişmiyor, telefon düzeni aynen duruyor.
+- 600 dp üstünde alt çubuk yerine `NavigationRail` (Material 3'ün
+  tablet kuralı): sekmeler tek kenarda toplanıyor, dikey alan içeriğe
+  kalıyor.
+- Sahada tablet gerçek bir kullanım — ekip fotoğrafı tablette çekip
+  ölçümü orada giriyor.
+
+**Düzeltildi — giriş ekranında logo tüm genişliğe yayılıyordu**
+- `CrossAxisAlignment.stretch`, alt ögelerin genişliğini eziyor: kutu
+  `width: 44` yazmasına rağmen 420 px'e uzuyor, logo 44×44 kare yerine
+  geniş bir şerit olarak çiziliyordu. Hem telefonda hem tablette, ve
+  giriş ekranının ilk göze çarpan ögesinde.
+
+**Doğrulandı — mobil derlemesi ilk kez gerçekten çalıştırıldı**
+- Önceki tur mobil değişiklikleri derleyiciyle doğrulanamamıştı
+  (araç zinciri yoktu). Flutter 3.47.2 kuruldu:
+  `flutter analyze` → **No issues found**, `flutter test` → **13/13**.
+  Tema refaktörü sırasındaki 35 `const` kaldırma işlemi temiz çıktı.
+- Ekran doğrulaması Flutter'ın web hedefiyle 390 / 834 / 1194 px'te
+  ekran görüntüsü alınarak yapıldı.
+
+---
+
 ### 31.08.2026 — Jüri gözüyle web denetimi; mobil eşitleme hatası ve açık tema
 
 Bu tur iki bölümden oluşuyor: web arayüzünün hakem bakışıyla baştan sona

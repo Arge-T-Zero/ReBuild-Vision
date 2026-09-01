@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
+import '../duzen.dart';
 import '../tema.dart';
 
 /// Görüntü çekme/seçme + konum — P2, madde 7.
@@ -120,7 +121,10 @@ class _YukleDurumu extends State<YukleEkrani> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    // Geniş ekranda içerik ortalanır ve genişliği sınırlanır;
+    // dar ekranda `OrtaSutun` hiçbir şey yapmaz (bkz. duzen.dart).
+    return OrtaSutun(
+      cocuk: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         if (!widget.cevrimici)
@@ -249,6 +253,7 @@ class _YukleDurumu extends State<YukleEkrani> {
           style: TextStyle(color: Renk.metin4, fontSize: 11, height: 1.5),
         ),
       ],
+      ),
     );
   }
 }

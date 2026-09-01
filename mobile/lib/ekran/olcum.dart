@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../api.dart';
+import '../duzen.dart';
 import '../kuyruk.dart';
 import '../olcum_turu.dart';
 import '../tema.dart';
@@ -156,7 +157,10 @@ class _OlcumDurumu extends State<OlcumEkrani> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    // Geniş ekranda içerik ortalanır ve genişliği sınırlanır;
+    // dar ekranda `OrtaSutun` hiçbir şey yapmaz (bkz. duzen.dart).
+    return OrtaSutun(
+      cocuk: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Text('Ölçüm gir',
@@ -361,6 +365,7 @@ class _OlcumDurumu extends State<OlcumEkrani> {
           }),
         ],
       ],
+      ),
     );
   }
 }

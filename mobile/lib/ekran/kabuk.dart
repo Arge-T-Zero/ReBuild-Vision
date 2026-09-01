@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
 import '../api.dart';
+import '../duzen.dart';
 import '../kuyruk.dart';
 import '../tema.dart';
 import 'olcum.dart';
@@ -162,6 +163,8 @@ class _KabukDurumu extends State<Kabuk> {
       ),
     ];
 
+    final genis = Duzen.genisMi(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('ReBuild Vision',
@@ -197,33 +200,76 @@ class _KabukDurumu extends State<Kabuk> {
           ),
         ),
       ),
-      body: IndexedStack(index: _sekme, children: sayfalar),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _sekme,
-        onDestinationSelected: (i) => setState(() => _sekme = i),
-        backgroundColor: Renk.yuzey,
-        indicatorColor: Renk.marka.withValues(alpha: 0.18),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.photo_camera_outlined),
-            selectedIcon: Icon(Icons.photo_camera, color: Renk.marka),
-            label: 'Görüntü',
-          ),
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: _kuyruktaBekleyen > 0,
-              label: Text('$_kuyruktaBekleyen'),
-              backgroundColor: Renk.uyari,
-              textColor: Renk.taban,
-              child: const Icon(Icons.straighten_outlined),
+      // ⚠️ GENİŞ EKRANDA ALT ÇUBUK YANLIŞ BİLEŞENDİ. Tablette iki sekme
+      // 1194 px'e yayılıyor, dokunma hedefleri ekranın iki ucuna
+      // dağılıyordu. Material 3, 600 dp üstünde yan gezinme rayını
+      // (`NavigationRail`) öneriyor: sekmeler tek bir kenarda toplanır
+      // ve dikey alan içeriğe kalır. Dar ekranda alt çubuk aynen kalır.
+      body: genis
+          ? Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _sekme,
+                  onDestinationSelected: (i) => setState(() => _sekme = i),
+                  backgroundColor: Renk.yuzey,
+                  indicatorColor: Renk.marka.withValues(alpha: 0.18),
+                  labelType: NavigationRailLabelType.all,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.photo_camera_outlined),
+                      selectedIcon:
+                          Icon(Icons.photo_camera, color: Renk.marka),
+                      label: const Text('Görüntü'),
+                    ),
+                    NavigationRailDestination(
+                      icon: _kuyrukRozeti(
+                          const Icon(Icons.straighten_outlined)),
+                      selectedIcon: Icon(Icons.straighten, color: Renk.marka),
+                      label: const Text('Ölçüm'),
+                    ),
+                  ],
+                ),
+                VerticalDivider(width: 1, color: Renk.kenar),
+                Expanded(
+                  child: IndexedStack(index: _sekme, children: sayfalar),
+                ),
+              ],
+            )
+          : IndexedStack(index: _sekme, children: sayfalar),
+      bottomNavigationBar: genis
+          ? null
+          : NavigationBar(
+              selectedIndex: _sekme,
+              onDestinationSelected: (i) => setState(() => _sekme = i),
+              backgroundColor: Renk.yuzey,
+              indicatorColor: Renk.marka.withValues(alpha: 0.18),
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  selectedIcon: Icon(Icons.photo_camera, color: Renk.marka),
+                  label: 'Görüntü',
+                ),
+                NavigationDestination(
+                  icon: _kuyrukRozeti(const Icon(Icons.straighten_outlined)),
+                  selectedIcon: Icon(Icons.straighten, color: Renk.marka),
+                  label: 'Ölçüm',
+                ),
+              ],
             ),
-            selectedIcon: Icon(Icons.straighten, color: Renk.marka),
-            label: 'Ölçüm',
-          ),
-        ],
-      ),
     );
   }
+
+  /// Kuyrukta bekleyen kayıt sayısını ikonun üstünde gösterir.
+  ///
+  /// Alt çubuk ve yan ray aynı rozeti kullanır; iki yerde ayrı ayrı
+  /// yazılırsa biri güncellenip diğeri unutulur.
+  Widget _kuyrukRozeti(Widget ikon) => Badge(
+        isLabelVisible: _kuyruktaBekleyen > 0,
+        label: Text('$_kuyruktaBekleyen'),
+        backgroundColor: Renk.uyari,
+        textColor: Renk.taban,
+        child: ikon,
+      );
 }
 
 /// Bağlantı ve kuyruk durumu — her ekranda görünür.
