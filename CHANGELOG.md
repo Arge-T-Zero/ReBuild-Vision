@@ -5,6 +5,44 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 01.09.2026 — Gerçek model servisi, sürekli tümleştirme
+
+**Eklendi — `model-service/` (Kaggle ağırlıklarının ineceği yer)**
+- README ve `docs/mimari.md` bu dizine atıf yapıyor, `test_agpl_siniri.py`
+  etrafındaki sınırı beş testle savunuyordu — ama **dizin yoktu.**
+  Eğitim bittiğinde `best.pt`'yi servis edecek hiçbir şey yoktu.
+- Servis `model-mock/app.py` ile birebir aynı sözleşmeyi konuşur;
+  `api/` ikisini ayırt etmez, geçiş tek ortam değişkenidir. Tek fark
+  olması gereken farktır: `/health` → `sahte: false`.
+- **Ağırlık yoksa sahte veri üretmez.** `/health` `agirlik_yuklendi:
+  false` ve nedenini döner, `/predict` **503** verir. Sessizce mock'a
+  düşmek ya da boş liste dönmek seçenek değil — ikincisi "görüntüde
+  malzeme yok" diye okunur.
+- **Sınıf adı modelden değil `siniflar.json`'dan alınır.** Model kendi
+  `names` sözlüğünü taşır; eğitimdeki sıra kayarsa arayüz "ahşap" yerine
+  "metal" gösterir ve hiçbir hata görünmez — miktar da yanlış malzemenin
+  katsayısıyla hesaplanır. Listede olmayan bir id gelirse istek 500 ile
+  reddedilir ve mesaj sorunun `data.yaml`'da olduğunu söyler.
+- İnceleme eşiği ölçülmüş değer olmadığı için (henüz metrik yok) ortam
+  değişkeniyle değiştirilebilir; kod değişikliği gerektirmez.
+- Ağırlıklar depoya girmez (`agirliklar/.gitignore`).
+
+**Eklendi — sözleşme testi (8 test)**
+- İki servisin aynı alan adlarını döndüğü, sahte bayrağının doğru
+  yönde olduğu, ağırlıksız serviste uydurma üretilmediği, AGPL
+  beyanının gizlenmediği ve bilinmeyen sınıf id'sinin sessizce
+  geçilmediği doğrulanıyor.
+- Ultralytics bu kapta kurulup gerçek bir ağırlıkla çalıştırılarak
+  uçtan uca denendi: ağırlık yokken 503, ağırlıkla 200 ve çıkarım.
+
+**Eklendi — sürekli tümleştirme**
+- Depoda 130 sunucu + 13 mobil testi vardı ve **hiçbiri otomatik
+  koşmuyordu.** `.github/workflows/testler.yml` üç işi paralel çalıştırır:
+  pytest (PostGIS servisiyle), `npm run build` (tsc dahil),
+  `flutter analyze` + `flutter test`.
+
+---
+
 ### 01.09.2026 — Mobil tablet düzeni; Flutter derlemesi doğrulandı
 
 **Eklendi — uygulama artık tablette de düzgün**

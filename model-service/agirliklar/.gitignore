@@ -1,0 +1,6 @@
+# Model ağırlıkları depoya girmez: büyük ikili dosyalar git geçmişini
+# şişirir ve her sürüm yeni bir kopya bırakır. Ağırlık, eğitim çıktısı
+# olarak ayrıca saklanır ve dağıtımda MODEL_AGIRLIK ile verilir.
+*.pt
+*.onnx
+*.engine

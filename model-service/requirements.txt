@@ -1,0 +1,12 @@
+# ⚠️ BU DOSYA AGPL-3.0 BİR PAKET İÇERİR.
+#
+# `ultralytics` AGPL-3.0'dır ve `api/requirements.txt` içine ASLA
+# eklenmemelidir; `tests/test_agpl_siniri.py` bunu zorlar.
+# Gerekçe: docs/lisans-analizi.md Bölüm 3.
+
+fastapi==0.115.6          # MIT
+uvicorn[standard]==0.34.0 # BSD-3-Clause
+python-multipart==0.0.20  # Apache-2.0
+pillow==11.1.0            # MIT-CMU
+
+ultralytics==8.4.0        # AGPL-3.0 🔴 — yalnızca bu serviste

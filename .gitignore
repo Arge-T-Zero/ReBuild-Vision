@@ -64,3 +64,4 @@ tests/__pycache__/
 /kapak-2.png
 /kapak-3.png
 .venv-inceleme/
+.venv-model/
