@@ -12,7 +12,10 @@
     "Bu degerler ABD insaat/yikim atigi karakterizasyonundan gelir. Turkiye'deki yapi malzemesi ve yikim pratigi farkli olabilir; mentore ve alan uzmanina SORULMALIDIR.",
     "beton, dolgu_toprak ve alcipan icin aralik veren ikinci bir kaynak gerekiyor. Beton en kritik sinif oldugu icin oncelikli.",
     "sert_plastik ve yumusak_plastik icin insaat/yikim kaynagi bulunamadi.",
-    "Cevre, Sehircilik ve Iklim Degisikligi Bakanligi'nin yayimlanmis bir donusum katsayisi tablosu var mi? Varsa oncelikle o kullanilmalidir."
+    "Cevre, Sehircilik ve Iklim Degisikligi Bakanligi'nin yayimlanmis bir donusum katsayisi tablosu var mi? Varsa oncelikle o kullanilmalidir.",
+    "BETON ARASTIRMASI (01.09.2026) — sonuc: uygun kaynak BULUNAMADI, deger yazilmadi. Yayimlanmis 'beton' donusum degerleri 860 ile 4.200 lb/yd3 arasinda, yani BESE KATLANIYOR. Sebep kategori farki: kimi kaynak KATI betonu (~4.050 lb/yd3), kimi KIRILMIS/GEVSEK molozu (~2.025 lb/yd3), kimi de KARISIK Y&D atigini olcuyor. EPA'nin 860 degeri gevsek moloz kategorisindedir. Bu araligin ortasindan bir sayi secmek, kategorileri karistirmak olurdu ve tonaji katlayabilirdi.",
+    "Ikinci aday kaynak Contra Costa County (ABD) donusum tablosuydu — 'Concrete and Asphalt' icin 1.400 lb/yd3 verdigi goruldu, ama BELGENIN KENDISINE ERISILEMEDI (ag kisiti) ve dogrulanamadi. Ayrica beton ile asfalti BIRLIKTE veriyor; ayri deger gerekiyor.",
+    "SONUC: beton icin gereken sey 'bir sayi' degil, GEVSEK YIKIM MOLOZU kategorisinde ALT-UST ARALIGI veren, dogrulanabilir tek bir kaynak. Oncelik sirasi: (1) Bakanlik tablosu, (2) TUIK, (3) yontemi yayimlanmis uluslararasi kaynak."
   ],
   "katsayilar": [
     {

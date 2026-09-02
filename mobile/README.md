@@ -155,7 +155,6 @@ Dürüst beyan — bunlar henüz yapılmadı:
 
 - **Kayıt ol ekranı yok.** Hesap açma yalnızca web arayüzünden yapılır;
   telefondan başvurulamaz.
-- **Parolayı göster/gizle yok.** Web arayüzünde var.
 - **Fotoğraflar şifreli değil.** Yalnızca ölçüm kayıtları ve oturum
   jetonu güvenli depoda tutulur (yukarıdaki sınır beyanı).
 - **Enkaz alanı tanımlama, doğrulama kuyruğu ve harita ekranları yok.**
