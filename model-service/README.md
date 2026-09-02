@@ -83,11 +83,17 @@ MODEL_SERVICE_URL=http://localhost:8090
 `INCELEME_ESIGI` (varsayılan `0.50`), altındaki tespitleri uzman
 incelemesine yönlendirir.
 
-**Bu ölçülmüş bir değer değildir.** Modelin başarımı henüz ölçülmediği
-için ([`results/model-metrikleri.md`](../results/model-metrikleri.md))
-eşik bir mühendislik varsayımıdır. Ölçüm yapıldığında precision/recall
-eğrisinden türetilmelidir; o zamana kadar kod değişikliği gerekmesin
-diye ortam değişkeniyle değiştirilebilir tutuluyor.
+**Bu ölçülmüş bir değer değildir** — ama sebebi değişti. Model
+01.09.2026'da eğitildi ve ölçüldü
+([`results/model-metrikleri.md`](../results/model-metrikleri.md)).
+
+Eşik yine de türetilemiyor: doğru seçmek için precision ve recall'un
+**güvene göre** değişimi gerekir, elimizdeki ölçüm her sınıf için tek bir
+çalışma noktası veriyor. Eğriler yalnızca görsel olarak var
+(`results/egitim/gorseller/*_BoxF1_curve.png`) ve bir görselden sayı
+okumak ölçüm değildir. 0,50 bir mühendislik varsayımıdır ve kod
+değişikliği gerekmesin diye ortam değişkeniyle değiştirilebilir
+tutuluyor.
 
 ## Sözleşme
 

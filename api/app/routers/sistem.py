@@ -60,9 +60,15 @@ async def durum():
 async def siniflar():
     """Sınıf tanımları. Arayüz renk ve etiketleri buradan alır.
 
-    `kapsanmayan_gruplar` da döner: cam ve seramik eğitim verisinde
-    bulunmadığı için model bu grupları tanımaz. Arayüz bunu görünür kılar —
-    bir sınıfın yokluğu 'o malzeme sahada yok' anlamına gelmez.
+    Model beş sınıf tanır: ahsap, beton_tugla, cam, metal, seramik.
+
+    `kapsanmayan_gruplar` da döner — dolgu/toprak, plastik, tekstil,
+    karton, alçıpan: model bu grupları tanımaz. Arayüz bunu görünür kılar,
+    çünkü bir sınıfın yokluğu 'o malzeme sahada yok' anlamına gelmez.
+
+    Tanınan bir sınıfın listede olması, çıktısının güvenilir olduğu
+    anlamına da gelmez; sınıf bazlı başarım results/model-metrikleri.md
+    dosyasındadır.
     """
     return sinif_tanimlari()
 

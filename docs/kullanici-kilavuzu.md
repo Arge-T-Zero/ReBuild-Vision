@@ -314,13 +314,31 @@ dağılımı görünür.
 - Lejandın altında **kapsam uyarısı** ve **kapsanmayan malzeme grupları**
   yazılıdır.
 
+### Modelin tanıdığı beş sınıf
+
+**Ahşap · Beton / tuğla · Cam · Metal · Seramik**
+
+> Bu liste 02.09.2026'da **10 sınıftan 5'e indi**: model, planlanan
+> kamuya açık veri setiyle değil takımın kendi topladığı veri setiyle
+> eğitildi. Kılavuzun önceki sürümü "cam ve seramik tanınmıyor, tuğla
+> betondan ayrılmıyor" diyordu; **üçü de artık geçerli değil.** `Cam`
+> bugün modelin en iyi sınıfıdır.
+
 ### Kapsanmayan gruplar
 
-Mevcut eğitim verisinde **cam** ve **seramik** sınıfı bulunmamaktadır;
-**tuğla** ise betondan ayrılmaz. Model bu grupları **tanımaz.**
+Model bu beşin dışındaki malzeme gruplarını — **dolgu/toprak, plastik,
+tekstil, karton, alçıpan** — **tanımaz.**
 
 Bir malzemenin haritada görünmemesi, **o malzemenin sahada olmadığı
-anlamına gelmez.** Ayrıntı: `results/bilinen-sinirlar.md`.
+anlamına gelmez.**
+
+### Tanınan her sınıfa aynı ölçüde güvenilmez
+
+Bir sınıfın listede olması, çıktısının güvenilir olduğu anlamına gelmez.
+`Seramik` sınıfının test başarımı **çok düşüktür** (mAP50 0,0877) —
+pratikte çalışmadığı kabul edilmelidir. Sınıf bazlı ölçümler:
+`results/model-metrikleri.md`. Sistemin bilinen sınırları:
+`results/bilinen-sinirlar.md`.
 
 ---
 

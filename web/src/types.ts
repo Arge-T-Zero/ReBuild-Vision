@@ -119,7 +119,7 @@ export interface SiniflarYaniti {
   surum: string
   kaynak: string
   siniflar: SinifTanimi[]
-  kapsanmayan_gruplar: { ad: string; not: string }[]
+  kapsanmayan_gruplar: { ad: string; gorunen_ad: string; not: string }[]
 }
 
 export interface SistemDurumu {

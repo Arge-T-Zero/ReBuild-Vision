@@ -19,6 +19,19 @@ RUN pip install --no-cache-dir -r api/requirements.txt
 # Uygulama kodu ve çalışma zamanında okunan yapılandırma dosyaları.
 COPY api/ api/
 COPY siniflar.json katsayilar.json ./
+
+# ⚠️ BU SATIR YOKTU VE JÜRİYE YANLIŞ BİLGİ GİDİYORDU.
+#
+# `api/app/core/config.py` → `model_metrik_ozeti()` başarım özetini
+# `results/egitim/metrikler.json` dosyasından ÜRETİR; dosya yoksa
+# "henüz ölçülmedi" döner. Bu metin üç yerde görünür: /sistem/durum,
+# arayüzün altbilgisi ve İNDİRİLEN HER RAPORUN künyesi.
+#
+# Dosya imaja kopyalanmadığı için, konteynerde çalışan sistem
+# "model henüz ölçülmedi" diyordu — README aynı anda test mAP50 = 0,4334
+# ilan ederken. Yani jürinin çalıştıracağı sürüm, deponun kendi
+# ölçümünü yalanlıyordu.
+COPY results/egitim/metrikler.json results/egitim/metrikler.json
 # Açılışta göç ve demo verisi çalıştırılır (docker/baslat-api.sh).
 COPY scripts/demo_veri.py scripts/demo_veri.py
 COPY docker/baslat-api.sh /baslat-api.sh

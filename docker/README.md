@@ -1,4 +1,12 @@
-# docker/ — doğrulandı ✅
+# docker/
+
+## Durum — neyin doğrulandığı, neyin doğrulanmadığı
+
+> ⚠️ Bu dosyanın başlığı 02.09.2026'ya kadar **"doğrulandı ✅"** idi ve
+> aynı dosyanın sonunda *"Temiz bir makinede doğrulama"* kutucuğu
+> işaretsiz duruyordu. İki ifade birbirini yalanlıyordu. Aşağıdaki tablo
+> neyin gerçekten çalıştırıldığını, sonraki bölüm neyin hâlâ
+> çalıştırılmadığını söyler.
 
 ## Durum
 
@@ -95,8 +103,8 @@ Varsayılan değerler bilinçli olarak "DEGISTIRIN" uyarısı taşır.
 ### AGPL sınırı imaj düzeyinde korunur
 
 `api` imajına model kütüphanesi **kurulmaz**. Gerçek YOLO11 servisi
-eklendiğinde ayrı bir imaj (`model-service`) olacak ve `api` ona yalnızca
-`MODEL_SERVICE_URL` üzerinden bağlanacaktır — tek satırlık değişiklik.
+ayrı bir imajdır (`docker/model-service.Dockerfile`, 02.09.2026'da
+eklendi) ve `api` ona yalnızca `MODEL_SERVICE_URL` üzerinden bağlanır.
 
 Bu sınır `tests/test_agpl_siniri.py` ile testle korunur; yorum satırına
 güvenilmez.
@@ -112,11 +120,54 @@ Gerekçe: `docs/lisans-analizi.md` Bölüm 3.4
 - [x] `docker/web.Dockerfile` + `docker/nginx.conf`
 - [x] `docker/compose.yaml`
 - [x] `.dockerignore` — Bakanlık verisinin imaja sızmasını da engeller
-- [ ] **Temiz bir makinede `docker compose up` ile doğrulama**
-- [ ] Gerçek model için `docker/model-service.Dockerfile`
+- [x] Gerçek model için `docker/model-service.Dockerfile` *(02.09.2026)*
+- [x] `docker/compose.gercek-model.yaml` bindirmesi *(02.09.2026)*
+- [ ] 🔴 **Gerçek model imajının derlenmesi ve çalıştırılması**
 
-> Son iki madde kaldı. Doğrulama en önemlisidir: kendi makinede çalışıyor
-> olması kanıt değildir, Madde 10.3 bağımsız ortam istiyor.
+> ⚠️ **Son madde teslim öncesi mutlaka yapılmalıdır.**
+>
+> `model-service.Dockerfile` ve compose bindirmesi yazıldı,
+> `docker compose config` ile **söz dizimi doğrulandı**, ama imaj
+> **derlenemedi**: geliştirme oturumunun ağ politikası Docker kayıt
+> defterinin dağıtım ağını (`production.cloudfront.docker.com`)
+> engelliyor, temel imaj (`python:3.11-slim`) indirilemiyor.
+>
+> Yani bu iki dosya, çalıştığı **görülmemiş** koddur. Bu depoda
+> "yazdım, herhalde çalışıyor" kabul edilmiyor; kutucuk bu yüzden
+> işaretsiz. Doğrulama komutu aşağıdaki bölümdedir.
+
+## Gerçek modeli çalıştırma
+
+Varsayılan `docker compose up` **sahte** model servisini kaldırır ve
+arayüzde kalıcı "SAHTE MODEL SERVİSİ" bandı gösterir. Gerçek YOLO11
+modelini çalıştırmak için:
+
+```bash
+# 1. Ağırlığı yerine koyun (depoya girmez, ~40 MB — ayrıca verilir)
+cp best.pt model-service/agirliklar/
+
+# 2. Gerçek model bindirmesiyle başlatın
+docker compose -f docker/compose.yaml \
+               -f docker/compose.gercek-model.yaml up --build
+```
+
+Doğrulama:
+
+```bash
+curl -s http://localhost:8080/api/sistem/durum
+# model_servisi.sahte  → false   olmalı
+```
+
+**Ağırlık yoksa sessiz düşüş YOKTUR:** `/health` `agirlik_yuklendi: false`
+der, `/predict` **503** döner, arayüz uydurma tespit göstermez. Bu
+bilinçlidir (ana talimat Bölüm 9.5) — ağırlıksız çalışmak istiyorsanız
+bindirmeyi hiç kullanmayın; sahte servis, sahte olduğunu ekranda söyler.
+
+**İlk derleme uzun sürer:** torch ve ultralytics indirilir (~1 GB).
+`compose.gercek-model.yaml` bu yüzden 90 saniyelik bir başlangıç payı
+tanır.
+
+---
 
 ## Doğrulama kontrol listesi
 
@@ -129,3 +180,6 @@ Docker kurulduğunda sırayla:
 5. Ölçüm girilmemiş tespitte miktar alanı **boş**
 6. `docker compose down -v && docker compose up` — sıfırdan yine çalışıyor
 7. `docker image inspect` çıktısında `api` imajında `ultralytics` yok
+8. Altbilgide **ölçülmüş** mAP değeri yazıyor ("henüz ölçülmedi" DEĞİL)
+9. Gerçek model bindirmesiyle `/api/sistem/durum` → `sahte: false`
+10. Ağırlık kaldırıldığında `/predict` **503** veriyor, uydurma üretmiyor

@@ -40,6 +40,9 @@ class _KabukDurumu extends State<Kabuk> {
   int _sekme = 0;
   int _kuyruktaBekleyen = 0;
   bool _cevrimici = true;
+  // `null` = henüz sorulmadı ya da sunucuya ulaşılamadı. Bilinmiyorken
+  // rozet GÖSTERİLMEZ: "sahte değil" diye bir şey iddia etmiyoruz.
+  bool? _sahteModel;
   StreamSubscription<List<ConnectivityResult>>? _baglantiAboneligi;
 
   @override
@@ -47,6 +50,20 @@ class _KabukDurumu extends State<Kabuk> {
     super.initState();
     _kuyrukSay();
     _baglantiIzle();
+    _modelDurumu();
+  }
+
+  Future<void> _modelDurumu() async {
+    try {
+      final sahte = await widget.api.sahteModelMi();
+      if (mounted) setState(() => _sahteModel = sahte);
+    } catch (_) {
+      // Sunucuya ulaşılamıyorsa rozet gösterilmez. Sahteliği gizlemek
+      // değil, bilmediğimiz bir şeyi iddia etmemek için: çevrimdışı
+      // saha personeline "gerçek model çalışıyor" izlenimi vermeyiz,
+      // "sahte" damgası da basmayız.
+      if (mounted) setState(() => _sahteModel = null);
+    }
   }
 
   @override
@@ -192,11 +209,13 @@ class _KabukDurumu extends State<Kabuk> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(30),
+          // Sahte servis bandı ikinci bir satır ekler.
+          preferredSize: Size.fromHeight(_sahteModel == true ? 58 : 30),
           child: _DurumSeridi(
             cevrimici: _cevrimici,
             bekleyen: _kuyruktaBekleyen,
             esitle: esitle,
+            sahteModel: _sahteModel,
           ),
         ),
       ),
@@ -278,10 +297,14 @@ class _DurumSeridi extends StatelessWidget {
   final int bekleyen;
   final Future<void> Function({bool sessiz}) esitle;
 
+  /// `true` ise SAHTE model servisi çalışıyor demektir; `null` bilinmiyor.
+  final bool? sahteModel;
+
   const _DurumSeridi({
     required this.cevrimici,
     required this.bekleyen,
     required this.esitle,
+    this.sahteModel,
   });
 
   @override
@@ -294,7 +317,7 @@ class _DurumSeridi extends StatelessWidget {
             ? (Renk.bilgi, '$bekleyen kayıt gönderilmeyi bekliyor')
             : (Renk.metin4, 'Çevrimiçi · kuyruk boş');
 
-    return Container(
+    final baglantiSeridi = Container(
       width: double.infinity,
       color: Renk.yuzey2,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -327,6 +350,43 @@ class _DurumSeridi extends StatelessWidget {
             ),
         ],
       ),
+    );
+
+    // SAHTE MODEL SERVİSİ bandı — ana talimat Bölüm 9.5.
+    //
+    // Sahtelik hiçbir yerde gizlenmez. Bant yalnızca sunucu açıkça
+    // `sahte: true` dediğinde çıkar; bilinmiyorken (çevrimdışı, sunucuya
+    // ulaşılamıyor) HİÇBİR ŞEY iddia edilmez.
+    if (sahteModel != true) return baglantiSeridi;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: double.infinity,
+          color: Renk.uyari,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          child: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded,
+                  size: 15, color: Renk.taban),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'SAHTE MODEL SERVİSİ — sonuçlar gerçek bir modelden '
+                  'gelmiyor',
+                  style: TextStyle(
+                    color: Renk.taban,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        baglantiSeridi,
+      ],
     );
   }
 }

@@ -7,16 +7,41 @@ tarafından bağımsız bir ortamda kurulabilir ve çalıştırılabilir olmalı
 
 ## İki kurulum yolu
 
-### A. Docker — ÖNERİLEN, doğrulanmıştır ✅
+### A. Docker — ÖNERİLEN
 
 ```bash
 docker compose -f docker/compose.yaml up --build
 # Tek adres: http://localhost:8080
 ```
 
-Başka hiçbir şey kurmanız gerekmez: PostgreSQL, PostGIS, API, sahte model
+Başka hiçbir şey kurmanız gerekmez: PostgreSQL, PostGIS, API, model
 servisi ve arayüz konteynerlerden gelir. Şema göçü ve demo verisi açılışta
-otomatik çalışır.
+otomatik çalışır — giriş yaptığınızda **üç saha, üç görüntü ve sekiz
+tespit** hazır bekler (hepsi sentetik, Madde 10.7).
+
+### Gerçek modeli çalıştırma
+
+Yukarıdaki komut **sahte** model servisini kaldırır; arayüzde kalıcı
+"SAHTE MODEL SERVİSİ" bandı görürsünüz. Eğitilmiş YOLO11 modelini
+çalıştırmak için ağırlık dosyasını yerine koyup bindirme dosyasıyla
+başlatın:
+
+```bash
+cp best.pt model-service/agirliklar/        # ~40 MB, ayrıca verilir
+docker compose -f docker/compose.yaml \
+               -f docker/compose.gercek-model.yaml up --build
+```
+
+Doğrulama: `curl -s http://localhost:8080/api/sistem/durum` çıktısında
+`model_servisi.sahte` **false** olmalıdır.
+
+Ağırlık dosyası depoya girmez (büyük ikili dosyalar git geçmişini şişirir).
+Ağırlık yokken servis **sahte veri üretmez**: `/predict` 503 döner ve
+arayüz uydurma tespit göstermez.
+
+⚠️ **Bu yol henüz temiz bir makinede çalıştırılmadı** — dosyalar yazıldı ve
+`docker compose config` ile doğrulandı, ama imaj derlemesi geliştirme
+ortamının ağ kısıtı nedeniyle denenemedi. Ayrıntı: `docker/README.md`.
 
 İlk açılış imajların derlenmesi ve indirilmesiyle birkaç dakika sürer.
 Dört servis de ayağa kalkınca `http://localhost:8080` adresinden

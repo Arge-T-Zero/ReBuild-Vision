@@ -364,8 +364,10 @@ class _SonucKarti extends StatelessWidget {
                               color: Renk.metin2, fontSize: 13)),
                     ),
                     // Güven skoru yuvarlanmaz (ana talimat Bölüm 9.2).
+                    // Biçimlendirme `api.dart` → `guvenYuzdesi()`'nde;
+                    // web'deki `yuzdeMetni()` ile aynı davranış.
                     Text(
-                      '%${(guven * 100).toStringAsFixed(guven * 100 % 1 == 0 ? 0 : 1)}',
+                      '%${guvenYuzdesi(guven)}',
                       style: TextStyle(
                         color: inceleme ? Renk.uyari : Renk.metin3,
                         fontSize: 13,

@@ -4,8 +4,8 @@ import { useDurum } from '../durum'
 import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
 import {
-  Baslik, Bilgi, BosDurum, Buton, Hata, KapsamUyarisi, Kart, SinifEtiketi,
-  girdiSinifi,
+  Baslik, Bilgi, BosDurum, Buton, Hata, KapsamUyarisi, Kart,
+  OnTahminEtiketi, SinifEtiketi, girdiSinifi,
 } from '../bilesenler/Temel'
 import { GuvenSkoru } from '../bilesenler/GuvenSkoru'
 import { Ikon } from '../bilesenler/Ikon'
@@ -212,6 +212,14 @@ export function Yukle() {
                           ad={tanim?.gorunen_ad ?? t.sinif} />
                         <GuvenSkoru skor={t.guven_skoru}
                           incelemeGerekli={t.inceleme_gerekli} />
+                        {/* ⚠️ BU ETİKET BURADA YOKTU. Kural "istisnasız"
+                            diyor; yan paneldeki düzyazı ("sonuçlar ön
+                            tahmin olarak listelenir") etiketin yerini
+                            tutmaz — kullanıcı bu listenin ekran
+                            görüntüsünü paylaştığında düzyazı gitmiş
+                            olur, etiket kalır. Mobil aynı listeyi zaten
+                            doğru gösteriyordu. */}
+                        <OnTahminEtiketi />
                         <span className="grow" />
                         {t.inceleme_gerekli && (
                           <span className="text-xs text-uyari">
