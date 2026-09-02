@@ -2,7 +2,7 @@
 
 Bu klasör, 01.09.2026 tarihli eğitim koşusunun **ham çıktılarıdır**.
 Yorum eklenmemiştir; `results/model-metrikleri.md` bu dosyalara dayanarak
-doldurulacaktır.
+**doldurulmuştur** (02.09.2026).
 
 ## Sınıf listesi — uyuşmazlık ÇÖZÜLDÜ (02.09.2026)
 

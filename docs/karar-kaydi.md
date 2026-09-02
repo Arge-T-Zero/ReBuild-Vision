@@ -294,8 +294,14 @@ Doğrulama kontrol listesi: `docker/README.md`.
   edilemiyordu (ΔE 10.6, taban 15).
 - **Yöntem:** Bütün ikili mesafeler ölçüldü, ardından her komşu ikilinin
   eşiği geçtiği bir sıralama permütasyon taramasıyla bulundu. Sonuç:
-  en zayıf komşu renk körlüğü ΔE **8.6**, normal görüş ΔE **19.3** —
+  en zayıf **komşu** renk körlüğü ΔE **8.6**, normal görüş ΔE **19.3** —
   beş kontrol de geçiyor.
+- ⚠️ **Ölçüt uyarısı (02.09.2026 eklendi).** Buradaki 8,6 değeri
+  *sıralamadaki komşu ikililerin* en kötüsüdür; K-022'deki 3,5 ise aynı
+  paletin *bütün ikililerinin* en kötüsüdür. İki sayı çelişmiyor, **farklı
+  şeyleri ölçüyor**: sıralama optimize edilince lejantta yan yana gelen
+  renkler ayrılır, ama uzaktaki iki renk yine birbirine yakın kalabilir.
+  K-022 "aynı ölçüdeki skoru" derken bunu belirtmiyordu; düzeltildi.
 - **Not:** Malzeme olmayan sınıflar kategorik paletten renk almaz (K-007
   ile tutarlı), nötr gridir.
 - **Durum:** ⚠️ **Yerini K-022'ye bıraktı.** Bu ölçüm 10 renkli palet
@@ -421,6 +427,14 @@ Doğrulama kontrol listesi: `docker/README.md`.
 ---
 
 ## K-018 · Dönüşüm katsayıları kaynaklandı — 9 sınıftan 4'ü açıldı
+
+> ⚠️ **GEÇERSİZ (02.09.2026, bkz. K-021).** Bu kayıt 10 sınıflı listeye
+> göre yazıldı ve `tekstil`, `karton`, `dolgu_toprak`, `alcipan`,
+> `sert_plastik`, `yumusak_plastik` üzerine kuruludur — bunların hiçbiri
+> artık bir sınıf değil. **Bugünkü durum: 5 sınıftan 2'si açık**
+> (`ahsap`, `metal`). Kayıt silinmedi çünkü katsayıların NASIL
+> kaynaklandığını ve `tekstil`/`karton` değerlerinin nereden geldiğini
+> gösteren tek belge budur; sınıflar geri gelirse dayanak hazırdır.
 
 - **Tarih:** 29.08.2026
 - **Durum:** `katsayilar.json` sürüm 0.2 · **kısmen** kaynaklandı
@@ -635,12 +649,67 @@ Colima durduruldu. Depoda kalıcı bir iz yok.
 - **Karar:** Beş sınıfın rengi: `ahsap #d95926`, `beton_tugla #6b7280`,
   `cam #008300`, `metal #3987e5`, `seramik #c98500`.
 - **Gerekçe:** Renkler protanopi, dötanopi ve tritanopi benzetimiyle
-  LAB uzayında ölçüldü. Seçilen küme en kötü durumda **ΔE = 6,8**;
-  önceki 10 renkli paletin aynı ölçüdeki skoru **3,5** idi — yani yeni
-  palet iki kat daha ayırt edilebilir.
+  LAB uzayında ölçüldü.
+- **Ölçüt açıkça:** *bütün ikililerin* en kötüsü — normal görüş ve üç
+  renk körlüğü benzetimi birlikte. Seçilen küme **ΔE = 6,8**; önceki 10
+  renkli paletin **aynı ölçütteki** skoru **3,5** idi, yani yeni palet
+  iki kat daha ayırt edilebilir.
+- ⚠️ **K-012'deki 8,6 ile karıştırılmamalı.** O sayı aynı 10 renkli
+  paletin *sıralamadaki komşu ikililerinin* en kötüsüdür — farklı bir
+  ölçüt, dolayısıyla farklı bir sayı. Sıralamayı optimize etmek lejantta
+  yan yana düşen renkleri ayırır ama uzaktaki iki rengi yaklaştırabilir.
+  Bu paragrafın ilk sürümü "aynı ölçüdeki skoru" derken ölçütü
+  yazmıyordu; iki kayıt 02.09.2026'da yeniden ölçülerek uzlaştırıldı.
+- **Yeniden üretilebilir:** ölçüm `siniflar.json` ile git geçmişindeki
+  eski palet üzerinde tekrarlandı — bütün-ikili: eski 3,51 · yeni 6,79;
+  en iyi komşu sıralama: eski 23,6 · yeni 14,4. (Yeni palet komşu
+  ölçütünde daha düşük çünkü beş renkte optimize edilecek daha az
+  sıralama var; kritik olan bütün-ikili ölçütüdür, çünkü kullanıcı
+  renkleri lejanttaki sırayla değil haritada yan yana görür.)
 - **Anlamsal tutarlılık da korundu:** gri beton/tuğla, koyu yeşil cam,
   mavi metal, turuncu ahşap, kehribar seramik.
 - **Not:** Renk hiçbir zaman TEK BAŞINA anlam taşımaz — her etikette
   sınıf adı yazılıdır (WCAG 1.4.1). Ölçüm, rengin yardımcı olduğu
   durumu iyileştirmek içindir, ona bağımlılık yaratmak için değil.
 - **Durum:** ✅ Uygulandı (`siniflar.json`, `mobile/lib/tema.dart`).
+
+---
+
+## K-023 · Nesne düzeyi yetkilendirme tekil uçlara da uygulandı
+
+- **Tarih:** 02.09.2026 (teslim denetimi)
+- **Bulunan açık:** Yetki kontrolü **eylem** üzerinden yapılıyordu ("bu
+  rol okuyabilir mi?"), **nesne** üzerinden unutulmuştu ("bu rol BU
+  KAYDI okuyabilir mi?").
+
+  `gorulebilir_alanlar()` süzgeci **liste** uçlarında uygulanıyordu:
+  `yikim` rolü `/enkaz-alani`'nda boş liste, `/harita`'da boş dağılım
+  görüyordu (K-017). Ama **tekil kayıt** uçları yalnızca "giriş yapmış
+  mı" diye bakıyordu:
+
+  | Uç nokta | Önce | Sonra |
+  |---|---|---|
+  | `GET /tespit/{id}` | ❌ kapsamsız | ✅ |
+  | `GET /miktar/{id}` | ❌ kapsamsız | ✅ |
+  | `GET /olcum/tespit/{id}` | ❌ kapsamsız | ✅ |
+  | `GET /tehlikeli/tespit/{id}` | ❌ kapsamsız | ✅ |
+  | `POST /tespit/{id}/dogrula` | ❌ kapsamsız | ✅ |
+  | `POST /olcum` | ❌ kapsamsız | ✅ |
+
+- **Somut sonuç:** dış taraf bir rol (yıkım firması, geri kazanım
+  tesisi) id'leri sırayla gezerek göremediği sahaların tespitlerini,
+  malzeme sınıflarını ve **hesaplanmış tonajını** okuyabiliyordu. Liste
+  ucunda kapatılan kapı tekil uçta açıktı.
+- **Çözüm — veri katmanında:** `queries.gorulebilir_tespitler()` eklendi;
+  uçlar kaydı `db.get()` ile değil bu sorgudan alıyor. Projenin ilkesi
+  gereği süzgeç arayüzde değil sorguda.
+- **Ortaya çıkan incelik — bilinçli:** `uzman` rolünün görünürlüğü İŞ
+  ÜZERİNDEN türetiliyor (K-014: atama akışı henüz yok). Dolayısıyla bir
+  uzman, **başka bir uzmanın** doğruladığı ve kapsamında iş bırakmayan
+  bir kaydı artık göremiyor. Bu bir gerileme değil, liste ucundaki
+  davranışın tekil uca uygulanmasıdır — `/enkaz-alani` o sahayı zaten
+  döndürmüyordu. Kuyruktaki kaydı açmak (demo 5. adım) etkilenmiyor;
+  ayrı bir testle sabitlendi.
+- **Durum:** ✅ Uygulandı. Üç testle korunuyor
+  (`tests/test_yetki_ve_roller.py`): açığın kapandığı, süzgecin fazla
+  dar olmadığı ve uzmanın kuyruktaki kaydı açabildiği.

@@ -31,6 +31,7 @@ from ..db import oturum
 from ..deps import aktif_kullanici, rol_gerekli
 from ..models import Kullanici, TehlikeliDurum, TehlikeliKayit, Tespit
 from ..schemas import TehlikeliCikti, TehlikeliIstek
+from ..services.queries import gorulebilir_tespitler
 
 router = APIRouter(prefix="/tehlikeli", tags=["tehlikeli madde"])
 
@@ -85,7 +86,7 @@ async def yonlendir(
 @router.get("/tespit/{tespit_id}")
 async def kayitlar(
     tespit_id: int,
-    _: Kullanici = Depends(aktif_kullanici),
+    k: Kullanici = Depends(aktif_kullanici),
     db: AsyncSession = Depends(oturum),
 ):
     """Bir tespitin inceleme kayıtları.
@@ -93,6 +94,20 @@ async def kayitlar(
     Kayıt yoksa `kayitlar: []` döner ve `aciklama` alanı yokluğun güvenlik
     anlamına gelmediğini AÇIKÇA söyler. Arayüz bu metni gösterir.
     """
+    # Tespit rolün kapsamı dışındaysa kayıtları da dönmez. Yokluk
+    # açıklaması yine verilir: "kayıt yok" ile "göremiyorsun" arasındaki
+    # farkı sızdırmamak, ikisini de aynı biçimde yanıtlamak demektir —
+    # ve yokluğun güvenlik anlamına gelmediği her iki durumda da doğru.
+    gorunur = (await db.execute(
+        gorulebilir_tespitler(k.rol, k.id).where(Tespit.id == tespit_id)
+    )).scalar_one_or_none()
+    if not gorunur:
+        return {
+            "tespit_id": tespit_id,
+            "kayitlar": [],
+            "aciklama": YOKLUK_ACIKLAMASI,
+        }
+
     y = await db.execute(
         select(TehlikeliKayit, Kullanici.ad)
         .join(Kullanici, Kullanici.id == TehlikeliKayit.giren_id, isouter=True)

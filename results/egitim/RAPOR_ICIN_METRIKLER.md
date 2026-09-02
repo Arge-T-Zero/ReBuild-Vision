@@ -40,7 +40,11 @@
 
 ## Kullanılacak görseller
 
-- `rapor_ciktilari/gorseller/` — karışıklık matrisi, PR/F1 eğrileri, val batch tahminleri
-- `rapor_ciktilari/egitim_egrileri.png` — loss/mAP eğrileri
-- `rapor_ciktilari/sinif_dagilimi.png` — sınıf dengesizliği görseli
-- `rapor_ciktilari/tahmin_ornekleri/` — test seti örnek çıkarımları
+> Yollar 02.09.2026'da düzeltildi: dosyalar
+> `rapor_ciktilari/` altında değil, `results/egitim/` altındadır.
+> `tahmin_ornekleri/` klasörü depoya alınmadı (bkz. bu klasörün README'si).
+
+- `results/egitim/gorseller/` — karışıklık matrisi, PR/F1 eğrileri, val batch tahminleri
+- `results/egitim/egitim_egrileri.png` — loss/mAP eğrileri
+- `results/egitim/sinif_dagilimi.png` — sınıf dengesizliği görseli
+- `results/egitim/tahmin_ornekleri/` — test seti örnek çıkarımları

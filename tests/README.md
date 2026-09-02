@@ -50,6 +50,9 @@ bozulmasını engellemektir.**
 | `test_guvenlik.py` | Varsayılan JWT anahtarıyla üretime çıkış engeli, parola özeti, jeton taklidi |
 | `test_agpl_siniri.py` | `api/` model kütüphanesine bağlanmaz — yorum satırına değil teste güvenilir |
 | `test_sinif_tanimlari.py` | `siniflar.json` tutarlılığı; malzeme ayıklama mekanizması duruyor; kapsanmayan gruplar beyan edilmiş; doğrulanmamış katsayı kullanılmaz; **`data.yaml` sınıf sırası `siniflar.json` ile aynı** |
+| `test_model_servisi_sozlesmesi.py` | Sahte ve gerçek servisin alan sözleşmesi; ağırlıksız serviste **503** (uydurma üretilmez); AGPL beyanı gizlenmiyor; bilinmeyen sınıf id'si sessizce geçilmez |
+| `test_ogc_api.py` | OGC API - Features standardı; kural süzgecinin **atlanamadığı**; OGC ile rapor aynı kayıtları verir; `oas30` yanlış beyan edilmiyor |
+| `test_tehlikeli_yonlendirme.py` | Kural 2'nin akış tarafı: yokluk 'güvenli' değil; lab sonucunu yalnız uzman girer; salt okunur roller yönlendiremez |
 
 ## Regresyon testleri
 

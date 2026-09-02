@@ -1,5 +1,24 @@
 # Denetim — 29.08.2026
 
+> ⚠️ **TARİHÎ KAYIT — güncel durumu ANLATMAZ.**
+>
+> Bu belge 29.08.2026 günündeki durumun fotoğrafıdır ve o hâliyle
+> korunuyor: neyin ne zaman doğrulandığı izlenebilsin diye. Ama o
+> tarihten sonra depo çok değişti; aşağıdaki satırlar **bugün yanlıştır**:
+>
+> | Bu belgede yazan | Bugünkü gerçek |
+> |---|---|
+> | Sınıf sayısı 10 = 10 | **5 sınıf** (`docs/karar-kaydi.md` K-021) |
+> | Doğrulanmış katsayı 0/9 | **2/5** (`katsayilar.json` v0.3) |
+> | Raporda `konteyner` yok | `konteyner` diye bir sınıf artık **yok** |
+> | Arayüzde sahte model işareti yok | Eklendi (web ve mobil) |
+> | `LICENSE` kararı bekliyor, depo lisanssız | **AGPL-3.0** (K-020) |
+> | Model eğitimi ve metrikler ⏳ | **Ölçüldü** (01.09.2026) |
+> | İzlenen dosya 205 | 256 — arada kazayla işlenen 1.906 dosyalık bir
+>   sanal ortam 02.09'da temizlendi |
+>
+> **Güncel durum için:** `results/teslim-denetimi.md` (02.09.2026).
+
 Yapılan bütün işin baştan sona kontrolü. Her satır **çalıştırılarak**
 doğrulanmıştır; "yazdım, herhalde çalışıyor" yok.
 

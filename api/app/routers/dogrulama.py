@@ -14,6 +14,7 @@ from ..deps import aktif_kullanici
 from ..models import DogrulamaDurumu, EnkazAlani, Goruntu, Kullanici, Tespit
 from ..schemas import DogrulamaIstek, TespitCikti
 from ..deps import rol_gerekli
+from ..services.queries import gorulebilir_tespitler
 
 router = APIRouter(prefix="/tespit", tags=["doğrulama"])
 
@@ -69,7 +70,11 @@ async def dogrula(
 
     Değişiklik islem_gecmisi'ne otomatik düşer (Rapor Bölüm 6).
     """
-    t = await db.get(Tespit, tespit_id)
+    # Kayıt DOĞRUDAN db.get() ile değil, rolün görebildiği sahalar
+    # üzerinden alınır — nesne düzeyi yetkilendirme (queries.py).
+    t = (await db.execute(
+        gorulebilir_tespitler(k.rol, k.id).where(Tespit.id == tespit_id)
+    )).scalar_one_or_none()
     if not t:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Tespit bulunamadı")
 
@@ -109,10 +114,14 @@ async def dogrula(
 @router.get("/{tespit_id}", response_model=TespitCikti)
 async def getir(
     tespit_id: int,
-    _: Kullanici = Depends(aktif_kullanici),
+    k: Kullanici = Depends(aktif_kullanici),
     db: AsyncSession = Depends(oturum),
 ):
-    t = await db.get(Tespit, tespit_id)
+    # Kayıt DOĞRUDAN db.get() ile değil, rolün görebildiği sahalar
+    # üzerinden alınır — nesne düzeyi yetkilendirme (queries.py).
+    t = (await db.execute(
+        gorulebilir_tespitler(k.rol, k.id).where(Tespit.id == tespit_id)
+    )).scalar_one_or_none()
     if not t:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Tespit bulunamadı")
     return TespitCikti.model_validate(t)

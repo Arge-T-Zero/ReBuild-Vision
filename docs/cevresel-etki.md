@@ -8,7 +8,8 @@
 > etkisi gibi iddialar varsayım, yöntem ve veri kaynağı ile birlikte
 > sunulacaktır."
 
-**Son güncelleme:** 01.09.2026
+**Son güncelleme:** 02.09.2026 — sınıf listesi 10'dan 5'e indi, katsayı
+tablosu yeniden yazıldı
 
 ---
 
@@ -254,7 +255,7 @@ Sıraya konmuş, somut:
 | 2 | Bakanlık dönüşüm katsayısı tablosu (varsa) | Bakanlık | G1 — EPA'nın yerini alır, V4 riskini kapatır |
 | 3 | Emisyon faktörleri | Bakanlık / TÜİK | **G3'ün tamamı** |
 | 4 | Atık kodu ↔ sınıf eşlemesi | Atık Yönetimi Yönetmeliği | G2 |
-| 5 | Modelin eğitilmesi ve ölçülmesi | Proje ekibi | Tüm göstergelerin güvenilirliği |
+| ~~5~~ | ~~Modelin eğitilmesi ve ölçülmesi~~ ✅ **01.09.2026'da yapıldı** | Proje ekibi | `results/model-metrikleri.md` — test mAP50 0,4334 |
 | 6 | Pilot saha kullanımı | Madde 10.10 protokolü | G4 |
 
 1–4 arası **mentör görüşmesinde sorulacaktır** (Madde 5.2). Özellikle

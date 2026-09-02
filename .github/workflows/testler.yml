@@ -74,6 +74,10 @@ jobs:
           cache-dependency-path: web/package-lock.json
 
       - run: npm ci
+      # ⚠️ LINT KURULUYDU AMA HİÇ ÇALIŞMIYORDU. `oxlint` bağımlılıklarda
+      # ve `.oxlintrc.json` yapılandırılmış; CI onu bir kez bile
+      # çağırmıyordu. Kurulu ama çağrılmayan bir araç, olmayan araçtır.
+      - run: npm run lint
       # `tsc -b` derlemenin parçası: tip hatası yayına çıkamaz.
       - run: npm run build
 

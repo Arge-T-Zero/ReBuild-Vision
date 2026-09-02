@@ -47,9 +47,12 @@ ve testte duruyor (`K-007`).
 ### Renkler ölçülerek seçildi
 
 Beş renk protanopi, dötanopi ve tritanopi benzetimiyle LAB uzayında
-ölçülerek seçildi. Seçilen küme en kötü durumda **ΔE = 6,8**; önceki
-10 renkli paletin aynı ölçüdeki skoru **3,5** idi — yeni palet iki kat
-daha ayırt edilebilir. Karar: `docs/karar-kaydi.md` **K-022**.
+ölçülerek seçildi.
+
+**Ölçüt:** bütün ikililerin en kötüsü — normal görüş ve üç renk körlüğü
+birlikte. Seçilen küme **ΔE = 6,8**; önceki 10 renkli paletin aynı
+ölçütteki skoru **3,5** idi, yani yeni palet iki kat daha ayırt
+edilebilir. Karar: `docs/karar-kaydi.md` **K-022**.
 
 Anlamsal tutarlılık da korundu: gri beton/tuğla, koyu yeşil cam, mavi
 metal, turuncu ahşap, kehribar seramik.

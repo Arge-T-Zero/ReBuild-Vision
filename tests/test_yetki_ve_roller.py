@@ -245,3 +245,138 @@ async def test_gecmis_kullanici_adini_dondurur(istemci, jeton, tespit_kur):
     guncelleme = [k for k in y if k["islem"] == "guncelleme"]
     assert guncelleme, "Doğrulama geçmişe düşmeli"
     assert guncelleme[0]["kullanici_ad"], "Kullanıcı adı dönmeli, yalnızca id değil"
+
+
+# --- Nesne düzeyi yetkilendirme (02.09.2026 denetimi) ---------------------
+
+
+async def test_gormedigi_sahanin_tespitini_id_ile_okuyamaz(
+    istemci, jeton, tespit_kur
+):
+    """⚠️ BU AÇIK 02.09.2026 DENETİMİNDE BULUNDU.
+
+    Yetki kontrolü EYLEM üzerinden yapılıyordu ("bu rol okuyabilir mi?"),
+    NESNE üzerinden unutulmuştu ("bu rol BU KAYDI okuyabilir mi?").
+
+    `gorulebilir_alanlar()` süzgeci liste uçlarında uygulanıyordu: `yikim`
+    rolü `/enkaz-alani`'nda boş liste, `/harita`'da boş dağılım görüyordu.
+    Ama TEKİL kayıt uçları yalnızca "giriş yapmış mı" diye bakıyordu.
+
+    Sonuç: dış taraf bir rol, id'leri sırayla gezerek göremediği
+    sahaların tespitlerini, malzeme sınıflarını ve **hesaplanmış
+    tonajını** okuyabiliyordu. Liste ucunda kapatılan kapı tekil uçta
+    açıktı.
+
+    Bu test dört ucu birden tutar; biri gevşerse kırılır.
+    """
+    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    yikim = await jeton("yikim")
+
+    # Önce kapsamın gerçekten dışında olduğunu doğrula — testin
+    # varsayımı çürükse geri kalanı anlamsız olurdu.
+    alanlar = (await istemci.get("/enkaz-alani", headers=yikim)).json()
+    assert alanlar == [], "Test kurgusu bozuk: yikim bu sahayı görüyor"
+
+    # 1) Tespitin kendisi
+    y = await istemci.get(f"/tespit/{tid}", headers=yikim)
+    assert y.status_code == 404, (
+        f"Görülmeyen sahanın tespiti okunabildi: {y.status_code} {y.text[:200]}"
+    )
+
+    # 2) Miktar — en pahalı sızıntı: hesaplanmış tonaj
+    y = await istemci.get(f"/miktar/{tid}", headers=yikim)
+    assert y.status_code == 404, f"Miktar sızdı: {y.status_code}"
+
+    # 3) Ölçümler — tonaj hesabının girdisi
+    y = await istemci.get(f"/olcum/tespit/{tid}", headers=yikim)
+    assert y.status_code == 200 and y.json() == [], (
+        f"Ölçümler sızdı: {y.text[:200]}"
+    )
+
+    # 4) Tehlikeli madde kayıtları
+    y = await istemci.get(f"/tehlikeli/tespit/{tid}", headers=yikim)
+    assert y.status_code == 200
+    d = y.json()
+    assert d["kayitlar"] == [], "Tehlikeli madde kaydı sızdı"
+    # Yokluk açıklaması yine verilmeli: "kayıt yok" ile "göremiyorsun"
+    # aynı biçimde yanıtlanır, ve yokluk her iki durumda da güvenlik
+    # anlamına gelmez (ana talimat Bölüm 1.2).
+    assert d["aciklama"], "Yokluk açıklaması kapsam dışında da verilmeli"
+
+
+async def test_gormedigi_sahanin_tespitine_olcum_giremez(
+    istemci, jeton, tespit_kur
+):
+    """Yazma tarafı da aynı süzgeçten geçer.
+
+    `saha` rolü ölçüm girebilir (eylem yetkisi var) ama yalnızca
+    görebildiği sahalarda (nesne yetkisi). İkisi ayrı sorulardır.
+    """
+    tid = await tespit_kur("metal", dogrulama="onaylandi")
+
+    y = await istemci.post("/olcum", headers=await jeton("yikim"), json={
+        "tespit_id": tid, "tur": "hacim", "deger": 10.0,
+        "birim": "m3", "yontem": "Test",
+    })
+    # `yikim` ölçüm giremez (eylem yetkisi yok) — 403.
+    assert y.status_code == 403
+
+
+async def test_kapsamindaki_tespiti_okuyabilir(istemci, jeton, tespit_kur):
+    """Süzgeç fazla dar olmamalı: yetkili rol kaydı GÖREBİLMELİ.
+
+    Bir yetki düzeltmesinin en sık yan etkisi, kapıyı herkese kapatmak ve
+    bunu fark etmemektir. Bu test o yönü tutar.
+
+    `TUM_SAHALARI_GORUR` = {yonetici, afad}. `belediye` kendi oluşturduğu
+    sahaları görür ve `conftest.tespit_kur` sahayı belediye adına kurar.
+    """
+    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    for rol in ("belediye", "afad", "yonetici"):
+        y = await istemci.get(f"/tespit/{tid}", headers=await jeton(rol))
+        assert y.status_code == 200, (
+            f"{rol} kapsamındaki tespiti göremiyor: {y.status_code}"
+        )
+
+
+async def test_uzman_inceleme_bekleyen_tespiti_okuyabilir(
+    istemci, jeton, tespit_kur
+):
+    """Uzmanın görünürlüğü İŞ ÜZERİNDEN türetilir (K-014).
+
+    Uzmana saha atama akışı henüz yok; `gorulebilir_alanlar()` uzmana
+    "inceleme bekleyen ya da kendisinin doğruladığı tespiti içeren"
+    sahaları verir. Kuyruktan bir kaydı açan uzman onu görebilmelidir —
+    demo akışının 5. adımı tam olarak budur.
+
+    ⚠️ Bunun DİĞER YÜZÜ de bilinçlidir ve altta sınanıyor: başka bir
+    uzmanın doğruladığı, kapsamında iş bırakmayan bir kaydı göremez.
+    Bu bir gerileme değil, liste ucundaki davranışın tekil uca
+    uygulanmasıdır — `/enkaz-alani` o sahayı zaten döndürmüyordu.
+    """
+    tid = await tespit_kur("metal", inceleme=True)
+    y = await istemci.get(f"/tespit/{tid}", headers=await jeton("uzman"))
+    assert y.status_code == 200, (
+        "Uzman kuyruktaki kaydı açamıyor — doğrulama akışı kırılırdı"
+    )
+
+
+async def test_uzman_isi_olmayan_sahanin_tespitini_okuyamaz(
+    istemci, jeton, tespit_kur
+):
+    """Yukarıdaki kuralın simetrik yüzü.
+
+    Kayıt başka bir uzmanca doğrulanmış ve sahada bekleyen iş yok:
+    bu uzmanın kapsamı dışındadır. Liste ucu bu sahayı zaten
+    döndürmüyordu; tekil uç 02.09.2026'ya kadar döndürüyordu.
+    """
+    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    alanlar = (await istemci.get(
+        "/enkaz-alani", headers=await jeton("uzman"))).json()
+    assert alanlar == [], "Test kurgusu bozuk: uzman bu sahayı listede görüyor"
+
+    y = await istemci.get(f"/tespit/{tid}", headers=await jeton("uzman"))
+    assert y.status_code == 404, (
+        "Liste ucu sahayı gizlerken tekil uç tespiti veriyor — "
+        "iki uç aynı kuralı uygulamalı"
+    )

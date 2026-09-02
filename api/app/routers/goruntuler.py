@@ -24,6 +24,24 @@ router = APIRouter(prefix="/goruntu", tags=["görüntü"])
 
 IZINLI_TURLER = {"image/jpeg", "image/png", "image/webp"}
 
+# ⚠️ YÜKLEME BOYUT SINIRI YOKTU.
+#
+# Bu uç nokta `list[UploadFile]` alıyor ve her dosyayı `await
+# dosya.read()` ile TÜMÜYLE belleğe okuyordu. Dosya sayısı ve boyutu
+# sınırsızdı. Tek koruma `docker/nginx.conf` içindeki
+# `client_max_body_size 64m` idi ve o da yalnız konteyner yolunda
+# geçerli: yerel geliştirme (Vite → uvicorn), Render ve MOBİL UYGULAMA
+# doğrudan API'ye gidiyor. Yani tek bir istekle sunucunun belleği
+# tüketilebiliyordu.
+#
+# Sınırlar nginx'inkiyle uyumlu seçildi: dosya başına 32 MB (modern bir
+# telefon kamerası ~8-12 MB üretir; 32 MB rahat bir tavan), istek başına
+# 10 dosya ve toplam 64 MB. Vekil arkasındayken nginx zaten 64 MB'ta
+# keser; bu sınırlar vekilsiz yolları da kapatır.
+DOSYA_BASI_SINIR = 32 * 1024 * 1024
+ISTEK_BASI_DOSYA_SINIRI = 10
+ISTEK_BASI_TOPLAM_SINIR = 64 * 1024 * 1024
+
 
 def _tespit_ciktisi(t: Tespit) -> TespitCikti:
     return TespitCikti.model_validate(t)
@@ -51,12 +69,22 @@ async def yukle(
     if not alan:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Enkaz alanı bulunamadı")
 
+    # Sayı denetimi model servisine gitmeden ÖNCE: reddedilecek bir
+    # istek için çıkarım servisini hiç meşgul etmemek gerekir.
+    if len(dosyalar) > ISTEK_BASI_DOSYA_SINIRI:
+        raise HTTPException(
+            status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            f"Tek istekte en çok {ISTEK_BASI_DOSYA_SINIRI} görüntü "
+            f"yüklenebilir; {len(dosyalar)} gönderildi.",
+        )
+
     saglik = await model_client.saglik()
     sahte = bool(saglik.get("sahte"))
 
     klasor = ayarlar().yukleme_yolu
     ciktilar: list[GoruntuCikti] = []
     kuyruga_dusen = 0
+    toplam_bayt = 0
 
     for dosya in dosyalar:
         if dosya.content_type not in IZINLI_TURLER:
@@ -65,6 +93,25 @@ async def yukle(
                 f"Desteklenmeyen dosya türü: {dosya.content_type}",
             )
         icerik = await dosya.read()
+
+        # Boyut denetimi okumadan SONRA: Starlette büyük gövdeyi zaten
+        # diske alıyor (SpooledTemporaryFile), yani bellekte tutulan şey
+        # bir dosyalık. Asıl korunan, on beş dosyanın aynı anda belleğe
+        # açılması ve diskin dolması.
+        if len(icerik) > DOSYA_BASI_SINIR:
+            raise HTTPException(
+                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                f"Görüntü çok büyük ({len(icerik) // (1024 * 1024)} MB): "
+                f"{dosya.filename}. Dosya başına sınır "
+                f"{DOSYA_BASI_SINIR // (1024 * 1024)} MB.",
+            )
+        toplam_bayt += len(icerik)
+        if toplam_bayt > ISTEK_BASI_TOPLAM_SINIR:
+            raise HTTPException(
+                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                f"İstek toplamı çok büyük; sınır "
+                f"{ISTEK_BASI_TOPLAM_SINIR // (1024 * 1024)} MB.",
+            )
 
         try:
             with Image.open(io.BytesIO(icerik)) as im:
