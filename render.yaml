@@ -8,10 +8,25 @@
 # ASLA yüklenmez (şartname Madde 9.1 ve 10.5).
 
 services:
-  # --- Model servisi (şu an sahte) ---------------------------------------
-  # Gerçek YOLO11 servisi hazır olduğunda bu servis değiştirilecek ve
-  # api'nin MODEL_SERVICE_URL değeri ona çevrilecektir. AGPL sınırı gereği
-  # model her zaman AYRI bir serviste kalır (docs/lisans-analizi.md 3.4).
+  # --- Model servisi (canlı ortamda SAHTE) -------------------------------
+  # AGPL sınırı gereği model her zaman AYRI bir serviste kalır
+  # (docs/lisans-analizi.md 3.4).
+  #
+  # ⚠️ CANLI DEMO BİLİNÇLİ OLARAK SAHTE SERVİSLE ÇALIŞIR.
+  #
+  # Gerçek servis (docker/model-service.Dockerfile) torch içerir; torch
+  # tek başına diskte ~1,2 GB ve çalışırken Render'ın ücretsiz katmanının
+  # verdiği 512 MB RAM'e sığmaz. Bu bir tercih değil, ölçülmüş bir
+  # kısıttır.
+  #
+  # Gizlenmiyor: arayüz sahte servis çalışırken her ekranda kalıcı
+  # "SAHTE MODEL SERVİSİ" bandı gösterir (ana talimat Bölüm 9.5).
+  #
+  # GERÇEK MODELİ GÖRMEK İÇİN yerel docker paketi kullanılır:
+  #   docker compose -f docker/compose.yaml \
+  #                  -f docker/compose.gercek-model.yaml up --build
+  # Madde 10.3 zaten bunu ister; canlı demo onun yerine geçmez
+  # (docs/yayin.md).
   - type: web
     name: rebuild-vision-model
     runtime: docker

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rebuild_vision_mobil/api.dart';
 import 'package:rebuild_vision_mobil/olcum_turu.dart';
 
 /// Ölçüm biriminin SUNUCU SÖZLEŞMESİ.
@@ -52,6 +53,25 @@ void main() {
   group('üst sınır', () {
     test('sunucudaki OLCUM_UST_SINIR ile aynı', () {
       expect(olcumUstSiniri, 100000.0);
+    });
+  });
+
+  group('güven skoru yuvarlanmaz (Bölüm 9.2)', () {
+    test('web ile aynı sayıyı verir — 4 ondalığa kadar', () {
+      // Gerçek model float32 döner; mobil bunu 1 basamağa yuvarlıyordu.
+      expect(guvenYuzdesi(0.8734567), '87,3457');
+      expect(guvenYuzdesi(0.5838851928710938), '58,3885');
+    });
+
+    test('ondalık ayracı VİRGÜL — nokta değil', () {
+      expect(guvenYuzdesi(0.873), contains(','));
+      expect(guvenYuzdesi(0.873), isNot(contains('.')));
+    });
+
+    test('gereksiz sıfır yazılmaz', () {
+      expect(guvenYuzdesi(0.78), '78');
+      expect(guvenYuzdesi(0.5), '50');
+      expect(guvenYuzdesi(1.0), '100');
     });
   });
 }

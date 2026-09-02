@@ -143,8 +143,10 @@ export function Kuyruk() {
  * pikselinde olduğunu söyler. Başka bir biçim gelirse önizleme
  * gösterilmez — yanlış yeri kırpmaktansa hiç göstermemek doğrudur.
  */
-function Kanit({ tespit, buyut }: {
+function Kanit({ tespit, ad, buyut }: {
   tespit: Tespit
+  /** Sınıfın EKRANDA görünen adı — ham `tespit.sinif` değil. */
+  ad: string
   buyut: () => void
 }) {
   const { bbox, bbox_format: bicim } = tespit
@@ -194,7 +196,11 @@ function Kanit({ tespit, buyut }: {
           tamamı, tespit kutusu üzerinde işaretli olarak açılır. */}
       <button
         onClick={buyut}
-        aria-label={`Tespiti büyüt — ${tespit.sinif} ön tahmini`}
+        /* Ekran okuyucu HAM sınıf adını ("beton_tugla") okuyordu.
+           Aynı hata `TespitKutulari.tsx`'te bir kez düzeltilmişti;
+           kuyrukta tekrarlanmış. Bu bileşenin 360. satırı zaten
+           `gorunen_ad` kullanıyordu — iki satır arasında tutarsızlık. */
+        aria-label={`Tespiti büyüt — ${ad} ön tahmini`}
         className="rounded-md border border-kenar bg-yuzey-3 relative
           overflow-hidden block !min-h-0 p-0 group hover:border-marka
           transition-colors"
@@ -357,12 +363,14 @@ function KuyrukSatiri({ tespit, siniflar, secenekler, tamamlandi }: {
     <Kart className="p-4">
       {buyutecAcik && (
         <KanitBuyutec tespit={tespit}
-          ad={siniflar.get(tespit.sinif)?.gorunen_ad ?? tespit.sinif}
+          ad={tanim?.gorunen_ad ?? tespit.sinif}
           kapat={() => setBuyutecAcik(false)} />
       )}
 
       <div className="flex items-start gap-3">
-        <Kanit tespit={tespit} buyut={() => setBuyutecAcik(true)} />
+        <Kanit tespit={tespit}
+          ad={tanim?.gorunen_ad ?? tespit.sinif}
+          buyut={() => setBuyutecAcik(true)} />
         <div className="grow min-w-0">
           {/* Hangi sahadaki hangi tespit — iki kayıt birbirinden
               ayırt edilebilmeli. */}

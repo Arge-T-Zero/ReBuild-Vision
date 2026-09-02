@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import 'kuyruk.dart';
 
@@ -9,6 +10,61 @@ import 'kuyruk.dart';
 ///
 /// Oturum jetonu güvenli depoda tutulur — `SharedPreferences` düz metindir,
 /// jeton orada durmamalıdır.
+/// Güven skorunu ekrana yazar — **yuvarlamadan**, Türkçe biçimde.
+///
+/// ⚠️ MOBİL BU SAYIYI YUVARLIYORDU: `toStringAsFixed(1)` ile 0,8734567
+/// telefonda **"%87.3"** görünüyordu; aynı kayıt web'de "%87,3457".
+/// Üstelik ondalık ayracı **nokta**ydı. Kodun hemen üstündeki yorum
+/// "Güven skoru yuvarlanmaz" diyordu — yorum kodu yalanlıyordu.
+///
+/// Ana talimat Bölüm 9.2: "Güven skoru gizlenmez. Sayı olarak gösterilir,
+/// YUVARLANMAZ." Web'deki `yuzdeMetni()` ile aynı davranış: en çok dört
+/// ondalık, gereksiz sıfır yok, ayraç virgül.
+String guvenYuzdesi(double skor) {
+  // Kayan nokta artığını temizle: 0.78 * 100 = 78.00000000000001
+  final y = (skor * 100 * 1e6).round() / 1e6;
+  var metin = y.toStringAsFixed(4);
+  if (metin.contains('.')) {
+    metin = metin.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+  }
+  return metin.replaceAll('.', ',');
+}
+
+/// Sunucunun kabul ettiği görüntü türleri.
+///
+/// `api/app/routers/goruntuler.py` → `IZINLI_TURLER` ile **birebir aynı**
+/// olmak zorundadır. Biri değişirse ikisi birden değişmelidir;
+/// `test/goruntu_turu_test.dart` ayrışmayı yakalar.
+const izinliGoruntuTurleri = {'image/jpeg', 'image/png', 'image/webp'};
+
+/// Dosya adından MIME türü çıkarır.
+///
+/// ⚠️ BU EKSİKLİK SAHA UYGULAMASININ ANA İŞLEVİNİ ÇALIŞMAZ HÂLE
+/// GETİRİYORDU. `MultipartFile.fromPath` çağrısına `contentType`
+/// verilmediğinde `http` paketi varsayılan olarak
+/// `application/octet-stream` gönderir (http 1.6.0,
+/// `multipart_file.dart:54`). Sunucu ise yalnızca `image/*` üçlüsünü
+/// kabul ediyor ve ilk dosyada **bütün partiyi** 415 ile düşürüyor
+/// (`goruntuler.py:62` — döngü içinde `raise`).
+///
+/// Yani telefondan yüklenen her fotoğraf reddediliyordu ve kullanıcı
+/// ekranda ham MIME tipini görüyordu. Web arayüzü tarayıcı türü kendisi
+/// belirlediği için etkilenmiyordu; hata yalnızca gerçek cihazda ortaya
+/// çıkıyordu.
+///
+/// Bilinmeyen uzantıda `null` DÖNMEZ — `image/jpeg` varsayılır, çünkü
+/// `image_picker` kameradan gelen dosyaya her zaman `.jpg` verir ve
+/// sessizce `octet-stream`'e düşmek tam da bu arızayı geri getirirdi.
+MediaType goruntuTuru(String yol) {
+  final uzanti = yol.split('.').last.toLowerCase();
+  return switch (uzanti) {
+    'png' => MediaType('image', 'png'),
+    'webp' => MediaType('image', 'webp'),
+    _ => MediaType('image', 'jpeg'),
+  };
+}
+
+
 class Api {
   /// Sunucu adresi. Derleme sırasında değiştirilebilir:
   ///   flutter run --dart-define=API_TABAN=https://...
@@ -137,7 +193,11 @@ class Api {
     final istek = http.MultipartRequest('POST', adres)
       ..headers.addAll(await _basliklar());
     for (final d in dosyalar) {
-      istek.files.add(await http.MultipartFile.fromPath('dosyalar', d.path));
+      istek.files.add(await http.MultipartFile.fromPath(
+        'dosyalar',
+        d.path,
+        contentType: goruntuTuru(d.path),
+      ));
     }
     final y = await http.Response.fromStream(await istek.send());
     return _coz(y) as Map<String, dynamic>;
@@ -174,6 +234,23 @@ class Api {
   Future<Map<String, dynamic>> siniflar() async {
     final y = await _istemci.get(Uri.parse('$taban/sistem/siniflar'));
     return _coz(y) as Map<String, dynamic>;
+  }
+
+  /// Model servisinin SAHTE olup olmadığını sorar.
+  ///
+  /// ⚠️ MOBİL BU UÇ NOKTAYI HİÇ ÇAĞIRMIYORDU. Ana talimat Bölüm 9.5 ve
+  /// `README.md` sahte servis çalışırken **kalıcı** bir rozet istiyor;
+  /// web arayüzünde üst çubukta her ekranda duruyordu, mobilde ise
+  /// yalnızca bir yükleme yapıldıktan sonra sonuç kartında beliriyordu.
+  /// Yani jüri telefonu eline alıp Ölçüm sekmesine baksa sahtelik
+  /// hakkında tek bir işaret görmüyordu.
+  ///
+  /// Kimlik gerektirmez; giriş yapılmadan da çağrılabilir.
+  Future<bool> sahteModelMi() async {
+    final y = await _istemci.get(Uri.parse('$taban/sistem/durum'));
+    final d = _coz(y) as Map<String, dynamic>;
+    final servis = d['model_servisi'] as Map<String, dynamic>?;
+    return servis?['sahte'] == true;
   }
 }
 

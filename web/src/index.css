@@ -189,17 +189,17 @@
   --color-dikkat:       var(--u-dikkat);
   --color-bilgi:        var(--u-bilgi);
 
-  /* Malzeme sınıfı renkleri — siniflar.json ile birebir aynı. */
-  --color-m-ahsap:           #d95926;
-  --color-m-sert_plastik:    #199e70;
-  --color-m-metal:           #3987e5;
-  --color-m-karton:          #c98500;
-  --color-m-tekstil:         #d55181;
-  --color-m-yumusak_plastik: #008300;
-  --color-m-alcipan:         #e66767;
-  --color-m-beton:           #9085e9;
-  --color-m-dolgu_toprak:    #a06a2c;
-  --color-m-konteyner:       #6b7280;
+  /* ⚠️ MALZEME SINIFI RENKLERİ BURADA TUTULMAZ — KALDIRILDI.
+     Burada 10 sınıflık bir palet duruyordu ve "siniflar.json ile birebir
+     aynı" diye etiketlenmişti. 02.09.2026'da sınıf listesi 5'e inince
+     bu jetonlar hem ÖLÜ (hiçbir yerde kullanılmıyorlardı) hem de
+     YANILTICI hâle geldi: `--color-m-yumusak_plastik: #008300` bugün
+     `cam`'ın rengi, `--color-m-konteyner: #6b7280` ise `beton_tugla`'nın.
+     Birinin bu jetonlara güvenmesi yanlış malzemeyi boyamak demekti.
+
+     Sınıf renkleri ÇALIŞMA ZAMANINDA `/sistem/siniflar` uç noktasından
+     gelir (`SinifTanimi.renk`) ve tek kaynağı `siniflar.json`'dur.
+     Statik bir CSS kopyası, tanımı gereği ayrışmaya mahkûmdur. */
 
   --shadow-kart:  var(--u-golge-kart);
   --shadow-dugme: var(--u-golge-dugme);

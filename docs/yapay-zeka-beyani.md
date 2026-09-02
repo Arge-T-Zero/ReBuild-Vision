@@ -23,7 +23,8 @@ maddedeki sırayla yanıtlanmıştır.
 
 Sistemde **tek bir model** vardır ve yalnızca bir iş yapar: bir enkaz
 fotoğrafındaki görünür malzeme bölgelerini sınırlayıcı kutu olarak
-işaretleyip on sınıftan birine atamak.
+işaretleyip **beş sınıftan** birine atamak (`ahsap`, `beton_tugla`,
+`cam`, `metal`, `seramik`).
 
 Üretken yapay zekâ (LLM, görüntü üretimi vb.) **kullanılmamaktadır.**
 Sistemde metin üreten, özetleyen veya karar gerekçesi yazan hiçbir model
@@ -184,10 +185,25 @@ GitHub Actions üzerinde koşar.
 Güven skoru eşiğin altında kalan tespitler **kendiliğinden uzman
 inceleme kuyruğuna** düşer; kullanıcının bunu fark etmesi gerekmez.
 
-⚠️ Eşik (varsayılan 0,50) **ölçülmüş bir değer değildir.** Model henüz
-eğitilmediği için precision/recall eğrisinden türetilememiştir; şu an
-bir mühendislik varsayımıdır ve ortam değişkeniyle değiştirilebilir
-tutulmuştur. Ölçüm yapıldığında eğriden türetilecektir.
+⚠️ Eşik (varsayılan 0,50) **ölçülmüş bir değer değildir** — ama sebebi
+değişti. Eski gerekçe "model henüz eğitilmedi" idi; model 01.09.2026'da
+eğitildi ve ölçüldü.
+
+Eşik yine de türetilemiyor: doğru seçmek için precision ve recall'un
+**güvene göre** değişimi gerekir, elimizdeki `results/egitim/metrikler.json`
+ise her sınıf için tek bir çalışma noktası veriyor. Eğriler yalnızca
+görsel olarak var (`results/egitim/gorseller/*_BoxF1_curve.png`); bir
+görselden sayı okumak ölçüm değildir.
+
+Gerekli olan: eğitim ortamında eşiği tarayan bir doğrulama koşusunun ham
+p/r/f1 dizileri. O gelene kadar 0,50 bir mühendislik varsayımıdır ve
+ortam değişkeniyle değiştirilebilir tutulmuştur.
+
+**Pratik etkisi gizlenmiyor:** modelin genel precision'ı val'de 0,53;
+yani bu eşiğin üstünde kalan tespitlerin azımsanmayacak kısmı da
+yanlıştır. Sistemin cevabı eşiği yükseltmek değil **doğrulama
+kapısıdır**: doğrulanmamış hiçbir tespit miktara, haritaya ya da rapora
+girmez.
 
 ### "Reddet" aksiyonu bilinçli olarak yoktur
 

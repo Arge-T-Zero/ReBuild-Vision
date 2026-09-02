@@ -10,7 +10,7 @@ import { Ikon } from '../bilesenler/Ikon'
 import { RaporIndir } from '../bilesenler/RaporIndir'
 import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
-import type { EnkazAlani } from '../types'
+import type { EnkazAlani, SinifTanimi } from '../types'
 import L from 'leaflet'
 import { sayfaGorevi } from '../roller'
 
@@ -35,7 +35,10 @@ const RAPOR_ALABILIR = new Set(['yonetici', 'belediye', 'afad'])
  * `textContent` ile kurulan bir düğüm bu yolu tamamen kapatır: tarayıcı
  * içeriği metin olarak ele alır, hiçbir kaçış işlemine gerek kalmaz.
  */
-function balon(alan: EnkazAlani): HTMLElement {
+function balon(
+  alan: EnkazAlani,
+  siniflar: Map<string, SinifTanimi>,
+): HTMLElement {
   const kok = document.createElement('div')
 
   const ad = document.createElement('strong')
@@ -52,8 +55,12 @@ function balon(alan: EnkazAlani): HTMLElement {
   if (alan.malzeme_dagilimi.length > 0) {
     const m = document.createElement('div')
     m.style.marginTop = '4px'
+    // ⚠️ HAM SINIF ADI BASILIYORDU: kullanıcı balonda "beton_tugla (3)"
+    // görüyordu. Bunlar makine tanımlayıcısıdır; `siniflar.json`'daki
+    // `gorunen_ad` alanı tam bunun için var.
     m.textContent = alan.malzeme_dagilimi
-      .map((d) => `${d.sinif} (${d.adet})`).join(', ')
+      .map((d) => `${siniflar.get(d.sinif)?.gorunen_ad ?? d.sinif} (${d.adet})`)
+      .join(', ')
     kok.appendChild(m)
   }
 
@@ -103,7 +110,7 @@ export function HaritaSayfasi() {
       if (a.sinir && a.sinir.length >= 3) {
         L.polygon(a.sinir.map((n) => [n.enlem, n.boylam] as [number, number]), {
           color: '#4da3ff', weight: 2, fillOpacity: 0.08,
-        }).addTo(katman).bindPopup(balon(a))
+        }).addTo(katman).bindPopup(balon(a, siniflar))
       }
       if (a.konum) {
         noktalar.push([a.konum.enlem, a.konum.boylam])
@@ -116,7 +123,7 @@ export function HaritaSayfasi() {
           alt: `${a.ad} — enkaz alanı`,
         })
           .addTo(katman)
-          .bindPopup(balon(a))
+          .bindPopup(balon(a, siniflar))
       }
     })
     if (noktalar.length > 0 && harita) {
@@ -255,7 +262,9 @@ export function HaritaSayfasi() {
                 <ul className="space-y-1.5 text-metin-4 leading-relaxed">
                   {siniflarHam.kapsanmayan_gruplar.map((g) => (
                     <li key={g.ad}>
-                      <span className="text-metin-3 font-medium">{g.ad}</span>
+                      <span className="text-metin-3 font-medium">
+                        {g.gorunen_ad ?? g.ad}
+                      </span>
                       {' — '}{g.not}
                     </li>
                   ))}

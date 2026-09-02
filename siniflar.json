@@ -43,27 +43,33 @@
   "kapsanmayan_gruplar": [
     {
       "ad": "dolgu_toprak",
-      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
+      "gorunen_ad": "Dolgu / toprak"
     },
     {
       "ad": "sert_plastik",
-      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
+      "gorunen_ad": "Sert plastik"
     },
     {
       "ad": "yumusak_plastik",
-      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
+      "gorunen_ad": "Yumuşak plastik"
     },
     {
       "ad": "tekstil",
-      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
+      "gorunen_ad": "Tekstil"
     },
     {
       "ad": "karton",
-      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
+      "gorunen_ad": "Karton"
     },
     {
       "ad": "alcipan",
-      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
+      "gorunen_ad": "Alçıpan"
     }
   ],
   "renk_notu": "Renkler renk körlüğü benzetimiyle (protanopi, dötanopi, tritanopi) yeniden seçildi: en kötü durum ΔE=6,8 — önceki 10 renkli paletin kendi skorunun (3,5) iki katı. Anlamsal olarak da tutarlı: gri beton/tuğla, koyu yeşil cam, mavi metal, turuncu ahşap, kehribar seramik. Renk TEK BAŞINA anlam taşımaz — her etikette sınıf adı yazılıdır.",

@@ -1,0 +1,61 @@
+# GERÇEK modelle çalıştırma — `compose.yaml`'ın üstüne bindirilir.
+#
+#   docker compose -f docker/compose.yaml \
+#                  -f docker/compose.gercek-model.yaml up --build
+#
+# Bu dosya iki şey yapar:
+#   1. Gerçek YOLO11 servisini (`model-service`) ayağa kaldırır.
+#   2. `api`'nin model adresini sahte servisten ona çevirir.
+#
+# ÖNCE AĞIRLIĞI KOYUN:
+#
+#   cp best.pt model-service/agirliklar/
+#
+# Ağırlık dosyası depoya girmez (~40 MB; büyük ikili dosyalar git
+# geçmişini şişirir ve her sürüm yeni bir kopya bırakır). Teslim
+# paketinde ayrıca verilir.
+#
+# AĞIRLIK YOKSA NE OLUR — sessiz düşüş YOKTUR:
+#   /health   → agirlik_yuklendi: false + nedeni
+#   /predict  → 503
+#   arayüz    → "model servisi yanıt vermiyor"; uydurma tespit ÜRETİLMEZ
+#
+# Bu bilinçlidir: bu projede en pahalı arıza, uydurma bir çıktının gerçek
+# sanılmasıdır (ana talimat Bölüm 9.5). Ağırlıksız çalıştırmak
+# istiyorsanız bu dosyayı hiç kullanmayın — sahte servis, sahte olduğunu
+# ekranda kalıcı bir bantla söyleyerek çalışır.
+
+services:
+  model-service:
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+    volumes:
+      # Salt okunur: servis ağırlığı yalnızca okur, asla yazmaz.
+      - ../model-service/agirliklar:/uygulama/model-service/agirliklar:ro
+    environment:
+      # Ağırlığın imaj içindeki yolu. Ana makinedeki dosya yukarıdaki
+      # bağlama ile buraya gelir.
+      MODEL_AGIRLIK: /uygulama/model-service/agirliklar/best.pt
+      # Uzman inceleme eşiği. ÖLÇÜLMÜŞ bir değer değildir; gerekçesi
+      # model-service/app.py içinde yazılı.
+      INCELEME_ESIGI: "${INCELEME_ESIGI:-0.50}"
+    healthcheck:
+      # Ağırlık yokken de /health yanıt verir (durumu söylemek için).
+      # Bu yüzden sağlık koşulu "servis ayakta mı", "model hazır mı"
+      # değil — ikincisini arayüz gösterir.
+      test: ["CMD-SHELL",
+             "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8090/health')\""]
+      interval: 15s
+      timeout: 10s
+      # Torch'un ilk içe aktarımı yavaştır; başlangıç payı geniş.
+      start_period: 90s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    environment:
+      MODEL_SERVICE_URL: http://model-service:8090
+    depends_on:
+      model-service:
+        condition: service_started

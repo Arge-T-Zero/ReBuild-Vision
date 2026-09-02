@@ -15,6 +15,9 @@ dependencies:
   # Ayrıntı: docs/lisans-analizi.md
 
   http: ^1.6.0                    # BSD-3-Clause — API çağrıları
+  # `http`'nin kendi bağımlılığı; MediaType için doğrudan içe aktarılıyor.
+  # Görüntü yüklerken contentType verilmezse sunucu 415 döner (api.dart).
+  http_parser: ^4.1.2             # BSD-3-Clause — MIME türü
   flutter_secure_storage: ^11.0.0 # BSD-3-Clause — şifreli yerel depolama
   image_picker: ^1.2.3            # BSD-3-Clause — kamera ve galeri
   geolocator: ^14.0.3             # MIT          — konum

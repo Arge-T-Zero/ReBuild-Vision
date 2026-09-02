@@ -135,11 +135,16 @@ katabilir. Bu, alan tabanlı her hesabı yukarı yönlü saptırır.
 Aşağıdakiler için **hiçbir sayı beyan edilmemektedir.** Ölçüm yapıldıkça
 bu bölüm `results/model-metrikleri.md` ile birlikte güncellenecektir.
 
+> **02.09.2026 — bu tablonun ilk iki satırı kapandı.** Model
+> 01.09.2026'da eğitildi ve ölçüldü; sınıf bazlı metrikler ve karışıklık
+> matrisleri artık elde. Kapanan satırlar aşağıda üstü çizili bırakıldı
+> ki neyin ne zaman ölçüldüğü izlenebilsin.
+
 | Sınır | Durum |
 |---|---|
-| Sınıf bazında precision / recall / F1 / mAP | ⏳ henüz ölçülmedi |
-| Hangi sınıfların birbirine karıştığı (karışıklık matrisi) | ⏳ henüz ölçülmedi |
-| Düşük güven eşiğinin (`needs_review`) doğru değeri | ⏳ henüz ölçülmedi — şu an sahte serviste 0.50 varsayılıyor |
+| ~~Sınıf bazında precision / recall / F1 / mAP~~ | ✅ **ölçüldü** — `results/model-metrikleri.md`, B.2 bölümü |
+| ~~Hangi sınıfların birbirine karıştığı (karışıklık matrisi)~~ | ✅ **ölçüldü** — `results/egitim/gorseller/val_{val,test}__confusion_matrix.png` |
+| Düşük güven eşiğinin (`needs_review`) doğru değeri | ⏳ **hâlâ ölçülmedi, ama sebebi değişti.** Eşiği türetmek için precision/recall'un güvene göre değişimi gerekir; elimizdeki ölçüm her sınıf için tek çalışma noktası veriyor. Eğriler yalnızca görsel olarak var. 0,50 gerçek serviste de bir mühendislik varsayımıdır |
 | Afet enkazı görüntülerinde başarım düşüşü | ⏳ henüz ölçülmedi (bkz. B.3) |
 | Çıkarım süresi ve eşzamanlı istek kapasitesi | ⏳ henüz ölçülmedi |
 | Toz / düşük ışık / hareket bulanıklığı etkisi | ⏳ henüz ölçülmedi |
