@@ -1,6 +1,7 @@
 # Teknik Mimari
 
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 02.09.2026 — sınıf listesi 10'dan 5'e indi, Bölüm 7
+(Madde 10.8) ve OGC API eklendi, bilinen boşluklar tablosu güncellendi
 
 ---
 
@@ -134,6 +135,17 @@ Bu, raporun "insan denetimli yapay zekâ" iddiasının kod karşılığıdır.
   `core/permissions.py`.
 - Saha görünürlüğü sorgu seviyesinde filtrelenir
   (`queries.gorulebilir_alanlar`).
+
+**İki ayrı soru, iki ayrı süzgeç:**
+
+| Soru | Nerede |
+|---|---|
+| Bu rol bu **eylemi** yapabilir mi? | `deps.rol_gerekli()` — `permissions.py` kümeleri |
+| Bu rol bu **kaydı** görebilir mi? | `queries.gorulebilir_alanlar()` (listeler) ve `queries.gorulebilir_tespitler()` (tekil kayıtlar) |
+
+İkincisi 02.09.2026'ya kadar yalnızca liste uçlarında uygulanıyordu;
+tekil kayıt uçları kapsamsızdı ve dış taraf roller id gezerek göremedikleri
+sahaların tonajını okuyabiliyordu. Bkz. `docs/karar-kaydi.md` **K-023**.
 
 ---
 

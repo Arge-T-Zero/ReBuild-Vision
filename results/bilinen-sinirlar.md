@@ -4,7 +4,8 @@
 > iddiadan güçlüdür. Bu dosya sistemin yapamadıklarını gizlemek yerine
 > sayar.
 
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 02.09.2026 — B bölümü baştan yazıldı, C bölümünün
+ilk iki satırı ölçüldü olarak kapandı
 
 Sınırlar iki gruba ayrılıyor: **tasarım gereği olanlar** (bilinçli seçim,
 değişmeyecek) ve **mevcut durum sınırları** (veri/zaman kaynaklı,

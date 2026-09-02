@@ -11,6 +11,7 @@ from ..deps import aktif_kullanici, rol_gerekli
 from ..models import Kullanici, MiktarHesabi, Olcum, Tespit
 from ..schemas import MiktarCikti, OlcumCikti, OlcumIstek
 from ..services import miktar as miktar_servisi
+from ..services.queries import gorulebilir_tespitler
 
 router = APIRouter(tags=["ölçüm ve miktar"])
 
@@ -21,7 +22,11 @@ async def olcum_ekle(
     k: Kullanici = Depends(rol_gerekli(OLCUM_GIREBILIR)),
     db: AsyncSession = Depends(oturum),
 ):
-    t = await db.get(Tespit, istek.tespit_id)
+    # Kayıt DOĞRUDAN db.get() ile değil, rolün görebildiği sahalar
+    # üzerinden alınır — nesne düzeyi yetkilendirme (queries.py).
+    t = (await db.execute(
+        gorulebilir_tespitler(k.rol, k.id).where(Tespit.id == istek.tespit_id)
+    )).scalar_one_or_none()
     if not t:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Tespit bulunamadı")
 
@@ -42,9 +47,16 @@ async def olcum_ekle(
 @router.get("/olcum/tespit/{tespit_id}", response_model=list[OlcumCikti])
 async def olcumler(
     tespit_id: int,
-    _: Kullanici = Depends(aktif_kullanici),
+    k: Kullanici = Depends(aktif_kullanici),
     db: AsyncSession = Depends(oturum),
 ):
+    # Tespit görünmüyorsa ölçümleri de görünmez; aksi hâlde tonaj
+    # hesabının girdisi kapsam dışından okunabilirdi.
+    gorunur = (await db.execute(
+        gorulebilir_tespitler(k.rol, k.id).where(Tespit.id == tespit_id)
+    )).scalar_one_or_none()
+    if not gorunur:
+        return []
     y = await db.execute(select(Olcum).where(Olcum.tespit_id == tespit_id))
     return list(y.scalars())
 
@@ -52,7 +64,7 @@ async def olcumler(
 @router.get("/miktar/{tespit_id}", response_model=MiktarCikti)
 async def miktar(
     tespit_id: int,
-    _: Kullanici = Depends(aktif_kullanici),
+    k: Kullanici = Depends(aktif_kullanici),
     db: AsyncSession = Depends(oturum),
 ):
     """Bir tespitin miktarı.
@@ -61,7 +73,11 @@ async def miktar(
     nedenini söyler. Varsayılan değer, "≈0" veya "hesaplanıyor"
     DÖNDÜRÜLMEZ (ana talimat Bölüm 1.1). Bu, final demosunun 7. adımıdır.
     """
-    t = await db.get(Tespit, tespit_id)
+    # Kayıt DOĞRUDAN db.get() ile değil, rolün görebildiği sahalar
+    # üzerinden alınır — nesne düzeyi yetkilendirme (queries.py).
+    t = (await db.execute(
+        gorulebilir_tespitler(k.rol, k.id).where(Tespit.id == tespit_id)
+    )).scalar_one_or_none()
     if not t:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Tespit bulunamadı")
 

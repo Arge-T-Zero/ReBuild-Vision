@@ -205,7 +205,10 @@ Teslim paketinde istenen belgeler (Madde 10.3) ve beyan yükümlülükleri:
 
 | Madde | Konu | Belge |
 |---|---|---|
+| **5.2** | **Veri seti kaynak beyanı** | 🔴 **EKSİK** — [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1 |
+| 5.5 | Ürünün Kuruma devri | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 3.2 |
 | 9.1 · 10.6 · 10.7 | Veri hakları, silme, KVKK | [`docs/veri-politikasi.md`](docs/veri-politikasi.md) |
+| 9.2 | Üçüncü taraf hakları | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1 |
 | 10.3 | Kurulum ve çalıştırılabilirlik | [`docs/kurulum.md`](docs/kurulum.md) · [`docs/kullanici-kilavuzu.md`](docs/kullanici-kilavuzu.md) · [`docker/`](docker/) |
 | 10.3 · 10.4 | Kütüphane ve lisans listesi | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) |
 | 10.3 | Demo videosu | [`docs/demo-video.md`](docs/demo-video.md) |
@@ -213,6 +216,11 @@ Teslim paketinde istenen belgeler (Madde 10.3) ve beyan yükümlülükleri:
 | 10.8 | Teknik mimari, veri modeli, ölçeklenebilirlik | [`docs/mimari.md`](docs/mimari.md) · [`docs/veri-modeli.md`](docs/veri-modeli.md) |
 | 10.8 | Açık coğrafi standart | **OGC API - Features** → `/ogc` |
 | **10.9** | **Çevresel etki doğrulama** | [`docs/cevresel-etki.md`](docs/cevresel-etki.md) |
+
+> **Madde 5.2 neden kırmızı:** eğitim veri setinin kaynak ve lisans
+> beyanı henüz yazılı değil. Bu tabloda gizlenmiyor çünkü teslim öncesi
+> kapatılması gereken en acil boşluk odur ve Madde 9.2 sorumluluğu
+> katılımcıya yüklüyor.
 
 ---
 

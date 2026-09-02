@@ -10,7 +10,7 @@
 > taraf yapay zekâ servislerine veya bulut tabanlı model sağlayıcılarına
 > gönderilemez."
 
-**Son güncelleme:** 01.09.2026
+**Son güncelleme:** 02.09.2026 — sınıf sayısı ve eşik gerekçesi düzeltildi
 
 Madde yedi kalem beyan istiyor. Aşağıda her biri ayrı başlık altında,
 maddedeki sırayla yanıtlanmıştır.

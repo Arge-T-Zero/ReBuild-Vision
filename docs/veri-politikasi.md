@@ -1,7 +1,8 @@
 # Veri Politikası
 
 **Dayanak:** Şartname Madde 9.1, 10.5, 10.6, 10.7 · Rapor Bölüm 6
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 02.09.2026 — eğitim veri seti envanteri düzeltildi
+(kaynak ve lisans beyanı eksiği açıkça işlendi)
 
 ---
 

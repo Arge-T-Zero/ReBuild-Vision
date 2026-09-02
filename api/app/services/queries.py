@@ -126,3 +126,35 @@ def gorulebilir_alanlar(rol: Rol | None, kullanici_id: int) -> Select:
     return sorgu.where(
         (EnkazAlani.olusturan_id == kullanici_id) | (EnkazAlani.id.in_(alt))
     )
+
+
+def gorulebilir_tespitler(rol: Rol | None, kullanici_id: int) -> Select:
+    """Rolün görebileceği ENKAZ ALANLARINA ait tespitler.
+
+    ⚠️ BU SÜZGEÇ 02.09.2026 DENETİMİNDE EKSİK BULUNDU.
+
+    `gorulebilir_alanlar()` liste uçlarında uygulanıyordu: `yikim` rolü
+    `/enkaz-alani`'nda boş liste, `/harita`'da boş dağılım görüyordu. Ama
+    TEKİL kayıt uçları bu süzgeçten geçmiyordu — `GET /tespit/1`,
+    `/miktar/1`, `/olcum/tespit/1`, `/tehlikeli/tespit/1` yalnızca "giriş
+    yapmış mı" diye bakıyordu.
+
+    Sonuç: dış taraf bir rol, id'leri sırayla gezerek göremediği
+    sahaların tespitlerini, sınıflarını ve **hesaplanmış tonajını**
+    okuyabiliyordu. Liste ucunda kapatılan kapı, tekil uçta açıktı.
+
+    Bu, kitaplarda "nesne düzeyi yetkilendirme eksikliği" diye geçen
+    hatadır ve en sık gözden kaçan yetki açığıdır: yetki kontrolü EYLEM
+    üzerinden yapılır ("bu rol okuyabilir mi?"), NESNE üzerinden
+    unutulur ("bu rol BU KAYDI okuyabilir mi?").
+
+    Projenin kendi ilkesi gereği çözüm veri katmanındadır: uç noktalar
+    kaydı doğrudan `db.get()` ile değil bu sorgudan alır.
+    """
+    return (
+        select(Tespit)
+        .join(Goruntu, Tespit.goruntu_id == Goruntu.id)
+        .where(Goruntu.enkaz_alani_id.in_(
+            gorulebilir_alanlar(rol, kullanici_id).with_only_columns(EnkazAlani.id)
+        ))
+    )

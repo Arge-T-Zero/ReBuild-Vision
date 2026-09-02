@@ -7,6 +7,7 @@ korumaların sessizce kaldırılmamasını sağlar.
 from __future__ import annotations
 
 import pytest
+from sqlalchemy import select
 
 from api.app.core.config import GUVENSIZ_VARSAYILAN_ANAHTAR, Ayarlar
 from api.app.core.security import jeton_coz, jeton_uret, parola_ozetle, parola_dogrula
@@ -84,3 +85,68 @@ def test_ortam_degiskenlerindeki_bosluk_kirpilir():
     assert a.veritabani_url.endswith("rebuild_vision")
     assert "\n" not in a.veritabani_url
     assert a.model_service_url == "http://localhost:8090"
+
+
+# --- Yükleme sınırları (02.09.2026 denetimi) ------------------------------
+
+
+async def test_cok_fazla_dosya_reddedilir(istemci, jeton, db_oturum):
+    """Yükleme uç noktasında dosya SAYISI sınırı yoktu.
+
+    `list[UploadFile]` sınırsızdı ve her dosya belleğe okunuyordu. Tek
+    koruma nginx'in `client_max_body_size` değeriydi; o da yalnız
+    konteyner yolunda geçerli — yerel geliştirme, Render ve MOBİL
+    UYGULAMA doğrudan API'ye gidiyor.
+    """
+    from api.app.models import EnkazAlani
+    from api.app.routers.goruntuler import ISTEK_BASI_DOSYA_SINIRI
+
+    alan_id = (await db_oturum.execute(select(EnkazAlani.id))).scalars().first()
+    if alan_id is None:
+        a = EnkazAlani(ad="Sınır testi", olusturan_id=1)
+        db_oturum.add(a)
+        await db_oturum.commit()
+        alan_id = a.id
+
+    # Sınırın bir fazlası kadar minik dosya — boyut değil SAYI sınanıyor.
+    dosyalar = [
+        ("dosyalar", (f"{i}.jpg", b"x", "image/jpeg"))
+        for i in range(ISTEK_BASI_DOSYA_SINIRI + 1)
+    ]
+    y = await istemci.post(
+        f"/goruntu/yukle/{alan_id}",
+        headers=await jeton("saha"),
+        files=dosyalar,
+    )
+    assert y.status_code == 413, (
+        f"Sınırın üstünde dosya kabul edildi: {y.status_code}"
+    )
+    assert str(ISTEK_BASI_DOSYA_SINIRI) in y.text, (
+        "Hata mesajı sınırın ne olduğunu söylemeli"
+    )
+
+
+def test_boyut_sinirlari_nginx_ile_uyumlu():
+    """API sınırı vekilin sınırından büyük olmamalı.
+
+    Büyük olsaydı API'nin kabul ettiği bir istek vekilde 413 ile
+    kesilirdi ve kullanıcı iki farklı yerden iki farklı davranış görürdü.
+    """
+    import re
+    from pathlib import Path
+
+    from api.app.routers.goruntuler import (
+        DOSYA_BASI_SINIR, ISTEK_BASI_TOPLAM_SINIR,
+    )
+
+    kok = Path(__file__).resolve().parents[1]
+    nginx = (kok / "docker/nginx.conf").read_text(encoding="utf-8")
+    m = re.search(r"client_max_body_size\s+(\d+)m", nginx)
+    assert m, "nginx.conf içinde client_max_body_size yok"
+    vekil = int(m.group(1)) * 1024 * 1024
+
+    assert ISTEK_BASI_TOPLAM_SINIR <= vekil, (
+        f"API toplam sınırı ({ISTEK_BASI_TOPLAM_SINIR}) vekilinkinden "
+        f"({vekil}) büyük; vekil arkasında ulaşılamayan bir sınır olurdu"
+    )
+    assert DOSYA_BASI_SINIR <= ISTEK_BASI_TOPLAM_SINIR

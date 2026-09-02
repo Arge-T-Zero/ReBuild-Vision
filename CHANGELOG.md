@@ -5,6 +5,86 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 02.09.2026 — Teslim denetimi (sıfırdan, her şey)
+
+Teslime iki gün kala yapılan tam kontrol: depo, 29 belge, kod, testler,
+CI, dağıtım, güvenlik ve iki arayüz. Üç bağımsız envanter taraması +
+elle doğrulama. **46 bulgu · 38 düzeltildi.** Tam rapor:
+`results/teslim-denetimi.md`.
+
+**En pahalı üç bulgu — üçü de test takımının kör noktasında**
+
+1. **Mobil uygulamanın ana işlevi gerçek cihazda hiç çalışmıyordu.**
+   `contentType` verilmediği için `http` paketi `octet-stream`
+   gönderiyor, sunucu ilk dosyada bütün partiyi 415 ile düşürüyordu.
+   Web'de türü tarayıcı belirlediği, Flutter web'de `fromPath` zaten
+   hata verdiği için hiçbir denemede görünmemişti.
+2. **Jürinin `docker compose up` yolu gerçek modeli hiç çalıştırmıyordu.**
+   `model-service` için Dockerfile yoktu; compose'un yorumu hâlâ "gerçek
+   model hazır olduğunda eklenecek" diyordu — model 01.09'da hazırdı.
+3. **Konteynerde sistem kendi ölçümünü yalanlıyordu.** `metrikler.json`
+   imaja kopyalanmadığı için arayüz, `/sistem/durum` ve **indirilen her
+   rapor** "model henüz ölçülmedi" diyordu; README aynı anda 0,4334
+   ilan ediyordu. Tek `COPY` satırı.
+
+**Güvenlik — nesne düzeyi yetkilendirme eksikti (K-023)**
+
+Yetki kontrolü *eylem* üzerinden yapılıyordu, *nesne* üzerinden
+unutulmuştu. Liste uçları kapsam süzgecinden geçiyordu ama tekil kayıt
+uçları geçmiyordu: dış taraf bir rol id gezerek göremediği sahaların
+tespitlerini ve **hesaplanmış tonajını** okuyabiliyordu. Altı uç veri
+katmanında kapatıldı, üç testle bağlandı.
+
+Ayrıca yükleme boyut/sayı sınırı eklendi (yoktu; her dosya belleğe
+okunuyordu ve tek koruma nginx'teydi — mobil ve Render yolları kapsam
+dışıydı).
+
+**Depo — %88'i çöptü**
+
+`web/.venv-inceleme/` 1.906 dosya olarak izleniyordu; gerçek proje 256
+dosya. 30.08'de girmiş, dört gün fark edilmemiş. İçinde beyan edilmemiş
+üçüncü taraf kod da vardı (certifi, MPL-2.0), yani aynı zamanda bir
+Madde 10.4 boşluğuydu.
+
+**Demo verisi boştu**
+
+Jüri giriş yapınca boş listeler görüyordu. Artık üç saha, üç görüntü ve
+sekiz tespit üretiliyor; dört kural da ilk ekranda görünüyor — ölçümlü,
+ölçümsüz, düşük güvenli, uzman düzeltmeli, katsayısı kapalı ve belirsiz
+kayıtlar birlikte.
+
+**Beyanı gerçeğe bağlayan yeni test**
+
+`tests/test_lisans_beyani.py`: Madde 10.4 beyanında 11 sürüm yanlıştı,
+bir paket hayaletti, üç paket eksikti, model servisi ve konteyner temel
+imajları hiç beyan edilmemişti. Belgenin kendi bakım kuralı vardı ama
+mekanizması yoktu. Artık beyan `requirements.txt`, `package.json`,
+`pubspec.yaml` ve Dockerfile'lara bağlı — ayrışırsa test kırılıyor.
+
+**ΔE çelişkisi — iki sayı da doğruymuş**
+
+K-012 (8,6) ile K-022 (3,5) uyuşmuyordu ve K-022 "aynı ölçüdeki skoru"
+diyordu. Yeniden ölçüldü: çelişki yok, **ölçütler farklı** — biri komşu
+sıralamayı, diğeri bütün ikilileri ölçüyor. Her iki karara ölçüt yazıldı.
+
+**Kendini yalanlayan altı belge düzeltildi**
+
+Kullanıcı kılavuzu jüriye "cam ve seramik tanınmıyor" diyordu (cam
+modelin en iyi sınıfı); Madde 10.5 beyanı kendi içinde çelişiyordu;
+`bilinen-sinirlar` ölçülmüş iki satırı "ölçülmedi" sayıyordu;
+`docker/README` başlığı "doğrulandı" sonu "doğrulanmadı" diyordu.
+
+**Doğrulanamayan — açıkça yazıldı**
+
+Docker imajı **derlenemedi**: geliştirme ortamının ağ politikası kayıt
+defterinin dağıtım ağını engelliyor. `compose config` ile söz dizimi
+doğrulandı ama çalıştığı görülmedi; `docker/README.md` kutucuğu bu
+yüzden işaretsiz ve gerekçe yazılı.
+
+170 sunucu testi (155'ten), 27 mobil testi (18'den), web derlemesi ve
+`flutter analyze` temiz.
+
+
 ### 02.09.2026 — Sınıf listesi eğitilen modele çekildi (10 → 5)
 
 **Sorun — sessiz yanlış etiketleme**

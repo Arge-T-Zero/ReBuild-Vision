@@ -38,7 +38,7 @@ konuşulur · *veri* = kod değil içerik.
 
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |
 |---|---|---|---|---|
-| ultralytics (YOLO11) | 8.4.x | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
+| ultralytics (YOLO11) | 8.4.0 | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
 | model ağırlıkları (özgün eğitim) | — | **AGPL-3.0** (proje lisansıyla aynı) ⚠️ | model dosyası | proje içi |
 | **eğitim veri seti** (takımın kendi topladığı) | — | 🔴 **BEYAN EKSİK** | veri | proje içi — bkz. 2.1.1 |
 
@@ -101,35 +101,61 @@ Bu soru mentöre de sorulacaktır (Bölüm 7, soru 10).
 
 ### 2.3. Backend (`api/`)
 
+> ⚠️ **Sürüm sütunu 02.09.2026'da `api/requirements.txt` dosyasından
+> YENİDEN ÜRETİLDİ.** Önceki sürümde **on bir satırın sürümü yanlıştı**
+> (ör. fastapi 0.141 yazıyordu, sabitlenmiş sürüm 0.115.6). Lisanslar
+> doğruydu; hatalı olan yalnızca sürümlerdi — ama Madde 10.4 beyanı
+> denetlenebilir olmalıdır, hatalı bir sürüm beyanı beyan sayılmaz.
+
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |
 |---|---|---|---|---|
-| fastapi | 0.141 | MIT | kütüphane | https://github.com/fastapi/fastapi |
-| uvicorn | 0.52 | BSD-3-Clause | kütüphane | https://github.com/encode/uvicorn |
-| pydantic | 2.x | MIT | kütüphane | https://github.com/pydantic/pydantic |
-| sqlalchemy | 2.0 | MIT | kütüphane | https://github.com/sqlalchemy/sqlalchemy |
-| geoalchemy2 | 0.20 | MIT | kütüphane | https://github.com/geoalchemy/geoalchemy2 |
-| alembic | 1.19 | MIT | kütüphane | https://github.com/sqlalchemy/alembic |
-| **asyncpg** | 0.31 | **Apache-2.0** | kütüphane | https://github.com/MagicStack/asyncpg |
-| pyjwt | 2.13 | MIT | kütüphane | https://github.com/jpadilla/pyjwt |
-| bcrypt | 5.0 | Apache-2.0 | kütüphane | https://github.com/pyca/bcrypt |
-| python-multipart | 0.0.32 | Apache-2.0 | kütüphane | https://github.com/Kludex/python-multipart |
-| pillow | 12.x | MIT-CMU | kütüphane | https://github.com/python-pillow/Pillow |
-| httpx | 0.28 | BSD-3-Clause | kütüphane | https://github.com/encode/httpx |
+| fastapi | 0.115.6 | MIT | kütüphane | https://github.com/fastapi/fastapi |
+| uvicorn[standard] | 0.34.0 | BSD-3-Clause | kütüphane | https://github.com/encode/uvicorn |
+| pydantic | 2.10.4 | MIT | kütüphane | https://github.com/pydantic/pydantic |
+| pydantic-settings | 2.7.0 | MIT | kütüphane | https://github.com/pydantic/pydantic-settings |
+| sqlalchemy[asyncio] | 2.0.36 | MIT | kütüphane | https://github.com/sqlalchemy/sqlalchemy |
+| geoalchemy2 | 0.16.0 | MIT | kütüphane | https://github.com/geoalchemy/geoalchemy2 |
+| alembic | 1.14.0 | MIT | kütüphane | https://github.com/sqlalchemy/alembic |
+| **asyncpg** | 0.30.0 | **Apache-2.0** | kütüphane | https://github.com/MagicStack/asyncpg |
+| pyjwt | 2.10.1 | MIT | kütüphane | https://github.com/jpadilla/pyjwt |
+| bcrypt | 4.2.1 | Apache-2.0 | kütüphane | https://github.com/pyca/bcrypt |
+| python-multipart | 0.0.20 | Apache-2.0 | kütüphane | https://github.com/Kludex/python-multipart |
+| pillow | 11.1.0 | MIT-CMU | kütüphane | https://github.com/python-pillow/Pillow |
+| httpx | 0.28.1 | BSD-3-Clause | kütüphane | https://github.com/encode/httpx |
+
+**Yalnızca geliştirme/test** (`api/requirements-dev.txt`; teslim edilen
+imaja girmez, `api.Dockerfile` yalnızca `requirements.txt` kurar):
+
+| Paket | Sürüm | Lisans | Kaynak |
+|---|---|---|---|
+| pytest | 8.3.4 | MIT | https://github.com/pytest-dev/pytest |
+| pytest-asyncio | 0.25.2 | Apache-2.0 | https://github.com/pytest-dev/pytest-asyncio |
 
 ### 2.4. Web arayüzü (`web/`)
 
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |
 |---|---|---|---|---|
-| react / react-dom | 19.x | MIT | kütüphane | https://github.com/facebook/react |
-| vite | 8.x | MIT | derleme aracı | https://github.com/vitejs/vite |
-| typescript | 5.x | Apache-2.0 | derleme aracı | https://github.com/microsoft/TypeScript |
-| **leaflet** | 1.9.4 | **BSD-2-Clause** | kütüphane | https://github.com/Leaflet/Leaflet |
-| @tanstack/react-query | 5.x | MIT | kütüphane | https://github.com/TanStack/query |
-| tailwindcss | 4.x | MIT | derleme aracı | https://github.com/tailwindlabs/tailwindcss |
-| @tailwindcss/vite | 4.x | MIT | derleme aracı | https://github.com/tailwindlabs/tailwindcss |
-| @types/leaflet | 1.9 | MIT (DefinitelyTyped) | tip tanımı (derleme) | https://github.com/DefinitelyTyped/DefinitelyTyped |
-| @vitejs/plugin-react | 5.x | MIT | derleme aracı | https://github.com/vitejs/vite-plugin-react |
-| oxlint | 1.x | MIT | geliştirme aracı (lint) | https://github.com/oxc-project/oxc |
+| react / react-dom | ^19.2.8 | MIT | kütüphane | https://github.com/facebook/react |
+| vite | ^8.2.2 | MIT | derleme aracı | https://github.com/vitejs/vite |
+| typescript | ~6.0.2 | Apache-2.0 | derleme aracı | https://github.com/microsoft/TypeScript |
+| **leaflet** | ^1.9.4 | **BSD-2-Clause** | kütüphane | https://github.com/Leaflet/Leaflet |
+| tailwindcss | ^4.3.3 | MIT | derleme aracı | https://github.com/tailwindlabs/tailwindcss |
+| @tailwindcss/vite | ^4.3.3 | MIT | derleme aracı | https://github.com/tailwindlabs/tailwindcss |
+| @types/leaflet | ^1.9.22 | MIT (DefinitelyTyped) | tip tanımı (derleme) | https://github.com/DefinitelyTyped/DefinitelyTyped |
+| @types/node | ^24.13.3 | MIT (DefinitelyTyped) | tip tanımı (derleme) | https://github.com/DefinitelyTyped/DefinitelyTyped |
+| @types/react | ^19.2.18 | MIT (DefinitelyTyped) | tip tanımı (derleme) | https://github.com/DefinitelyTyped/DefinitelyTyped |
+| @types/react-dom | ^19.2.4 | MIT (DefinitelyTyped) | tip tanımı (derleme) | https://github.com/DefinitelyTyped/DefinitelyTyped |
+| @vitejs/plugin-react | ^6.1.0 | MIT | derleme aracı | https://github.com/vitejs/vite-plugin-react |
+| oxlint | ^1.79.0 | MIT | geliştirme aracı (lint) | https://github.com/oxc-project/oxc |
+
+> ⚠️ **`@tanstack/react-query` bu tablodan ÇIKARILDI (02.09.2026).**
+> Beyanda vardı ama `web/package.json`'da yok ve `web/src` içinde hiç
+> kullanılmıyor — hayalet bir satırdı. Bir lisans beyanında var olmayan
+> paket, eksik paket kadar kusurludur: ikisi de beyanın gerçekle
+> denetlenmediğini gösterir.
+>
+> `@types/node`, `@types/react`, `@types/react-dom` ise **eklendi**;
+> `@types/leaflet` listedeyken bu üçü atlanmıştı.
 
 ### 2.4.1. Yazı tipleri — kendi sunucumuzdan
 
@@ -165,13 +191,50 @@ dosyalarından** doğrulanmıştır (29.08.2026). Bu ayrım önemli: pub.dev
 
 | Paket | Sürüm | Lisans | Kullanım |
 |---|---|---|---|
-| flutter_secure_storage | 11.0 | BSD-3-Clause | Şifreli yerel depolama |
-| http | 1.6 | BSD-3-Clause | API çağrıları |
-| image_picker | 1.2 | BSD-3-Clause | Kamera ve galeri |
-| geolocator | 14.0 | MIT | Konum |
-| connectivity_plus | 7.3 | BSD-3-Clause | Bağlantı durumu |
+| flutter_secure_storage | ^11.0.0 | BSD-3-Clause | Şifreli yerel depolama |
+| http | ^1.6.0 | BSD-3-Clause | API çağrıları |
+| http_parser | ^4.1.2 | BSD-3-Clause | Yüklenen görüntünün MIME türü |
+| image_picker | ^1.2.3 | BSD-3-Clause | Kamera ve galeri |
+| geolocator | ^14.0.3 | MIT | Konum |
+| connectivity_plus | ^7.3.1 | BSD-3-Clause | Bağlantı durumu |
 
 Hepsi izin vericidir; Madde 5.5 devrini kirletmez.
+
+### 2.4.2. Model servisi (`model-service/`) — AGPL sınırının içi
+
+Bu tablo bilinçli olarak ayrıdır: buradaki paketler `api/` imajına
+**girmez** ve girmediği `tests/test_agpl_siniri.py` ile denetlenir.
+
+| Paket | Sürüm | Lisans | Not |
+|---|---|---|---|
+| fastapi | 0.115.6 | MIT | |
+| uvicorn[standard] | 0.34.0 | BSD-3-Clause | |
+| python-multipart | 0.0.20 | Apache-2.0 | |
+| pillow | 11.1.0 | MIT-CMU | |
+| **ultralytics** | **8.4.0** | **AGPL-3.0** 🔴 | Bölüm 3 — yalnızca bu serviste |
+
+`ultralytics` kendi bağımlılıklarını (torch, opencv, numpy…) beraberinde
+getirir. Bunlar AGPL sınırının **içinde** kalır ve yine `api/`'ye
+girmez; torch **BSD-3-Clause**, opencv **Apache-2.0**, numpy
+**BSD-3-Clause** lisanslıdır — hiçbiri ek bir kopyaleft yükümlülüğü
+doğurmaz. Kopyaleft tetikleyicisi yalnızca `ultralytics`'in kendisidir.
+
+### 2.4.3. Konteyner temel imajları
+
+Jüri `docker compose up` çalıştırdığında bu imajlar da makinesine iner;
+Madde 10.4 "kullanılan tüm kütüphane, çerçeve..." diyor ve bunlar beyan
+dışı bırakılamaz. (02.09.2026'ya kadar hiçbiri beyan edilmemişti.)
+
+| İmaj | Nerede | Lisans |
+|---|---|---|
+| `python:3.11-slim` | `api.Dockerfile`, `model-mock.Dockerfile`, `model-service.Dockerfile` | PSF-2.0 (Python) + Debian temel katmanı |
+| `node:22-alpine` | `web.Dockerfile` (yalnızca derleme aşaması) | MIT (Node.js) + Alpine (çoğunlukla MIT/BSD) |
+| `nginx:1.27-alpine` | `web.Dockerfile` (son katman) | BSD-2-Clause |
+| `postgis/postgis:17-3.5` | `compose.yaml` | PostgreSQL License + **PostGIS GPL-2.0-or-later** 🔴 (Bölüm 4) |
+
+Dördü de resmî ya da proje tarafından yayımlanan imajlardır; hiçbiri
+değiştirilmemiştir. `node:22-alpine` çok aşamalı derlemede yalnızca
+derleyici olarak kullanılır ve son imajda **bulunmaz**.
 
 ### 2.5. Yardımcı betikler (`scripts/`)
 
@@ -487,7 +550,7 @@ getiriyor. Aşağıdaki sorular **ilk görüşmede** sorulacak; cevaplar
 
 8. Bakanlık'ın yayımlanmış bir **hacim→ağırlık dönüşüm katsayısı**
    tablosu var mı? Varsa EPA değerlerinin yerine öncelikle o
-   kullanılmalıdır (şu an 9 malzeme sınıfından yalnızca 4'ü kaynaklı;
+   kullanılmalıdır (şu an 5 malzeme sınıfından yalnızca 2'si kaynaklı;
    **beton kapalı**).
 9. Karbon azaltım potansiyeli için kullanılabilecek **emisyon faktörü**
    kaynağı var mı? Bu olmadan Madde 10.9'un o kalemi hesaplanamaz ve

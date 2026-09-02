@@ -1,6 +1,6 @@
 # Veri Modeli
 
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 02.09.2026 — sınıf listesi 10'dan 5'e indi
 Şema kaynağı: `api/app/models.py` · Göç: `api/alembic/versions/`
 Veri tabanı: PostgreSQL 17 + PostGIS 3.6, geometri SRID **4326**
 
