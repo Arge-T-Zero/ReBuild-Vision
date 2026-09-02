@@ -14,15 +14,23 @@ import { yuzdeMetni } from './GuvenSkoru'
 /**
  * Sınıf renginin üzerinde okunacak metin rengi.
  *
- * ⚠️ Etiket metni `#0e1116` olarak SABİT KODLANMIŞTI ve üç sınıf renginde
- * WCAG AA'nın altında kalıyordu (ölçüldü): `yumusak_plastik` 3,82 ·
- * `konteyner` 3,91 · `dolgu_toprak` 4,14. Etiket, kutunun ne olduğunu
+ * ⚠️ Etiket metni `#0e1116` olarak SABİT KODLANMIŞTI ve birkaç sınıf
+ * renginde WCAG AA'nın altında kalıyordu. Etiket, kutunun ne olduğunu
  * söyleyen tek yazıdır; okunamıyorsa kutu da anlamsızdır.
  *
  * Sınıf renkleri `siniflar.json`'dan gelir ve DEĞİŞTİRİLEMEZ (index.css
  * içindeki kural). Bu yüzden düzeltme metin tarafında: rengin bağıl
- * parlaklığına göre koyu ya da beyaz seçilir. Ölçüldü: on sınıfın
- * tamamında en düşük oran 4,57.
+ * parlaklığına göre koyu ya da beyaz seçilir.
+ *
+ * 02.09.2026'da palet 10 sınıftan 5'e inince ölçüm YENİDEN yapıldı —
+ * eski ölçüm artık var olmayan renkleri anlatıyordu:
+ *
+ *   ahsap #d95926 → koyu  4,87   ·  beton_tugla #6b7280 → beyaz 4,83
+ *   cam   #008300 → beyaz 4,95   ·  metal       #3987e5 → koyu  5,20
+ *   seramik #c98500 → koyu 6,16
+ *
+ * En düşük oran **4,83** — AA eşiği 4,5 sağlanıyor. Sabit koyu metinle
+ * en düşük oran 3,82 olurdu (`cam`), yani seçici hâlâ gerekli.
  */
 const ETIKET_KOYU = '#0e1116'
 const ETIKET_ACIK = '#ffffff'
@@ -36,7 +44,14 @@ function bagilParlaklik(renk: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-/** Eşik 0,19: on sınıf rengiyle ölçülerek belirlendi. */
+/**
+ * Eşik 0,19: sınıf renkleriyle ölçülerek belirlendi.
+ *
+ * Beş renkle geçerli aralık taranarak bulundu: eşik 0,17 ile 0,22
+ * arasındayken en düşük oran 4,83'te sabit kalıyor; dışına çıkınca
+ * düşüyor (0,167'de 3,91 · 0,25'te 3,64). 0,19 bu aralığın ortasıdır,
+ * yani palet biraz oynadığında kenardan düşmez.
+ */
 function okunurMetin(renk: string): string {
   return bagilParlaklik(renk) > 0.19 ? ETIKET_KOYU : ETIKET_ACIK
 }
@@ -181,7 +196,7 @@ export function TespitKutulari({
             onMouseLeave={() => vurgulandi?.(null)}
             onFocus={() => vurgulandi?.(t.id)}
             onBlur={() => vurgulandi?.(null)}
-            /* Ekran okuyucu HAM sınıf adını ("dolgu_toprak") okuyordu ve
+            /* Ekran okuyucu HAM sınıf adını ("beton_tugla") okuyordu ve
                uzmanın düzeltmesini hiç yansıtmıyordu: kutu görsel olarak
                düzeltilmiş sınıfı gösterirken sesli olarak modelin ilk
                tahminini söylüyordu. */

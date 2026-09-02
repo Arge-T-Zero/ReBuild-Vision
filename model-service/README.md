@@ -34,13 +34,17 @@ export MODEL_AGIRLIK=/bir/yer/best.pt
 Eğitimdeki `data.yaml` içindeki `names:` listesi
 [`siniflar.json`](../siniflar.json) ile **birebir aynı sırada** olmalıdır:
 
-| id | ad | id | ad |
-|---|---|---|---|
-| 0 | beton | 5 | metal |
-| 1 | dolgu_toprak | 6 | tekstil |
-| 2 | ahsap | 7 | karton |
-| 3 | sert_plastik | 8 | alcipan |
-| 4 | yumusak_plastik | 9 | konteyner |
+| id | ad | görünen ad |
+|---|---|---|
+| 0 | ahsap | Ahşap |
+| 1 | beton_tugla | Beton / tuğla |
+| 2 | cam | Cam |
+| 3 | metal | Metal |
+| 4 | seramik | Seramik |
+
+Bu liste 02.09.2026'da **10 sınıftan 5'e indi**: model CDW-Seg ile değil,
+takımın kendi topladığı veri setiyle eğitildi. Sıra `data.yaml`'dan gelir;
+`tests/test_sinif_tanimlari.py` ikisinin ayrışmasını CI'da yakalar.
 
 Sıra kayarsa model "ahşap" derken arayüz "metal" gösterir. Servis, sınıf
 adını modelin kendi `names` sözlüğünden **almaz** — `siniflar.json`

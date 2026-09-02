@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 /// Mobil ve web ayrı ürünler değil; aynı sistemin iki yüzü. Saha
 /// personeli telefonda gördüğü rengi masaüstünde de görmeli.
 ///
-/// Malzeme sınıfı renkleri `siniflar.json` ile birebir aynıdır ve dataviz
-/// doğrulayıcısından geçmiştir (koyu ve açık zeminde). Değiştirilmemeli.
+/// Malzeme sınıfı renkleri `siniflar.json` ile birebir aynıdır.
+/// Değiştirilmemeli — ayrışırsa iki yüz farklı renk gösterir.
+
 /// Koyu tema renkleri — web arayüzündeki `:root[data-theme="dark"]` ile aynı.
 class Koyu {
   static const taban = Color(0xFF000000);
@@ -104,21 +105,54 @@ class Renk {
   static Color get markaUstu =>
       _koyu ? Koyu.taban : const Color(0xFFFFFFFF);
 
-  /// Malzeme sınıfı renkleri — siniflar.json ile aynı.
+  /// Malzeme sınıfı renkleri — `siniflar.json` ile aynı.
+  ///
+  /// ⚠️ SIRA VE ADLAR MODELİN `data.yaml`'INDAN GELİR. 02.09.2026'da
+  /// sınıf listesi 10'dan 5'e indi: eğitilen model takımın kendi veri
+  /// setiyle (Roboflow etiketli, 5 sınıf) eğitildi, CDW-Seg'in 10
+  /// sınıfıyla değil. Bu liste `siniflar.json` ile birebir aynı kalmak
+  /// zorundadır — ayrışırsa mobil arayüz yanlış renk gösterir.
+  ///
+  /// Renkler renk körlüğü benzetimiyle seçildi (en kötü ΔE=6,8).
+  /// Renk tek başına anlam taşımaz; etiketlerde sınıf adı yazılıdır.
   static const malzeme = <String, Color>{
     'ahsap': Color(0xFFD95926),
-    'sert_plastik': Color(0xFF199E70),
+    'beton_tugla': Color(0xFF6B7280),
+    'cam': Color(0xFF008300),
     'metal': Color(0xFF3987E5),
-    'karton': Color(0xFFC98500),
-    'tekstil': Color(0xFFD55181),
-    'yumusak_plastik': Color(0xFF008300),
-    'alcipan': Color(0xFFE66767),
-    'beton': Color(0xFF9085E9),
-    'dolgu_toprak': Color(0xFFA06A2C),
-    'konteyner': Color(0xFF6B7280),
+    'seramik': Color(0xFFC98500),
+  };
+
+  /// Sınıfın EKRANDA görünen adı — `siniflar.json` → `gorunen_ad`.
+  ///
+  /// ⚠️ MOBİL, SAHA PERSONELİNE HAM SINIF ADINI GÖSTERİYORDU:
+  /// "beton_tugla", "ahsap". Bunlar makine tanımlayıcısıdır, Türkçe
+  /// değildir ve enkaz alanında telefonuna bakan biri için "Beton /
+  /// tuğla" kadar okunaklı değildir. Web arayüzü aynı kaydı doğru adla
+  /// gösteriyordu; iki arayüz aynı tespite iki farklı ad veriyordu.
+  ///
+  /// Aynı hata bir kez de ekran okuyucuda yakalanmıştı
+  /// (`web/.../TespitKutulari.tsx`): ham ad okunuyordu.
+  ///
+  /// Liste neden burada sabit: uygulama ÇEVRİMDIŞI çalışmak zorunda
+  /// (sahada bağlantı yok) ve sunucudan sınıf listesi çekemeyebilir.
+  /// Sabit kalması `siniflar.json` ile ayrışma riski doğurur; risk
+  /// `test/sinif_adlari_test.dart` ile kapatılmıştır — o test bu haritayı
+  /// deponun `siniflar.json` dosyasıyla karşılaştırır.
+  static const malzemeAdi = <String, String>{
+    'ahsap': 'Ahşap',
+    'beton_tugla': 'Beton / tuğla',
+    'cam': 'Cam',
+    'metal': 'Metal',
+    'seramik': 'Seramik',
   };
 
   static Color sinif(String ad) => malzeme[ad] ?? metin4;
+
+  /// Ekranda gösterilecek ad. Tanınmayan bir sınıf gelirse ham ad
+  /// gösterilir — uydurulmaz ve gizlenmez; kullanıcı bir tuhaflık
+  /// olduğunu görebilmelidir.
+  static String sinifAdi(String ad) => malzemeAdi[ad] ?? ad;
 }
 
 /// Seçilen temaya göre `ThemeData` üretir.

@@ -1,1 +1,52 @@
-{"sahte":true,"uyari":"SAHTE SERVIS - bu sonuclar gercek bir modelden gelmemistir","image_id":"8cf7e22a3ae4","image_width":4000,"image_height":3000,"processed_at":"2026-08-27T09:03:16+00:00","model":"yolo11-rebuild-SAHTE","model_license":"YOK - SAHTE SERVIS","review_threshold":0.5,"detections":[{"class_id":6,"class_name":"tekstil","confidence":0.35,"bbox":{"x":897,"y":1433,"w":1165,"h":455},"bbox_format":"pixel_absolute_original","needs_review":true},{"class_id":2,"class_name":"ahsap","confidence":0.83,"bbox":{"x":796,"y":685,"w":992,"h":295},"bbox_format":"pixel_absolute_original","needs_review":false},{"class_id":2,"class_name":"ahsap","confidence":0.75,"bbox":{"x":108,"y":1565,"w":867,"h":569},"bbox_format":"pixel_absolute_original","needs_review":false}]}
+{
+  "sahte": true,
+  "uyari": "SAHTE SERVIS - bu sonuclar gercek bir modelden gelmemistir",
+  "image_id": "f7bd5e890017",
+  "image_width": 1200,
+  "image_height": 630,
+  "processed_at": "2026-09-02T00:00:00+00:00",
+  "model": "yolo11-rebuild-SAHTE",
+  "model_license": "YOK - SAHTE SERVIS",
+  "review_threshold": 0.5,
+  "detections": [
+    {
+      "class_id": 4,
+      "class_name": "seramik",
+      "confidence": 0.47,
+      "bbox": {
+        "x": 576,
+        "y": 438,
+        "w": 331,
+        "h": 122
+      },
+      "bbox_format": "pixel_absolute_original",
+      "needs_review": true
+    },
+    {
+      "class_id": 2,
+      "class_name": "cam",
+      "confidence": 0.92,
+      "bbox": {
+        "x": 928,
+        "y": 191,
+        "w": 143,
+        "h": 160
+      },
+      "bbox_format": "pixel_absolute_original",
+      "needs_review": false
+    },
+    {
+      "class_id": 1,
+      "class_name": "beton_tugla",
+      "confidence": 0.7,
+      "bbox": {
+        "x": 993,
+        "y": 177,
+        "w": 89,
+        "h": 43
+      },
+      "bbox_format": "pixel_absolute_original",
+      "needs_review": false
+    }
+  ]
+}

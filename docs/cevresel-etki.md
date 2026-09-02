@@ -79,29 +79,35 @@ and Recovery — *Volume-to-Weight Conversion Factors*. Değerler lb/yd³
 cinsindendir; `katsayilar.json` içinde ton/m³'e çevrilmiştir (çarpan
 0,000593276; dayanağı: 1 lb = 0,45359237 kg, 1 yd³ = 0,764554857984 m³).
 
-**Durum — dokuz malzeme sınıfından yalnızca dördü kullanılabilir:**
+**Durum — beş malzeme sınıfından yalnızca ikisi kullanılabilir:**
 
 | Sınıf | Aralık (ton/m³) | Durum |
 |---|---|---|
 | ahşap | 0,1003 – 0,159 | ✅ kaynaklı |
 | metal | 0,0279 – 0,1335 | ✅ kaynaklı |
-| tekstil | 0,0742 – 0,1038 | ✅ kaynaklı |
-| karton | 0,0442 – 0,0629 | ✅ kaynaklı |
-| **beton** | — | ❌ **kapalı** |
-| dolgu toprak | — | ❌ kapalı |
-| alçıpan | — | ❌ kapalı |
-| sert plastik | — | ❌ kapalı |
-| yumuşak plastik | — | ❌ kapalı |
+| **beton / tuğla** | — | ❌ **kapalı** |
+| cam | — | ❌ kapalı |
+| seramik | — | ❌ kapalı |
 
-⚠️ **Beton kapalı olduğu için bu gösterge bugün enkaz sahasının ana
-kütlesini kapsamıyor.** Kapalı olmasının sebebi veri yokluğu değil,
+> Sınıf listesi 02.09.2026'da **10'dan 5'e indi**; model takımın kendi
+> veri setiyle eğitildi. Önceki sürümde kaynaklı olan `tekstil` ve
+> `karton` katsayıları, o sınıflar artık tanınmadığı için tablodan
+> düştü — kaynakları geçersizleşmedi, `git` geçmişinde duruyor.
+
+⚠️ **Beton / tuğla kapalı olduğu için bu gösterge bugün enkaz sahasının
+ana kütlesini kapsamıyor.** Kapalı olmasının sebebi veri yokluğu değil,
 **aralık** yokluğu: EPA beton için tek nokta değer veriyor (860 lb/yd³ ≈
 0,510 ton/m³), aralık vermiyor. Tek değerle miktar üretmek belirsizlik
 aralığı kuralını çiğnerdi; **aralık uydurulmadı**, satır kapalı
 bırakıldı.
 
-**Eksik:** Beton, dolgu toprak ve alçıpan için **aralık veren ikinci bir
-kaynak.** Plastikler için inşaat/yıkım alanından kaynak bulunamadı.
+Bu sınıfta **ikinci bir belirsizlik** daha var: sınıf betonu **tuğlayla
+birlikte** kapsıyor, ama ikisinin yoğunluğu aynı değil. Tek bir katsayı
+bulunsa bile, hangi karışıma ait olduğu bilinmeden uygulanamaz.
+
+**Eksik:** Beton/tuğla, cam ve seramik için **aralık veren bir kaynak.**
+EPA'nın C&D tablosunda ayrı bir seramik kalemi yok; cam kalemi ise
+ambalaj camını ölçüyor, yapı camını değil.
 
 #### Beton araştırması — 01.09.2026, sonuç: değer yazılmadı
 
@@ -140,8 +146,12 @@ oran = (geri kazanılabilir sınıfa ait doğrulanmış miktar)
        ÷ (doğrulanmış toplam miktar)
 ```
 
-`konteyner` sınıfı paydaya **girmez** — malzeme değildir
-(`siniflar.json` → `malzeme_mi: false`, karar `K-007`).
+Paydaya yalnızca **malzeme olan** sınıflar girer: `siniflar.json`
+içindeki her sınıfın bir `malzeme_mi` alanı vardır ve miktar hesabı
+yalnız `true` olanları toplar (karar `K-007`). Bu sürümde beş sınıfın
+beşi de malzemedir; ayıklama mekanizması yine de yerinde durur, çünkü
+atığın içinde bulunduğu kap (ör. hurda konteyneri) sahada tanınmaya
+başlarsa tonaja karışmamalıdır.
 
 **Durum:** Yöntem hazır, G1'e bağlı. G1 kapsanmadan bu oran anlamlı
 değildir.

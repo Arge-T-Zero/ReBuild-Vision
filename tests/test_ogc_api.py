@@ -30,7 +30,7 @@ async def konumlu_tespit(kullanicilar):
     konumsuz kaydı (doğru biçimde) eliyor. OGC testleri konuma ihtiyaç
     duyduğu için bu yardımcı ayrı duruyor; `conftest` değiştirilmedi.
     """
-    async def kur(sinif: str = "beton", dogrulama: str = "beklemede") -> int:
+    async def kur(sinif: str = "beton_tugla", dogrulama: str = "beklemede") -> int:
         async with db_modulu.OturumUret() as db:
             a = EnkazAlani(ad="OGC Test Alan",
                            olusturan_id=kullanicilar["belediye"],
@@ -53,17 +53,21 @@ async def konumlu_tespit(kullanicilar):
     return kur
 
 
-async def _hazirla(istemci, jeton, konumlu_tespit):
-    """Bir doğrulanmış, bir doğrulanmamış, bir konteyner kaydı kurar."""
+async def _hazirla(istemci, jeton, konumlu_tespit, ucuncu_sinif: str = "seramik"):
+    """Bir doğrulanmış, bir doğrulanmamış ve bir üçüncü kayıt kurar.
+
+    Üçüncü kayıt DOĞRULANMIŞTIR; malzeme olmayan bir sınıf verildiğinde
+    servisten düşmesinin tek sebebi malzeme olmaması olur.
+    """
     onayli = await konumlu_tespit("metal")
     await istemci.post(f"/tespit/{onayli}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
     beklemede = await konumlu_tespit("ahsap")
-    konteyner = await konumlu_tespit("konteyner")
-    await istemci.post(f"/tespit/{konteyner}/dogrula",
+    ucuncu = await konumlu_tespit(ucuncu_sinif)
+    await istemci.post(f"/tespit/{ucuncu}/dogrula",
                        headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
-    return onayli, beklemede, konteyner
+    return onayli, beklemede, ucuncu
 
 
 # --- Standart uyumu ---------------------------------------------------
@@ -118,14 +122,23 @@ async def test_dogrulanmamis_kayit_ogc_uzerinden_sizmaz(
     )
 
 
-async def test_konteyner_ogc_uzerinden_sizmaz(istemci, jeton, konumlu_tespit):
-    _, _, konteyner = await _hazirla(istemci, jeton, konumlu_tespit)
+async def test_malzeme_olmayan_sinif_ogc_uzerinden_sizmaz(
+    istemci, jeton, konumlu_tespit, malzeme_olmayan_sinif
+):
+    """K-007 coğrafi uç noktada da geçerli.
+
+    Bu, `ogc.py`'nin sorguyu yeniden yazmayıp `rapor._satirlar()`'ı
+    kullanmasının gerekçesidir: aynı süzgeç, aynı sonuç.
+    """
+    _, _, malzeme_degil = await _hazirla(
+        istemci, jeton, konumlu_tespit, malzeme_olmayan_sinif)
     d = json.loads((await istemci.get(
         "/ogc/collections/tespit/items?limit=1000",
         headers=await jeton("belediye"))).text)
 
-    assert konteyner not in [f["id"] for f in d["features"]]
-    assert "konteyner" not in {f["properties"]["sinif"] for f in d["features"]}
+    assert malzeme_degil not in [f["id"] for f in d["features"]]
+    assert malzeme_olmayan_sinif not in {
+        f["properties"]["sinif"] for f in d["features"]}
 
 
 async def test_tek_kayit_ucu_de_kural_suzgecinden_gecer(

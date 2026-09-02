@@ -77,7 +77,7 @@ async def test_uzman_duzeltmesi_model_tahminini_gecersiz_kilar(
     istemci, jeton, tespit_kur
 ):
     """İnsan denetimli yapay zekâ iddiasının kod karşılığı."""
-    tid = await tespit_kur("sert_plastik")
+    tid = await tespit_kur("cam")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
 
@@ -88,19 +88,48 @@ async def test_uzman_duzeltmesi_model_tahminini_gecersiz_kilar(
 
     # Ham tahmin izlenebilirlik için korunur.
     t = (await istemci.get(f"/tespit/{tid}", headers=await jeton("uzman"))).json()
-    assert t["sinif"] == "sert_plastik"
+    assert t["sinif"] == "cam"
     assert t["duzeltilen_sinif"] == "metal"
 
 
-async def test_konteynere_duzeltilen_kayit_hesaptan_cikar(
-    istemci, jeton, tespit_kur
+async def test_malzeme_olmayana_duzeltilen_kayit_hesaptan_cikar(
+    istemci, jeton, tespit_kur, malzeme_olmayan_sinif
 ):
-    """K-007: malzeme olmayan sınıf haritaya ve miktara girmez."""
+    """K-007: uzmanın malzeme olmayana çevirdiği kayıt hesaptan düşer.
+
+    Süzgeç HAM tahmine değil GEÇERLİ sınıfa bakar; model "metal" demiş
+    olsa da uzmanın kararı geçerlidir.
+    """
     tid = await tespit_kur("metal")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
-                       json={"durum": "duzeltildi", "duzeltilen_sinif": "konteyner"})
+                       json={"durum": "duzeltildi",
+                             "duzeltilen_sinif": malzeme_olmayan_sinif})
     d = (await istemci.get("/harita", headers=await jeton("belediye"))).json()
     assert d["malzeme_dagilimi"] == []
+
+
+async def test_tanimsiz_sinifli_kayit_hesaba_girmez(istemci, jeton, tespit_kur):
+    """`siniflar.json`'da olmayan bir sınıf adı dağılıma sızmamalı.
+
+    Bu davranış 02.09.2026'ya kadar KAZAYLA sınanıyordu: sınıf listesi
+    10'dan 5'e inince testlerdeki `konteyner` adı tanımsızlaştı, kayıtlar
+    yine elendi ve testler yeşil kaldı — ama artık K-007'yi değil bunu
+    sınıyorlardı. İki davranış da gerçek ve ikisi de korunmalı, o yüzden
+    ayrı ayrı yazıldı.
+
+    Pratik karşılığı: yanlış bir ağırlıkla (ör. sırası kaymış bir
+    `data.yaml`) üretilmiş bir tespit, veri tabanına düşse bile tonaja ve
+    haritaya karışmaz.
+    """
+    tid = await tespit_kur("bu_sinif_yok", dogrulama="beklemede",
+                           sinif_dogrula=False)
+    await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
+                       json={"durum": "onaylandi"})
+
+    d = (await istemci.get("/harita", headers=await jeton("belediye"))).json()
+    assert d["malzeme_dagilimi"] == [], (
+        "Tanımsız sınıf adı malzeme dağılımına girmemeli"
+    )
 
 
 async def test_reddet_aksiyonu_yoktur():
@@ -176,7 +205,7 @@ async def test_saha_ozeti_yalnizca_dogrulanmis_malzeme_gosterir(
 async def test_saha_ozeti_uzman_duzeltmesini_yansitir(
     istemci, jeton, tespit_kur
 ):
-    tid = await tespit_kur("sert_plastik")
+    tid = await tespit_kur("cam")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
 
@@ -185,25 +214,25 @@ async def test_saha_ozeti_uzman_duzeltmesini_yansitir(
 
 
 async def test_saha_ozeti_inceleme_bekleyeni_sayar(istemci, jeton, tespit_kur):
-    await tespit_kur("beton", guven=0.3, inceleme=True)
+    await tespit_kur("beton_tugla", guven=0.3, inceleme=True)
     a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
     assert a["inceleme_bekleyen"] == 1
 
 
-async def test_saha_ozetinde_konteyner_malzeme_sayilmaz(
-    istemci, jeton, tespit_kur
+async def test_saha_ozetinde_malzeme_olmayan_sinif_sayilmaz(
+    istemci, jeton, tespit_kur, malzeme_olmayan_sinif
 ):
-    """K-007: konteyner atık malzeme değildir, dağılıma girmez.
+    """K-007: malzeme olmayan sınıf dağılıma girmez.
 
     Harita bu filtreyi uyguluyordu ama kart özeti atlıyordu; sistem aynı
     soruya iki farklı cevap veriyordu.
     """
-    tid = await tespit_kur("konteyner")
+    tid = await tespit_kur(malzeme_olmayan_sinif)
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
 
     a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
     assert a["dogrulanan_sayisi"] == 1, "sayaç doğrulanmış kaydı görmeli"
     assert a["malzeme_dagilimi"] == [], (
-        "konteyner malzeme dağılımında görünmemeli"
+        "malzeme olmayan sınıf dağılımda görünmemeli"
     )

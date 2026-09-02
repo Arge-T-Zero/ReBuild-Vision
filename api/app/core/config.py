@@ -106,9 +106,46 @@ def siniflar() -> dict:
 def malzeme_siniflari() -> frozenset[str]:
     """Yalnızca gerçek malzeme olan sınıflar.
 
-    `konteyner` (skip bin) bir malzeme değildir; miktar hesabına ve
-    Malzeme Kaynak Haritası'na girmez. Bkz. docs/karar-kaydi.md K-007.
+    Atığın içinde bulunduğu kap ya da zemin bir malzeme değildir; miktar
+    hesabına ve Malzeme Kaynak Haritası'na girmez. Ayrım sınıf adına
+    değil `siniflar.json` → `malzeme_mi` alanına bakar, böylece sınıf
+    listesi değiştiğinde kural elle güncellenmek zorunda kalmaz.
+    Bkz. docs/karar-kaydi.md K-007.
     """
     return frozenset(
         s["ad"] for s in siniflar()["siniflar"] if s["malzeme_mi"]
+    )
+
+
+# --- Model başarım özeti (Madde 10.5 · ana talimat Bölüm 14) -------------
+
+@lru_cache
+def model_metrik_ozeti() -> str:
+    """Arayüzün altbilgisinde görünen tek satırlık başarım özeti.
+
+    ⚠️ BU METİN İKİ YERDE ELLE YAZILIYDU ve ikisi de "henüz ölçülmedi"
+    diyordu. Model 01.09.2026'da eğitilip ölçüldükten sonra da öyle
+    demeye devam etti — yani arayüz, jüriye ölçüm olmadığını söylerken
+    depoda ölçüm duruyordu. Sabit metnin sorunu yanlış olması değil,
+    yanlış OLABİLMESİDİR.
+
+    Bu yüzden özet artık ölçümün kendisinden üretilir: sayı
+    `results/egitim/metrikler.json` dosyasından okunur. Dosya yoksa
+    "ölçülmedi" denir — uydurulmaz.
+    """
+    yol = DEPO_KOKU / "results/egitim/metrikler.json"
+    if not yol.is_file():
+        return "henüz ölçülmedi — results/model-metrikleri.md"
+    try:
+        kayitlar = json.loads(yol.read_text(encoding="utf-8"))
+        test = next(k for k in kayitlar
+                    if k["split"] == "test" and k["sinif"] == "TÜM SINIFLAR")
+    except (json.JSONDecodeError, KeyError, StopIteration):
+        return "henüz ölçülmedi — results/model-metrikleri.md"
+
+    # Virgül ondalık ayracı: arayüzün geri kalanı da Türkçe yerelde.
+    map50 = f"{test['mAP50']:.4f}".replace(".", ",")
+    return (
+        f"test mAP50 = {map50} (5 sınıf, YOLO11m) — sınıf bazlı sonuçlar "
+        "ve bilinen zayıflıklar: results/model-metrikleri.md"
     )

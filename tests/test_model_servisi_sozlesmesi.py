@@ -135,7 +135,8 @@ def test_bilinmeyen_sinif_idsi_sessizce_gecilmez():
     modul = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modul)
 
-    # siniflar.json 0-9 tanımlıyor; 42 COCO ağırlığından gelebilecek bir id.
+    # siniflar.json 0-4 tanımlıyor; 42 COCO ağırlığından gelebilecek bir id.
+    # (Liste 02.09.2026'da 10 sınıftan 5'e indi; alt sınırı da sınıyoruz.)
     with pytest.raises(HTTPException) as h:
         modul._sinif_adi(42)
     assert h.value.status_code == 500
@@ -144,8 +145,13 @@ def test_bilinmeyen_sinif_idsi_sessizce_gecilmez():
         "Hata mesajı sorunun NEREDE çözüleceğini söylemeli")
 
     # Geçerli id'ler sorunsuz çevrilmeli.
-    assert modul._sinif_adi(0) == "beton"
-    assert modul._sinif_adi(9) == "konteyner"
+    assert modul._sinif_adi(0) == "ahsap"
+    assert modul._sinif_adi(4) == "seramik"
+
+    # Eski sürümün üst sınırı (9) artık TANIMSIZ olmalı. Sınıf listesi
+    # küçüldüğünde eski bir ağırlığın döndürdüğü id sessizce geçmemeli.
+    with pytest.raises(HTTPException):
+        modul._sinif_adi(9)
 
 
 def test_iki_servis_ayni_esik_alanini_kullanir(sahte, gercek):

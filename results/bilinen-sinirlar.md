@@ -50,69 +50,83 @@ ve yönlendirme hesaplarına girmez. *(Rapor 3.7 ve 12)*
 
 ## B. Eğitim verisinden kaynaklanan sınırlar
 
-Kaynak: **CDW-Seg** (CC0, DOI 10.6084/m9.figshare.28573229).
-Karar gerekçesi: `docs/karar-kaydi.md` K-006.
+**Güncelleme — 02.09.2026.** Bu bölüm baştan yazıldı. Önceki hâli
+CDW-Seg veri setini anlatıyordu; **model o veri setiyle eğitilmedi.**
+Eğitim, takımın kendi topladığı ve Roboflow ile etiketlediği **5 sınıflı**
+bir veri setiyle yapıldı (`results/egitim/veri_seti_kunyesi.json`).
 
-### B.1. 🔴 Cam ve seramik sınıfları eğitim verisinde YOK
+Önceki sürümün "cam ve seramik eğitim verisinde yok, model tanımaz"
+tespiti **artık geçersizdir** — ikisi de eğitildi; `cam` modelin en iyi
+sınıfı.
 
-Teslim edilmiş rapor *"beton/tuğla, metal, ahşap, cam ve seramik **gibi**
-ana malzeme grupları"* diyor. CDW-Seg'in on sınıfı içinde **cam** ve
-**seramik** bulunmuyor.
+### B.1. 🔴 Veri setinin kaynak ve lisans beyanı eksik
 
-**Sonuç:** Model bu iki malzeme grubunu **tanımaz**. Sahada cam veya seramik
-bulunsa dahi tespit edilmez veya başka bir sınıfa atanır.
+Görüntüler takımca toplanmıştır. **Nereden toplandığı ve hangi hakla
+kullanıldığı henüz yazılı değildir.**
 
-**Sistem ne yapıyor:** Bu iki sınıf için tahmin üretmiyor. Ayrıca bir
-sınıfın çıktıda görünmemesi, **"o malzeme sahada yok" anlamına gelecek
-biçimde gösterilmiyor** — A.2'deki "yokluk güvenlik değildir" ilkesinin
-malzeme tarafındaki karşılığı.
+Şartname iki yerden bağlıyor:
 
-**Kapatmak için ne gerekir:** Cam ve seramik için etiketli görüntü toplanıp
-veri setine eklenmesi. Bu sürüm kapsamında yapılmadı.
+- **Madde 5.2:** takımlar kendi veri setlerini kullanabilir — *"kaynaklarını
+  açıkça belirtmek kaydıyla"*.
+- **Madde 9.2:** *"Katılımcılar, geliştirdikleri projelerin ... herhangi bir
+  üçüncü kişi veya kuruluşa ait hakları ihlal etmediğini beyan eder. Aksi
+  durumda doğabilecek tüm hukuki ve mali sorumluluk ilgili katılımcıya
+  aittir."*
 
-### B.2. 🟡 Tuğla, betondan ayrılmıyor
+Madde 5.5 ürünü Kuruma devrettiği için bu, teslim sonrasına da uzanan bir
+sorumluluktur. **Kapatılması gereken en acil boşluk budur** ve kod işi
+değildir. Ayrıntı: `docs/lisans-analizi.md` Bölüm 2.1.
 
-CDW-Seg'in `concrete` sınıfı betonu kapsar; **tuğla ayrı bir sınıf
-değildir.** Rapordaki "beton/tuğla" ifadesi tek bir sınıfa karşılık geliyor.
+### B.2. 🔴 `seramik` sınıfı pratikte çalışmıyor
 
-**Sonuç:** Tuğla ağırlıklı bir enkazda malzeme dağılımı `beton` olarak
-raporlanır. Geri kazanım yönlendirmesi açısından bu ikisi farklı süreçlere
-gider — sınır burada.
+Testte **mAP50 = 0,0877** (precision 0,229 · recall 0,119). En az örneğe
+sahip sınıf: 939 / 97 / 42 kutu.
 
-### B.3. 🔴 Alan uyuşmazlığı: şantiye konteyneri ≠ deprem enkazı
+**Sonuç:** Bu sınıfın çıktısı kullanılabilir sayılmamalıdır. Sistem onu
+gizlemiyor — ama uzman doğrulaması bu sınıfta bir formalite değil,
+zorunluluktur.
 
-CDW-Seg görüntüleri **şantiyelerdeki hurda konteynerlerinden** (skip bin)
-çekilmiştir. Proje ise afet sonrası **enkaz sahası** iddiasındadır.
+### B.3. 🟡 Genel başarım düşük
 
-İki alan arasındaki farklar:
+Genel mAP50 **0,43–0,44**. Tespitlerin ancak bir kısmı doğru bulunuyor.
+Metalin recall'ü 0,32–0,35: **bulduğunu doğru buluyor ama çoğunu
+kaçırıyor.** Bir malzemenin çıktıda görünmemesi "sahada yok" anlamına
+gelmez — bu, sistemin en temel ilkelerinden biridir ve burada sayıyla
+karşılanır.
 
-| | CDW-Seg | Afet enkazı |
+### B.4. 🔴 Alan uyuşmazlığı: internet görüntüsü ≠ deprem enkazı
+
+Veri seti internetten toplanmış görüntülerden oluşuyor; proje ise afet
+sonrası **enkaz sahası** iddiasındadır.
+
+| | Eğitim verisi | Afet enkazı |
 |---|---|---|
-| Sahne | Sınırlı, çerçevelenmiş konteyner | Açık, düzensiz saha |
-| Ölçek | Yakın çekim | Değişken, çoğu zaman uzak/havadan |
-| Toz/renk | Şantiye koşulu | Yoğun toz, renk bozulması |
-| Malzeme durumu | Ayrışmış, üst üste | Çökmüş yapı, iç içe geçmiş |
+| Sahne | Çerçevelenmiş, seçilmiş kare | Açık, düzensiz saha |
+| Ölçek | Değişken, çoğu yakın çekim | Değişken, çoğu zaman uzak/havadan |
+| Toz / renk | Temiz görüntü | Yoğun toz, renk bozulması |
+| Malzeme durumu | Genelde ayrışmış | Çökmüş yapı, iç içe geçmiş |
 
-**Sonuç:** Modelin afet enkazı görüntülerindeki başarımı, CDW-Seg üzerinde
-ölçülen başarımdan **düşük olacaktır.** Ne kadar düşük olacağı
-**henüz ölçülmemiştir.**
+**Sonuç:** Saha başarımı ölçülen 0,43–0,44'ten **düşük olacaktır.** Ne
+kadar düşük olacağı **henüz ölçülmemiştir** ve ölçülene kadar hiçbir
+genelleme iddiası yapılmamaktadır.
 
-**Sistem ne yapıyor:** Bu fark ölçülene kadar hiçbir genelleme iddiası
-yapılmıyor. `results/model-metrikleri.md` yalnızca üzerinde ölçüm yapılan
-veri kümesini adıyla belirtir.
+### B.5. 🟡 `beton_tugla` iki malzemeyi birlikte kapsıyor
 
-### B.4. 🟡 Etiketler bölütleme maskesi, çıktı kutu
+Sınıf, betonu ve tuğlayı ayırmaz. Geri kazanım yönlendirmesi açısından
+ikisi farklı süreçlere gider. Ayrıca hacim→ağırlık katsayısı bu yüzden
+iki kat belirsiz (`katsayilar.json`).
 
-CDW-Seg anlamsal bölütleme (semantic segmentation) etiketleri içerir.
-Sistemin arayüz sözleşmesi ise sınırlayıcı kutu (bbox) üzerinedir.
+### B.6. 🟡 Katsayı 5 sınıftan yalnızca 2'sinde var
 
-**Sonuç:** Kutular COCO formatındaki maskelerden türetiliyor. İç içe geçmiş
-malzemelerde kutu, maskeden daha kaba bir temsildir — birbirine değen iki
-malzemenin kutuları örtüşür.
+`ahsap` ve `metal` kaynaklı (U.S. EPA); `beton_tugla`, `cam` ve `seramik`
+kapalı. **Beton kapalı olduğu için miktar hesabı enkazın ana kütlesini
+kapsamıyor.** Ayrıntı ve neden bir sayı seçilmediği:
+`docs/cevresel-etki.md` Bölüm 2.
 
-**Etkilenen alan:** `bbox_format` alanı bu nedenle veri modelinde zorunlu
-tutuluyor (`NOT NULL`); kutunun hangi koordinat uzayında verildiği
-belirsiz bırakılmıyor.
+### B.7. 🟡 Etiketler kutu, çıktı kutu — ama kutu kaba bir temsildir
+
+İç içe geçmiş malzemelerde sınırlayıcı kutu komşu malzemeyi kendi alanına
+katabilir. Bu, alan tabanlı her hesabı yukarı yönlü saptırır.
 
 ---
 

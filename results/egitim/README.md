@@ -4,28 +4,32 @@ Bu klasör, 01.09.2026 tarihli eğitim koşusunun **ham çıktılarıdır**.
 Yorum eklenmemiştir; `results/model-metrikleri.md` bu dosyalara dayanarak
 doldurulacaktır.
 
-## ⚠️ Sınıf listesi `siniflar.json` ile UYUŞMUYOR
+## Sınıf listesi — uyuşmazlık ÇÖZÜLDÜ (02.09.2026)
 
 Buradaki bütün metrikler **5 sınıflı** bir veri setiyle üretilmiştir:
 
     ahsap, beton_tugla, cam, metal, seramik
 
-Deponun sınıf doğruluk kaynağı `siniflar.json` ise **10 sınıflıdır**
-(CDW-Seg: beton, dolgu_toprak, ahsap, sert_plastik, yumusak_plastik,
-metal, tekstil, karton, alcipan, konteyner) ve `cam` ile `seramik`'i
-açıkça "kapsanmayan grup" sayar.
+Bu çıktılar depoya girdiğinde `siniflar.json` hâlâ **10 sınıflıydı**
+(CDW-Seg listesi) ve `cam` ile `seramik`'i açıkça "kapsanmayan grup"
+sayıyordu. Sıra da kaymıştı: id 0 modelde `ahsap`, depoda `beton`
+demekti — yani bu ağırlıkla çalışan servis **her tespiti yanlış adla**
+döndürürdü ve hata hiçbir yerde görünmezdi.
 
-Yani bu sayılar CDW-Seg sonuçları **değildir** ve `siniflar.json`'daki
-adlarla eşleştirilemez. `model-service/app.py` sınıf adını id üzerinden
-`siniflar.json`'dan okuduğu için, bu ağırlıkla çalışan servis her
-tespiti yanlış adla döndürür (id 0 = model'de `ahsap`, depoda `beton`).
+`tests/test_sinif_tanimlari.py` içindeki
+`test_data_yaml_sinif_sirasi_siniflar_json_ile_ayni` bunu yakalamak için
+yazılmıştı ve bir süre **bilerek kırmızı** bırakıldı.
 
-Uyuşmazlık `tests/test_sinif_tanimlari.py` içindeki
-`test_data_yaml_sinif_sirasi_siniflar_json_ile_ayni` ile yakalanır ve
-**test bilerek kırmızıdır**. Çözülene kadar buradaki hiçbir metrik
-rapora, arayüze veya sunuma taşınmamalıdır.
+**02.09.2026'da `siniflar.json` eğitilen modele çekildi** (`docs/karar-kaydi.md`
+**K-021**); `katsayilar.json`, renk paleti, belgeler ve testler aynı
+commit'te güncellendi. Test artık yeşildir ve iki dosyayı birbirine
+bağlı tutar. Buradaki metrikler `results/model-metrikleri.md`'ye
+taşınmıştır.
 
-Veri setinin gerçek künyesi: `veri_seti_kunyesi.json`,
+⚠️ **Kalan eksik lisanstır, sınıf değil:** veri setinin kaynak ve lisans
+beyanı hâlâ yazılı değildir — `docs/lisans-analizi.md` Bölüm 2.1.1.
+
+Veri setinin künyesi: `veri_seti_kunyesi.json`,
 ön işleme kaydı: `on_isleme_kaydi.json`.
 
 ## İçerik

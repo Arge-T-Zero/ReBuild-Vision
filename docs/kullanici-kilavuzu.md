@@ -232,8 +232,8 @@ yazılıdır. Dayanağı görünmeyen bir sayı bu sistemde üretilmez.
   hesaplanamaz"*
 - *"Bu malzeme için doğrulanmış dönüşüm katsayısı bulunmadığından miktar
   hesaplanmadı"*
-- *"Bu sınıf bir atık malzeme değildir; miktar hesaplanmaz"* (örn.
-  konteyner)
+- *"Bu sınıf bir atık malzeme değildir; miktar hesaplanmaz"* (atığın
+  içinde bulunduğu kap ya da zemin; bu sürümde böyle bir sınıf yok)
 
 ---
 

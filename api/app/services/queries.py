@@ -41,12 +41,19 @@ def gecerli_sinif():
 def sadece_malzeme(sorgu: Select) -> Select:
     """Malzeme olmayan sınıfları eler.
 
-    `konteyner` (skip bin) atığın içinde bulunduğu kaptır, atık değildir.
-    Miktara katılırsa sistem var olmayan bir malzeme kütlesi üretir.
+    Bir sınıf, atığın kendisi değil atığın içinde bulunduğu kap ya da
+    zemin olabilir (ör. hurda konteyneri). Miktara katılırsa sistem var
+    olmayan bir malzeme kütlesi üretir. Ayıklama, sınıf adına göre değil
+    `siniflar.json` içindeki `malzeme_mi` alanına göre yapılır — sınıf
+    listesi değişince kural kendiliğinden doğru kalır.
     Bkz. docs/karar-kaydi.md K-007.
 
-    Filtre GEÇERLİ sınıf üzerinden çalışır: uzman bir kaydı `konteyner`
-    olarak düzelttiyse o kayıt da hesaptan çıkar.
+    02.09.2026 itibarıyla beş sınıfın beşi de malzemedir, yani bu filtre
+    bugün hiçbir kaydı elemiyor. Kaldırılmadı: eleme mantığının yokluğu,
+    malzeme olmayan bir sınıf eklendiği gün sessiz bir hata olurdu.
+
+    Filtre GEÇERLİ sınıf üzerinden çalışır: uzman bir kaydı malzeme
+    olmayan bir sınıfa düzelttiyse o kayıt da hesaptan çıkar.
     """
     return sorgu.where(gecerli_sinif().in_(tuple(malzeme_siniflari())))
 

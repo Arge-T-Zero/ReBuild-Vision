@@ -159,7 +159,15 @@ Bu, raporun "insan denetimli yapay zekâ" iddiasının kod karşılığıdır.
 - `web` sınıfları API'den alır.
 
 Sınıf adları hiçbir yerde elle yazılmaz. `malzeme_mi: false` işaretli
-sınıflar (şu an `konteyner`) miktar ve harita hesaplarına girmez.
+sınıflar miktar ve harita hesaplarına girmez; bu sürümde beş sınıfın
+beşi de malzeme olduğu için ayıklama listesi boştur, ama mekanizma
+kaldırılmadı (`K-007`).
+
+Sınıf listesi 02.09.2026'da **10'dan 5'e indi** — model CDW-Seg ile
+değil, takımın kendi veri setiyle eğitildi. Bu yüzden `siniflar.json`
+artık ikinci bir dosyaya, eğitimdeki `model-service/data.yaml`
+dosyasına da bağlıdır: sıra ayrışırsa arayüz **yanlış malzeme** gösterir.
+`tests/test_sinif_tanimlari.py` ikisini CI'da karşılaştırır.
 
 ---
 
@@ -250,7 +258,9 @@ kalanında **tek satır değişmez.**
 | Boşluk | Etki | Durum |
 |---|---|---|
 | Uzmana/firmaya saha atama akışı yok | Uzman görünürlüğü **iş üzerinden** türetiliyor: inceleme bekleyen ya da kendi doğruladığı tespiti içeren sahaları görür. Yıkım firması ve tesis operatörü yalnızca ilişkili sahalarını görür | 🟡 ara çözüm |
-| Katsayı tablosu kısmen dolu | 9 malzeme sınıfından **4'ü** kaynaklı; beton dahil 5'i kapalı — hacim→ağırlık dönüşümü ana kütlede yapılamıyor | 🔴 kaynak bekliyor (`docs/cevresel-etki.md` Bölüm 5) |
-| Model ağırlığı yüklü değil | `model-service/` hazır ve sözleşmesi test edilmiş; eğitim çıktısı bekleniyor. O zamana kadar sahte servis kullanılıyor ve arayüzde işaretli | ⏳ eğitim sürüyor |
+| Katsayı tablosu kısmen dolu | 5 malzeme sınıfından **2'si** kaynaklı (`ahsap`, `metal`); `beton_tugla`, `cam`, `seramik` kapalı — hacim→ağırlık dönüşümü ana kütlede yapılamıyor | 🔴 kaynak bekliyor (`docs/cevresel-etki.md` Bölüm 5) |
+| Eğitim veri setinin lisans beyanı eksik | Görüntülerin kaynağı ve kullanım hakkı yazılı değil; Madde 5.2 açıkça istiyor, Madde 9.2 sorumluluğu katılımcıya yüklüyor | 🔴 **teslim öncesi kapatılmalı** (`docs/lisans-analizi.md` 2.1.1) |
+| `seramik` sınıfı pratikte çalışmıyor | Test mAP50 **0,0877**. Sınıf tanınıyor ama çıktısına güvenilemez; listede olması güvenilir olduğu anlamına gelmiyor | 🔴 beyan edildi (`results/model-metrikleri.md`) |
+| Ağırlık dosyası depoda değil | `best.pt` boyutu nedeniyle depoya girmez; `model-service/agirliklar/` altına elle konur. Ağırlık yokken servis sahte veri üretmez, `/predict` **503** döner | 🟡 bilinçli (`model-service/README.md`) |
 | Nesne depolama yok | Yatay ölçeklemede görüntüler paylaşılamaz (Bölüm 7.3) | 🟡 tek makinede sorun değil |
 | Yük testi yapılmadı | Ölçeklenebilirlik iddiası ölçülmemiştir | 🟡 beyan edilmiyor |

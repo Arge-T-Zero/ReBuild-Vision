@@ -10,16 +10,24 @@ import io
 import json
 
 
-async def _hazirla(istemci, jeton, tespit_kur):
-    """Bir doğrulanmış, bir doğrulanmamış, bir konteyner kaydı kurar."""
+async def _hazirla(istemci, jeton, tespit_kur, ucuncu_sinif: str = "seramik"):
+    """Bir doğrulanmış, bir doğrulanmamış ve bir de üçüncü kayıt kurar.
+
+    Üçüncü kayıt her zaman DOĞRULANMIŞTIR. `ucuncu_sinif` malzeme
+    olmayan bir sınıf verildiğinde rapordan düşmesinin tek sebebi
+    malzeme olmaması olur; doğrulanmamış olsaydı hangi kuralın onu
+    elediği belirsiz kalırdı. Varsayılan hâlinde (`seramik`) sıradan bir
+    malzeme kaydıdır ve raporda görünür.
+    """
     onayli = await tespit_kur("metal")
     await istemci.post(f"/tespit/{onayli}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
     beklemede = await tespit_kur("ahsap")
-    konteyner = await tespit_kur("konteyner")
-    await istemci.post(f"/tespit/{konteyner}/dogrula", headers=await jeton("uzman"),
+    malzeme_degil = await tespit_kur(ucuncu_sinif)
+    await istemci.post(f"/tespit/{malzeme_degil}/dogrula",
+                       headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
-    return onayli, beklemede, konteyner
+    return onayli, beklemede, malzeme_degil
 
 
 async def test_json_yalnizca_dogrulanmis_kayit_verir(istemci, jeton, tespit_kur):
@@ -35,12 +43,16 @@ async def test_json_yalnizca_dogrulanmis_kayit_verir(istemci, jeton, tespit_kur)
     )
 
 
-async def test_raporda_konteyner_yok(istemci, jeton, tespit_kur):
+async def test_raporda_malzeme_olmayan_sinif_yok(
+    istemci, jeton, tespit_kur, malzeme_olmayan_sinif
+):
     """K-007: malzeme olmayan sınıf raporda da yok."""
-    _, _, konteyner = await _hazirla(istemci, jeton, tespit_kur)
+    _, _, malzeme_degil = await _hazirla(
+        istemci, jeton, tespit_kur, malzeme_olmayan_sinif)
     d = json.loads((await istemci.get("/rapor/json",
                                       headers=await jeton("belediye"))).text)
-    assert konteyner not in [k["tespit_id"] for k in d["kayitlar"]]
+    assert malzeme_degil not in [k["tespit_id"] for k in d["kayitlar"]]
+    assert malzeme_olmayan_sinif not in {k["sinif"] for k in d["kayitlar"]}
 
 
 async def test_olcumsuz_kayitta_miktar_null(istemci, jeton, tespit_kur):
@@ -117,11 +129,11 @@ async def test_rapor_yetki_ister(istemci, jeton, tespit_kur):
 
 
 async def test_uzman_duzeltmesi_raporda_gecerli_sinif(istemci, jeton, tespit_kur):
-    tid = await tespit_kur("sert_plastik")
+    tid = await tespit_kur("cam")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
     d = json.loads((await istemci.get("/rapor/json",
                                       headers=await jeton("belediye"))).text)
     k = next(x for x in d["kayitlar"] if x["tespit_id"] == tid)
     assert k["sinif"] == "metal", "Geçerli sınıf uzmanın düzelttiğidir"
-    assert k["model_tahmini"] == "sert_plastik", "Ham tahmin izlenebilir kalmalı"
+    assert k["model_tahmini"] == "cam", "Ham tahmin izlenebilir kalmalı"
