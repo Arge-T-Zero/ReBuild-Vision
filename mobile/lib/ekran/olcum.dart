@@ -215,7 +215,10 @@ class _OlcumDurumu extends State<OlcumEkrani> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text('#${t.id} · ${t.gecerliSinif}')),
+                        Expanded(
+                          child: Text(
+                            '#${t.id} · ${Renk.sinifAdi(t.gecerliSinif)}'),
+                        ),
                       ],
                     ),
                   ))

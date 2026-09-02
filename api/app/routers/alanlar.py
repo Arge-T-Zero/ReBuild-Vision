@@ -44,8 +44,9 @@ async def _ciktiya_cevir(db: AsyncSession, a: EnkazAlani) -> EnkazAlaniCikti:
 
     # Malzeme dağılımı YALNIZCA doğrulanmış kayıtlardan gelir; kart da
     # haritayla aynı kuralı uygular (ana talimat Bölüm 1.4).
-    # `sadece_malzeme` şart: konteyner (skip bin) bir atık malzeme değildir
-    # ve dağılıma girmez (docs/karar-kaydi.md K-007). Harita bu filtreyi
+    # `sadece_malzeme` şart: `malzeme_mi: false` işaretli bir sınıf (atığın
+    # kabı ya da zemin) atık malzeme değildir ve dağılıma girmez
+    # (docs/karar-kaydi.md K-007). Harita bu filtreyi
     # zaten uyguluyordu; kart özeti onu atlarsa sistem aynı soruya iki
     # farklı cevap verir.
     sinif = gecerli_sinif().label("sinif")

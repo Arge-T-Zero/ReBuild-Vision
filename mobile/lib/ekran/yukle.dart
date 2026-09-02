@@ -49,6 +49,10 @@ class _YukleDurumu extends State<YukleEkrani> {
         _alanlar = a;
         if (a.length == 1) _seciliAlan = a.first.id;
       });
+    } on ApiHatasi catch (h) {
+      // Aynı ayrım: sunucu cevap verdiyse gerekçesi yazılır. "Bağlantı
+      // gerekiyor" demek, yetki sorununu ağ sorunu gibi gösterirdi.
+      if (mounted) setState(() => _hata = h.mesaj);
     } catch (_) {
       if (mounted) {
         setState(() => _hata = 'Saha listesi alınamadı. Bağlantı gerekiyor.');
@@ -108,10 +112,31 @@ class _YukleDurumu extends State<YukleEkrani> {
         _sonuc = s;
         _dosyalar.clear();
       });
+    } on ApiHatasi catch (h) {
+      // ⚠️ SUNUCUNUN VERDİĞİ GEREKÇE YUTULUYORDU.
+      //
+      // Burada tek bir `catch (_)` vardı ve HER hatada "bağlantı
+      // geldiğinde tekrar deneyin" yazıyordu. Oysa sunucu çoğu zaman
+      // cevap vermiş oluyor ve nedenini de söylüyor: sahaya yükleme
+      // yetkisi yok (403), dosya çok büyük (413), model servisi ayakta
+      // değil (503). Bunların hiçbiri bağlantı sorunu değildir ve
+      // "tekrar deneyin" demek sahadaki kullanıcıyı sonuçsuz bir
+      // döngüde bırakır — enkaz alanında geçen her dakikanın bedeli var.
+      //
+      // Giriş ekranı bu ayrımı zaten yapıyordu (`giris.dart`); yükleme
+      // ekranı yapmıyordu.
+      if (mounted) {
+        setState(() => _hata = h.durum == 401 || h.durum == 403
+            ? '${h.mesaj} Fotoğraflar listede duruyor.'
+            : 'Yükleme başarısız (${h.durum}): ${h.mesaj} '
+                'Fotoğraflar listede duruyor.');
+      }
     } catch (_) {
+      // Buraya yalnızca sunucuya HİÇ ulaşılamadığında düşülür; "bağlantı
+      // geldiğinde tekrar deneyin" ancak burada doğrudur.
       if (mounted) {
         setState(() => _hata =
-            'Yükleme başarısız. Fotoğraflar listede duruyor; '
+            'Sunucuya ulaşılamadı. Fotoğraflar listede duruyor; '
             'bağlantı geldiğinde tekrar deneyin.');
       }
     } finally {
@@ -273,7 +298,7 @@ class _SonucKarti extends StatelessWidget {
     // `/goruntu/yukle` yanıtı `sahte_model_servisi` alanını döner; bu
     // ekran yanıtın tamamını elinde tutup alanı hiç açmıyordu. Yani
     // sistem SAHTE model servisiyle çalışırken telefonda bunu söyleyen
-    // tek bir işaret yoktu: kullanıcı "sert_plastik %87,3 · ÖN TAHMİN"
+    // tek bir işaret yoktu: kullanıcı "Beton / tuğla %87,3 · ÖN TAHMİN"
     // görüyor ve bunu gerçek bir modelin çıktısı sanıyordu.
     //
     // Ana talimat Bölüm 9.5 açık: "sahtelik hiçbir yerde gizlenmez."
@@ -334,7 +359,7 @@ class _SonucKarti extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(sinif,
+                      child: Text(Renk.sinifAdi(sinif),
                           style: TextStyle(
                               color: Renk.metin2, fontSize: 13)),
                     ),

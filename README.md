@@ -126,29 +126,54 @@ scripts/gelistirme.sh
 
 ## Malzeme sınıfları
 
-On sınıf, tek doğruluk kaynağı [`siniflar.json`](siniflar.json) dosyasıdır;
-sınıf adları kodda elle yazılmaz. Tanım ve gerekçe:
-[`docs/siniflar.md`](docs/siniflar.md).
+**Beş sınıf:** `ahsap` · `beton_tugla` · `cam` · `metal` · `seramik`
 
-`konteyner` (skip bin) bir **malzeme değildir** — miktar hesabına ve
-Malzeme Kaynak Haritası'na girmez.
+Tek doğruluk kaynağı [`siniflar.json`](siniflar.json) dosyasıdır; sınıf
+adları kodda elle yazılmaz. Bu liste 02.09.2026'da **10'dan 5'e indi** —
+model, planlanan kamuya açık veri setiyle değil takımın kendi topladığı
+veri setiyle eğitildi. Tanım ve gerekçe:
+[`docs/siniflar.md`](docs/siniflar.md), karar
+[`docs/karar-kaydi.md`](docs/karar-kaydi.md) **K-021**.
 
-**Kapsanmayan gruplar:** eğitim verisinde **cam** ve **seramik** sınıfı
-bulunmamaktadır; **tuğla** ayrı bir sınıf olarak ayrılmaz. Model bu grupları
-tanımaz ve bir sınıfın yokluğu "o malzeme sahada yok" anlamına gelecek
-biçimde gösterilmez.
+Eğitimdeki sınıf **sırası** ile `siniflar.json` ayrışırsa arayüz yanlış
+malzeme gösterir; bu yüzden ikisi `model-service/data.yaml` üzerinden
+testle bağlanmıştır (`tests/test_sinif_tanimlari.py`).
+
+**Kapsanmayan gruplar:** model bu beşin dışındaki malzeme gruplarını
+(dolgu/toprak, plastik, tekstil, karton, alçıpan) **tanımaz.** Bir sınıfın
+çıktıda görünmemesi "o malzeme sahada yok" anlamına gelecek biçimde
+gösterilmez.
 
 ---
 
 ## Model durumu
 
-⏳ **Model henüz eğitilmemiştir.** Bu nedenle precision, recall, F1 veya mAP
-sonucu **beyan edilmemektedir.** Ölçülmemiş hiçbir sayı arayüze, bu dosyaya
-veya sunuma girmez. Bkz. [`results/model-metrikleri.md`](results/model-metrikleri.md).
+✅ **Model eğitildi ve ölçüldü** (01.09.2026, YOLO11m, 640 px, 2,03 saat).
 
-Geliştirme sırasında `model-mock` sahte servisi kullanılır. Sahte servis
-etkinken arayüzde kalıcı bir **"SAHTE MODEL SERVİSİ"** rozeti gösterilir —
-demo sırasında yanlışlıkla "gerçek model çalışıyor" izlenimi verilmez.
+| Bölme | mAP50 | mAP50-95 |
+|---|---|---|
+| val | 0,4424 | 0,3089 |
+| test | 0,4334 | 0,3132 |
+
+Bütün sayılar [`results/egitim/`](results/egitim/) altındaki ham
+çıktılardan gelir. Sınıf bazlı sonuçlar ve **açıkça yazılmış zayıflıklar**
+— `cam` en iyi (test mAP50 0,7257), `seramik` pratikte çalışmıyor (test
+mAP50 0,0877) — [`results/model-metrikleri.md`](results/model-metrikleri.md).
+
+⚠️ **Eğitim veri setinin kaynak ve lisans beyanı eksiktir.** Görüntülerin
+nereden toplandığı ve hangi hakla kullanıldığı henüz yazılı değildir;
+şartname Madde 5.2 bunu açıkça istiyor. Ayrıntı ve kapatma yolu:
+[`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1.
+
+Ağırlık dosyası (`best.pt`) depoya girmez; `model-service/agirliklar/`
+altına konur ya da `MODEL_AGIRLIK` ile yolu verilir —
+[`model-service/README.md`](model-service/README.md). Ağırlık yokken
+servis **sahte veri üretmez**: `/predict` 503 döner.
+
+Ağırlıksız geliştirme için `model-mock` sahte servisi kullanılır. Sahte
+servis etkinken arayüzde kalıcı bir **"SAHTE MODEL SERVİSİ"** rozeti
+gösterilir — demo sırasında yanlışlıkla "gerçek model çalışıyor" izlenimi
+verilmez.
 
 ---
 
@@ -203,11 +228,20 @@ Bkz. [`docs/veri-politikasi.md`](docs/veri-politikasi.md) ve
 
 ## Atıf
 
-Eğitim veri seti:
+**Eğitim veri seti:** takımın kendi topladığı ve Roboflow ile etiketlediği
+5 sınıflı veri seti (2.765 görüntü · 9.348 kutu). Künye:
+[`results/egitim/veri_seti_kunyesi.json`](results/egitim/veri_seti_kunyesi.json).
 
-> Sirimewan, D. & Arashpour, M. *A benchmark dataset for class-wise
-> segmentation of construction and demolition waste in cluttered
-> environments.* Scientific Data (2025).
-> https://doi.org/10.1038/s41597-025-05243-x — CC0 1.0
+> 🔴 **Kaynak ve lisans beyanı henüz tamamlanmamıştır.** Görüntülerin
+> hangi kaynaklardan, hangi tarihte ve hangi hakla toplandığı yazılı
+> değildir. Bu bir teslim eksiğidir ve gizlenmemektedir —
+> [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1 neyin
+> gerektiğini ve nasıl kapatılacağını yazar.
+
+Daha önce bu bölümde CDW-Seg (Sirimewan & Arashpour, *Scientific Data*
+2025, CC0 1.0) veri setine atıf yapılıyordu. **O veri seti eğitimde
+kullanılmamıştır**; atıf, kullanılmayan bir kaynağa kredi verdiği için
+kaldırıldı. Değerlendirme kaydı
+[`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.7'de duruyor.
 
 Harita altlığı: © OpenStreetMap katkıcıları (ODbL 1.0)

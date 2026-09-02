@@ -2,7 +2,9 @@
 
 **Proje:** ReBuild Vision · **Takım:** Arge-T Zero (Başvuru 5387352)
 **Belge tarihi:** 27.08.2026 · **Durum:** Canlı belge — her yeni bağımlılıkta güncellenir
-**Son güncelleme:** 27.08.2026 — CDW-Seg veri seti (CC0) eklendi; PostgreSQL 17 / PostGIS 3.6.4 sürümleri kesinleşti
+**Son güncelleme:** 02.09.2026 — eğitimin CDW-Seg ile DEĞİL takımın kendi
+veri setiyle yapıldığı ortaya çıktı; Bölüm 2.6 ve 2.7 düzeltildi, veri
+setinin lisans beyanı eksiği Bölüm 2.1.1'de açıldı
 
 ---
 
@@ -38,6 +40,55 @@ konuşulur · *veri* = kod değil içerik.
 |---|---|---|---|---|
 | ultralytics (YOLO11) | 8.4.x | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
 | model ağırlıkları (özgün eğitim) | — | **AGPL-3.0** (proje lisansıyla aynı) ⚠️ | model dosyası | proje içi |
+| **eğitim veri seti** (takımın kendi topladığı) | — | 🔴 **BEYAN EKSİK** | veri | proje içi — bkz. 2.1.1 |
+
+#### 2.1.1. 🔴 Eğitim veri setinin kaynak ve lisans beyanı EKSİK
+
+**Bu, teslim öncesi kapatılması gereken en acil boşluktur ve kod işi
+değildir.**
+
+Model, takımın kendi topladığı ve Roboflow ile etiketlediği 5 sınıflı bir
+veri setiyle eğitilmiştir (2.765 görüntü, 9.348 kutu —
+`results/egitim/veri_seti_kunyesi.json`). **Görüntülerin nereden
+toplandığı ve hangi hakla kullanıldığı hiçbir yerde yazılı değildir.**
+
+Şartname iki yerden bağlıyor:
+
+> **Madde 5.2:** "…**kaynaklarını açıkça belirtmek kaydıyla** açık kaynak
+> veri setleri, sentetik veri setleri veya kendi oluşturdukları veri
+> setlerini de kullanabileceklerdir."
+
+> **Madde 9.2:** "Katılımcılar, geliştirdikleri projelerin kendi özgün
+> çalışmaları olduğunu, **herhangi bir üçüncü kişi veya kuruluşa ait
+> hakları ihlal etmediğini** beyan eder. Aksi durumda doğabilecek tüm
+> hukuki ve mali sorumluluk ilgili katılımcıya aittir."
+
+Madde 10.4 ayrıca "veri seti" lisansını açıkça beyan edilecekler arasında
+sayıyor.
+
+⚠️ **Arama motorundan toplanan görüntüler otomatik olarak kullanılabilir
+değildir.** Google Görseller bir arama motorudur; görüntüler asıl
+sahiplerine aittir ve çoğu telif korumalıdır. Madde 5.5 ürünü Kuruma
+devrettiği için bu sorumluluk teslimden sonra da sürer.
+
+**Kapatmak için gereken** — her görüntü kümesi için:
+
+| Alan | Örnek |
+|---|---|
+| Kaynak | Hangi site / veri seti / kendi çekimimiz |
+| Lisans | CC0 / CC-BY / kendi çekimimiz / izin alındı |
+| Tarih | Toplama tarihi |
+| Sayı | Kaç görüntü |
+
+Kendi çektiğiniz fotoğraflar en temiz yoldur — hak sizindir ve devri
+Madde 5.5'i sorunsuz karşılar. İzin verici lisanslı kamu veri setleri
+(CC0/CC-BY) ikinci en temiz yoldur. **Kaynağı belirsiz görüntüler
+teslimden önce ya belgelenmeli ya da veri setinden çıkarılıp model
+yeniden eğitilmelidir.**
+
+Bu soru mentöre de sorulacaktır (Bölüm 7, soru 10).
+
+---
 
 ### 2.2. Veri tabanı
 
@@ -132,12 +183,26 @@ Hepsi izin vericidir; Madde 5.5 devrini kirletmez.
 
 | Kaynak | Lisans / koşul | Not |
 |---|---|---|
-| **CDW-Seg** eğitim veri seti | **CC0 1.0 (kamu malı)** ✅ | Sirimewan & Arashpour, *Scientific Data*, 28.05.2025. DOI: 10.6084/m9.figshare.28573229 · Makale DOI: 10.1038/s41597-025-05243-x. Ayrıntı: Bölüm 2.7 |
+| **Takımın kendi eğitim veri seti** | 🔴 **BEYAN EKSİK** | Modelin eğitildiği veri setidir. Kaynak ve lisans yazılı değil — Bölüm **2.1.1** |
+| CDW-Seg eğitim veri seti | CC0 1.0 (kamu malı) ✅ | **KULLANILMADI.** Değerlendirildi ve elenmedi ama eğitim onunla yapılmadı; künyesi kayıt için Bölüm 2.7'de duruyor |
 | OpenStreetMap karo görüntüleri | ODbL 1.0 + OSMF Tile Usage Policy | **Atıf zorunlu.** Karo sunucusuna yük bindirilmeyecek; demo ölçeğinde kullanılıyor. Üretimde kendi karo sunucusu gerekir. |
 | Bakanlık tarafından sağlanan veri | Madde 9.1 — kopyalanamaz, paylaşılamaz | Depoya **asla** girmez. Bkz. `docs/veri-politikasi.md` |
 
 
-### 2.7. Eğitim veri seti — CDW-Seg
+### 2.7. CDW-Seg — değerlendirildi, KULLANILMADI
+
+> ⚠️ **02.09.2026 düzeltmesi.** Bu bölüm 27.08.2026'da, model CDW-Seg ile
+> eğitilecek varsayımıyla yazıldı. **Eğitim o veri setiyle
+> yapılmamıştır.** Model, takımın kendi topladığı 5 sınıflı veri setiyle
+> eğitildi (Bölüm 2.1.1). Aşağıdaki künye silinmedi çünkü (a) hangi
+> seçeneğin değerlendirildiğinin kaydıdır, (b) kullanılan veri setinin
+> lisans beyanı kapanmazsa geri dönülecek en temiz alternatiftir: CC0
+> olması Madde 5.5 devri açısından kusursuzdur.
+>
+> Aşağıdaki "Madde 10.5 açısından" ve "Kapsam sınırlaması" değerlendirmeleri
+> de bu veri setine aittir; **bugünkü modele uygulanmazlar.**
+
+#### CDW-Seg künyesi (kayıt amaçlı)
 
 | Alan | Değer |
 |---|---|
@@ -427,6 +492,13 @@ getiriyor. Aşağıdaki sorular **ilk görüşmede** sorulacak; cevaplar
 9. Karbon azaltım potansiyeli için kullanılabilecek **emisyon faktörü**
    kaynağı var mı? Bu olmadan Madde 10.9'un o kalemi hesaplanamaz ve
    sayı uydurulmayacaktır.
+
+**Veri seti kaynağı (Madde 5.2 / 9.2 / 10.4) — 02.09.2026:**
+
+10. Eğitim veri seti takımca toplandı. Görüntülerin **kaynak ve lisans
+    beyanı** hangi ayrıntıda isteniyor? Arama motorundan alınan
+    görüntüler için Madde 9.2'nin "üçüncü taraf hakkı ihlal edilmedi"
+    beyanı nasıl karşılanmalı? Bkz. Bölüm 2.1.1.
 
 ---
 

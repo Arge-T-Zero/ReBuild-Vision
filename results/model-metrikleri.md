@@ -3,115 +3,115 @@
 > **Bu dosyaya ölçülmemiş hiçbir sayı yazılmaz.** *(Ana talimat Bölüm 7.4
 > ve 14)*
 
-**Son güncelleme:** 27.08.2026
+**Son güncelleme:** 02.09.2026
 
 ---
 
-## Durum: ⏳ HENÜZ ÖLÇÜLMEDİ
+## Durum: ✅ ÖLÇÜLDÜ
 
-Malzeme sınıflandırma modeli proje kapsamındaki veri setiyle **henüz
-eğitilmemiştir.** Bu nedenle bu dosyada precision, recall, F1 veya mAP
-sonucu bulunmamaktadır.
+Model eğitildi ve ölçüldü. Aşağıdaki bütün sayılar
+[`results/egitim/`](egitim/) altındaki ham çıktılardan gelir; hiçbiri
+elle yazılmamış ya da yuvarlanmamıştır.
 
-Bu, teslim edilmiş ön değerlendirme raporunun Bölüm 7'sindeki tutumun
-sürdürülmesidir:
+### ⚠️ Önce okunması gereken üç şey
 
-> "Malzeme sınıflandırma modeli proje kapsamındaki özgün veri setiyle henüz
-> eğitilmediğinden precision, recall, F1 veya mAP sonucu bulunmamaktadır.
-> Bu nedenle raporda model doğruluğu, geri kazanım oranı, karbon tasarrufu
-> veya ekonomik faydaya ilişkin gerçekleşmiş sonuç beyan edilmemektedir."
-
-Sonuçlar geldiğinde bu bölüm silinecek ve aşağıdaki tablolar
-doldurulacaktır. **Sonuç gelene kadar hiçbir yere tahmini sayı
-yazılmayacaktır** — README'ye, arayüze veya sunuma da.
+1. **Veri seti CDW-Seg DEĞİL.** Önceki sürümlerde bu dosya eğitim
+   kaynağını CDW-Seg (CC0, DOI 10.6084/m9.figshare.28573229) olarak
+   beyan ediyordu. **Eğitim o veri setiyle yapılmamıştır.** Model,
+   takımın kendi topladığı ve Roboflow ile etiketlediği **5 sınıflı**
+   bir veri setiyle eğitilmiştir.
+2. **Sınıf sayısı 10 değil 5.** `siniflar.json` 02.09.2026'da eğitilen
+   modele çekildi (`docs/karar-kaydi.md` K-021).
+3. **Veri setinin lisans ve kaynak beyanı EKSİKTİR.** Görüntülerin
+   nereden toplandığı ve hangi hakla kullanıldığı henüz yazılı değildir.
+   Şartname Madde 5.2 "kaynaklarını açıkça belirtmek kaydıyla" diyor;
+   Madde 9.2 üçüncü taraf hak ihlalinin sorumluluğunu katılımcıya
+   yüklüyor. Bkz. `docs/lisans-analizi.md` Bölüm 2.1.
 
 ---
 
-## Ölçüm yapıldığında doldurulacak
-
-### Deney künyesi
+## Deney künyesi
 
 | Alan | Değer |
 |---|---|
-| Model | *(YOLO11-? / girdi boyutu)* |
-| Eğitim veri seti | CDW-Seg — DOI 10.6084/m9.figshare.28573229 |
-| Bölme (train/val/test) | — |
-| Görüntü sayısı | — |
-| Nesne sayısı | — |
-| Epoch / durdurma ölçütü | — |
-| Donanım | — |
-| Eğitim tarihi | — |
-| Ölçüm yapılan küme | *(hangi kümede ölçüldüğü açıkça yazılacak)* |
+| Model | **YOLO11m** (`yolo11m.pt` başlangıç ağırlığı) |
+| Girdi boyutu | 640 × 640 |
+| Eğitim veri seti | Takımın kendi veri seti, Roboflow etiketli — **5 sınıf** |
+| Sınıflar | `ahsap`, `beton_tugla`, `cam`, `metal`, `seramik` |
+| Bölme | train 2.184 · valid 384 · test 197 görüntü |
+| Nesne sayısı | 7.265 · 1.407 · 676 kutu (toplam **9.348**) |
+| Epoch hedefi | 150 (`patience: 30` ile erken durdurma) |
+| Optimizasyon | AdamW, `lr0 = 0.001`, `batch = 16` |
+| Süre | **2,03 saat** |
+| Ham çıktılar | [`results/egitim/`](egitim/) |
 
-### Genel sonuçlar
-
-| Ölçüt | Değer |
-|---|---|
-| mAP@0.5 | — |
-| mAP@0.5:0.95 | — |
-| Ortalama precision | — |
-| Ortalama recall | — |
-| Ortalama F1 | — |
-
-### Sınıf bazında sonuçlar
-
-Sınıf listesi `siniflar.json` ile birebir aynı olacaktır.
-
-| id | Sınıf | Precision | Recall | F1 | AP@0.5 | Örnek sayısı |
-|---|---|---|---|---|---|---|
-| 0 | beton | — | — | — | — | — |
-| 1 | dolgu_toprak | — | — | — | — | — |
-| 2 | ahsap | — | — | — | — | — |
-| 3 | sert_plastik | — | — | — | — | — |
-| 4 | yumusak_plastik | — | — | — | — | — |
-| 5 | metal | — | — | — | — | — |
-| 6 | tekstil | — | — | — | — | — |
-| 7 | karton | — | — | — | — | — |
-| 8 | alcipan | — | — | — | — | — |
-| 9 | konteyner | — | — | — | — | — |
-
-> `konteyner` bir malzeme değildir (`siniflar.json` → `malzeme_mi: false`);
-> metriği ölçülür ama miktar hesabına girmez. Bkz. `docs/karar-kaydi.md`
-> K-007.
-
-### Düşük güven eşiği
-
-`needs_review` bayrağını tetikleyen eşik, **ölçümle** belirlenecektir:
-uzman incelemesine düşen kayıt oranı ile yakalanan hata oranı arasındaki
-denge. Şu an sahte serviste **0.50** varsayılmaktadır; bu bir ölçüm sonucu
-değil, yer tutucudur.
-
-| Eşik | Uzmana düşen oran | Yakalanan hatalı tespit oranı |
-|---|---|---|
-| — | — | — |
-
-### Karışıklık matrisi
-
-Hangi sınıfların birbirine karıştığı `results/bilinen-sinirlar.md` C
-bölümüne de işlenecektir.
+Ön işleme: sızıntı ve filigran nedeniyle görüntü silindi, 750 görüntü
+oversample edildi — ayrıntı `results/egitim/on_isleme_kaydi.json`.
 
 ---
 
-## Kapsanmayan sınıflar
+## Sonuçlar
 
-`siniflar.json` → `kapsanmayan_gruplar`:
+### Genel
 
-| Grup | Durum |
-|---|---|
-| cam | CDW-Seg'de sınıf yok — model tanımıyor, metrik üretilemez |
-| seramik | CDW-Seg'de sınıf yok — model tanımıyor, metrik üretilemez |
-| tuğla | `concrete` sınıfına dahil, ayrı ölçülemez |
+| Bölme | Precision | Recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|
+| val | 0,5318 | 0,4530 | **0,4424** | 0,3089 |
+| test | 0,4880 | 0,4176 | **0,4334** | 0,3132 |
 
-Ayrıntı: `results/bilinen-sinirlar.md` B.1 ve B.2.
+### Sınıf bazlı
+
+| Bölme | Sınıf | Precision | Recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|---|
+| val | ahsap | 0,4359 | 0,4553 | 0,4127 | 0,2681 |
+| val | beton_tugla | 0,4715 | 0,4367 | 0,4092 | 0,3072 |
+| val | **cam** | 0,7896 | 0,6848 | **0,7035** | 0,4638 |
+| val | metal | 0,4953 | 0,3482 | 0,3848 | 0,2782 |
+| val | seramik | 0,4669 | 0,3402 | 0,3019 | 0,2274 |
+| test | ahsap | 0,3887 | 0,4143 | 0,3607 | 0,2549 |
+| test | beton_tugla | 0,5818 | 0,5758 | 0,6268 | 0,4685 |
+| test | **cam** | 0,7928 | 0,6545 | **0,7257** | 0,4952 |
+| test | metal | 0,4477 | 0,3241 | 0,3660 | 0,2779 |
+| test | **seramik** | 0,2290 | 0,1190 | **0,0877** | 0,0699 |
+
+Eğriler ve karışıklık matrisleri:
+[`results/egitim/gorseller/`](egitim/gorseller/)
 
 ---
 
-## Atıf
+## Bu sayılar ne diyor — abartmadan
 
-Eğitim veri seti:
+**Model çalışıyor ama zayıf.** Genel mAP50 **0,43–0,44**. Bu, tespitlerin
+ancak bir kısmının doğru bulunduğu anlamına gelir; sistemin zorunlu uzman
+doğrulaması bu yüzden bir süs değil, **çalışma koşuludur.**
 
-> Sirimewan, D. & Arashpour, M. *A benchmark dataset for class-wise
-> segmentation of construction and demolition waste in cluttered
-> environments.* Scientific Data (2025).
-> https://doi.org/10.1038/s41597-025-05243-x
-> Veri: https://doi.org/10.6084/m9.figshare.28573229 — CC0 1.0
+### Sınıf bazında dürüst okuma
+
+| Sınıf | Durum |
+|---|---|
+| **cam** | En iyi sınıf (mAP50 0,70–0,73). Camın görsel imzası ayırt edici |
+| **beton_tugla** | Testte val'den iyi (0,63 / 0,41) — küçük test kümesinde olağan dalgalanma |
+| **ahsap**, **metal** | Orta (0,36–0,41). Metalin recall'ü düşük (0,32–0,35): **bulduğunu doğru buluyor ama çoğunu kaçırıyor** |
+| **seramik** | 🔴 **Testte 0,0877 — pratikte çalışmıyor.** val'de 0,30, testte 0,09; en az örneğe sahip sınıf (939 / 97 / 42 kutu). Bu bir sınıf değil, bir uyarıdır |
+
+### Ne iddia EDİLMİYOR
+
+- Bu sayılar **afet enkazı sahasında** ölçülmemiştir. Veri seti internetten
+  toplanmış görüntülerden oluşuyor; gerçek saha koşulunda (toz, ölçek,
+  iç içe geçmiş malzeme) başarım **daha düşük olacaktır** ve ne kadar
+  düşük olacağı ölçülmemiştir.
+- `seramik` sınıfının çıktısı **kullanılabilir sayılmamalıdır.**
+- Hiçbir çevresel fayda, geri kazanım oranı veya karbon sayısı bu
+  metriklerden türetilmemiştir (`docs/cevresel-etki.md`).
+
+---
+
+## Eşik
+
+`model-service` inceleme eşiği varsayılan **0,50**. Bu ölçülen
+metriklerden türetilmiş bir değer **değildir**, mühendislik varsayımıdır
+ve `INCELEME_ESIGI` ortam değişkeniyle değiştirilebilir.
+
+Ölçüm artık elde olduğuna göre eşik PR eğrisinden türetilebilir —
+`results/egitim/gorseller/val_val__BoxPR_curve.png`. Bu henüz
+yapılmamıştır ve yapılana kadar eşik bir varsayım olarak beyan edilir.

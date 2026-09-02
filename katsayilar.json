@@ -1,6 +1,6 @@
 {
-  "surum": "0.2",
-  "durum": "KISMEN KAYNAKLANDI — 9 siniftan 4'u kullanilabilir",
+  "surum": "0.3",
+  "durum": "KISMEN KAYNAKLANDI — 5 siniftan 2'si kullanilabilir (ahsap, metal)",
   "aciklama": "Hacim -> agirlik donusum katsayilari. Her katsayi icin dogrulanmis bir kaynak ZORUNLUDUR. dogrulandi:false olan katsayi ile miktar HESAPLANMAZ (ana talimat Bolum 14: olculmemis/dayanaksiz sayi uretilmez). Miktar tek kesin deger olarak da uretilmez; bu yuzden bir katsayinin kullanilabilmesi icin KAYNAKTAN GELEN bir alt-ust araligi gerekir. Tek nokta degeri olan satirlar bilincli olarak kapali birakilmistir — aralik uydurulmamistir.",
   "birim": "ton/m3",
   "cevrim": {
@@ -10,38 +10,14 @@
   },
   "acik_sorular": [
     "Bu degerler ABD insaat/yikim atigi karakterizasyonundan gelir. Turkiye'deki yapi malzemesi ve yikim pratigi farkli olabilir; mentore ve alan uzmanina SORULMALIDIR.",
-    "beton, dolgu_toprak ve alcipan icin aralik veren ikinci bir kaynak gerekiyor. Beton en kritik sinif oldugu icin oncelikli.",
-    "sert_plastik ve yumusak_plastik icin insaat/yikim kaynagi bulunamadi.",
+    "beton_tugla, cam ve seramik icin aralik veren kaynak gerekiyor. beton_tugla en kritik sinif oldugu icin oncelikli: enkaz sahasinin ana kutlesi bu siniftadir ve kapali oldugu surece miktar gostergesi o kutleyi kapsamaz.",
+    "cam ve seramik icin insaat/yikim atigi karakterizasyonunda aralik veren kaynak bulunamadi. EPA'nin C&D tablosunda ayri bir seramik kalemi yok; cam kalemi ise ambalaj camini olcuyor, yapi camini degil.",
     "Cevre, Sehircilik ve Iklim Degisikligi Bakanligi'nin yayimlanmis bir donusum katsayisi tablosu var mi? Varsa oncelikle o kullanilmalidir.",
     "BETON ARASTIRMASI (01.09.2026) — sonuc: uygun kaynak BULUNAMADI, deger yazilmadi. Yayimlanmis 'beton' donusum degerleri 860 ile 4.200 lb/yd3 arasinda, yani BESE KATLANIYOR. Sebep kategori farki: kimi kaynak KATI betonu (~4.050 lb/yd3), kimi KIRILMIS/GEVSEK molozu (~2.025 lb/yd3), kimi de KARISIK Y&D atigini olcuyor. EPA'nin 860 degeri gevsek moloz kategorisindedir. Bu araligin ortasindan bir sayi secmek, kategorileri karistirmak olurdu ve tonaji katlayabilirdi.",
     "Ikinci aday kaynak Contra Costa County (ABD) donusum tablosuydu — 'Concrete and Asphalt' icin 1.400 lb/yd3 verdigi goruldu, ama BELGENIN KENDISINE ERISILEMEDI (ag kisiti) ve dogrulanamadi. Ayrica beton ile asfalti BIRLIKTE veriyor; ayri deger gerekiyor.",
     "SONUC: beton icin gereken sey 'bir sayi' degil, GEVSEK YIKIM MOLOZU kategorisinde ALT-UST ARALIGI veren, dogrulanabilir tek bir kaynak. Oncelik sirasi: (1) Bakanlik tablosu, (2) TUIK, (3) yontemi yayimlanmis uluslararasi kaynak."
   ],
   "katsayilar": [
-    {
-      "sinif": "beton",
-      "alt": null,
-      "ust": null,
-      "kaynak": null,
-      "dogrulandi": false,
-      "epa_lb_yd3": [
-        860
-      ],
-      "epa_satirlari": "Concrete — Large/Small Concrete, with/without Re-bar (dordu de 860)",
-      "not_": "EPA tek bir nokta deger veriyor, aralik vermiyor. Tek deger ile miktar uretilemez (Bolum 4: belirsizlik araligi zorunlu). Aralik uydurulmadi. EKSIK: bu sinif icin degiskenlik/aralik veren ikinci kaynak. Not: 860 lb/yd3 = 0,510 ton/m3, kapta bosluklariyla birlikte KIRIK BETON yogunlugudur; masif betonun ~2,4 ton/m3 degeriyle karistirilmamalidir."
-    },
-    {
-      "sinif": "dolgu_toprak",
-      "alt": null,
-      "ust": null,
-      "kaynak": null,
-      "dogrulandi": false,
-      "epa_lb_yd3": [
-        929
-      ],
-      "epa_satirlari": "Dirt and Sand",
-      "not_": "EPA tek nokta deger veriyor (0,551 ton/m3). Aralik yok, uydurulmadi."
-    },
     {
       "sinif": "ahsap",
       "alt": 0.1003,
@@ -71,63 +47,33 @@
       "not_": "Aralik GENIS (4,7 kat): en hafif satir hava kanali, en agir satir demir/demir disi hurda. Genis ama DURUST bir aralik; daraltmak kaynakta olmayan bir kesinlik iddia etmek olurdu."
     },
     {
-      "sinif": "alcipan",
+      "sinif": "beton_tugla",
       "alt": null,
       "ust": null,
       "kaynak": null,
       "dogrulandi": false,
       "epa_lb_yd3": [
-        467
+        860
       ],
-      "epa_satirlari": "Gypsum Board — Clean / Painted-Demolition (ikisi de 467)",
-      "not_": "EPA tek nokta deger veriyor (0,277 ton/m3). Aralik yok, uydurulmadi."
+      "epa_satirlari": "Concrete — Large/Small Concrete, with/without Re-bar (dordu de 860)",
+      "not_": "EKSIK — aralik veren kaynak yok. Iki kat belirsizlik var: (1) EPA beton icin tek nokta deger veriyor, aralik vermiyor (860 lb/yd3 = 0,510 ton/m3); (2) bu sinif beton ILE TUGLAYI birlikte kapsiyor, ikisinin yogunlugu ayni degil. Aralik uydurulmadi. Ayrica yayimlanmis 'beton' degerleri 860-4.200 lb/yd3 arasinda bese katlaniyor (kategori farki: kati beton / kirilmis moloz / karisik atik). Bkz. acik_sorular ve docs/cevresel-etki.md."
     },
     {
-      "sinif": "tekstil",
-      "alt": 0.0742,
-      "ust": 0.1038,
-      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — dipnot 10 (Keep America Beautiful / bale spesifikasyonlari)",
-      "dogrulandi": true,
-      "epa_lb_yd3": [
-        125,
-        175
-      ],
-      "epa_satirlari": "Textiles — Mixed Textiles, Loose: 125–175 (aralik EPA tablosunda BASILI)",
-      "not_": "Aralik dogrudan kaynakta basili. UYARI: bu satir kentsel kati atik tekstili icindir, insaat/yikim tekstili icin ayri satir yok."
-    },
-    {
-      "sinif": "karton",
-      "alt": 0.0442,
-      "ust": 0.0629,
-      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — dipnot 4 (Keep America Beautiful, Aralik 2013)",
-      "dogrulandi": true,
-      "epa_lb_yd3": [
-        74.54,
-        106
-      ],
-      "epa_satirlari": "Old Corrugated Containers and Chip Board, Uncompacted 74,54; Old Corrugated Containers, Flattened 106",
-      "not_": "UYARI: kentsel geri donusum satiri; insaat/yikim karton kalemi yok."
-    },
-    {
-      "sinif": "sert_plastik",
+      "sinif": "cam",
       "alt": null,
       "ust": null,
       "kaynak": null,
       "dogrulandi": false,
-      "epa_lb_yd3": null,
-      "epa_satirlari": null,
-      "not_": "EPA'nin C&D bolumunde plastik kalemi YOK. Tablodaki plastik satirlari ambalaj geri donusumune aittir (siseler, kaplar, film). Bir PVC borunun ya da pencere profilinin yogunlugu sise yogunlugu degildir; bu esleme YAPILMADI."
+      "not_": "EKSIK — cam icin gevsek yikim molozu kategorisinde kaynak bulunamadi."
     },
     {
-      "sinif": "yumusak_plastik",
+      "sinif": "seramik",
       "alt": null,
       "ust": null,
       "kaynak": null,
       "dogrulandi": false,
-      "epa_lb_yd3": null,
-      "epa_satirlari": null,
-      "not_": "sert_plastik ile ayni gerekce: C&D bolumunde plastik satiri yok."
+      "not_": "EKSIK — seramik icin gevsek yikim molozu kategorisinde kaynak bulunamadi."
     }
   ],
-  "not": "konteyner sinifi malzeme olmadigi icin (siniflar.json malzeme_mi:false) burada yer almaz."
+  "not": "Sinif listesi 02.09.2026'da egitilen modele cekildi (10 -> 5). Onceki surumdeki tekstil ve karton katsayilari, o sinif artik bulunmadigi icin kaldirildi; kaynaklari degismedi, gerekirse git gecmisinden alinabilir."
 }

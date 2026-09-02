@@ -29,16 +29,25 @@ işaretleyip on sınıftan birine atamak.
 Sistemde metin üreten, özetleyen veya karar gerekçesi yazan hiçbir model
 yoktur; ekrandaki bütün açıklama metinleri insan tarafından yazılmıştır.
 
-### ⚠️ Modelin şu anki durumu
+### Modelin durumu — eğitildi ve ölçüldü (02.09.2026)
 
-Model, proje kapsamındaki veri setiyle **henüz eğitilmemiştir.** Bu
-nedenle hiçbir başarım sayısı (precision, recall, F1, mAP) beyan
-edilmemektedir — bkz. `results/model-metrikleri.md`.
+| Bölme | Precision | Recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|
+| val | 0,5318 | 0,4530 | **0,4424** | 0,3089 |
+| test | 0,4880 | 0,4176 | **0,4334** | 0,3132 |
 
-Geliştirme ve demo sırasında **sahte bir model servisi** (`model-mock/`)
-kullanılır. Sahtelik gizlenmez: sahte servis etkinken arayüzde kalıcı bir
-"SAHTE MODEL SERVİSİ" rozeti görünür ve yükleme sonucunda çıktıların
-uydurma olduğu yazılı olarak belirtilir.
+YOLO11m, 640×640, AdamW, 2,03 saat. Tam künye ve sınıf bazlı sonuçlar:
+`results/model-metrikleri.md`; ham çıktılar: `results/egitim/`.
+
+**Model çalışıyor ama zayıf.** mAP50 0,43–0,44 — tespitlerin ancak bir
+kısmı doğru bulunuyor. Sistemin zorunlu uzman doğrulaması bu yüzden bir
+süs değil, **çalışma koşuludur.** `seramik` sınıfı testte 0,0877 ile
+pratikte çalışmıyor ve çıktısı kullanılabilir sayılmamalıdır.
+
+Sahte servis (`model-mock/`) hâlâ mevcuttur ve ağırlık yüklü olmadığında
+kullanılabilir. Sahtelik gizlenmez: sahte servis etkinken arayüzde kalıcı
+bir "SAHTE MODEL SERVİSİ" rozeti görünür. Gerçek servis ağırlık yoksa
+uydurma üretmez, 503 döner.
 
 ---
 
@@ -48,7 +57,7 @@ uydurma olduğu yazılı olarak belirtilir.
 |---|---|
 | Ultralytics YOLO11 (çıkarım kütüphanesi) | **AGPL-3.0** 🔴 |
 | Proje kodu | AGPL-3.0 (bkz. `LICENSE`) |
-| Eğitim veri seti (CDW-Seg) | CC0 1.0 — kamu malı |
+| Eğitim veri seti (takımın kendi topladığı) | 🔴 **beyan eksik** — bkz. Bölüm 3 |
 | Model ağırlıkları (özgün eğitim) | Bkz. `docs/lisans-analizi.md` Bölüm 2.1 |
 
 AGPL-3.0, şartname **Madde 10.4**'ün "ayrıca belirtilecektir" dediği
@@ -64,36 +73,55 @@ hiçbir koşulda import etmez. Bu sınır bir yorum satırıyla değil,
 
 ## 3. Eğitim / veri kaynağı
 
-**CDW-Seg** — inşaat ve yıkım atığı bölütleme veri seti.
+**Takımın kendi oluşturduğu veri seti**, Roboflow ile etiketlenmiştir.
 
 | Alan | Değer |
 |---|---|
-| Lisans | **CC0 1.0** (kamu malı) |
-| DOI | 10.6084/m9.figshare.28573229 |
-| Makale | Sirimewan & Arashpour, *Scientific Data* (2025) |
-| Sınıf sayısı | 10 |
+| Sınıf sayısı | **5** — `ahsap`, `beton_tugla`, `cam`, `metal`, `seramik` |
+| Görüntü | 2.765 (train 2.184 · valid 384 · test 197) |
+| Kutu | 9.348 |
+| Lisans / kaynak | 🔴 **BEYAN EKSİK** — aşağıya bakınız |
+| Künye | `results/egitim/veri_seti_kunyesi.json` |
+| Ön işleme | `results/egitim/on_isleme_kaydi.json` — sızıntı ve filigran temizliği, 750 görüntü oversample |
 
-Karar gerekçesi: `docs/karar-kaydi.md` K-006.
+### ⚠️ Önceki sürümdeki beyan yanlıştı
+
+Bu belge 01.09.2026'da veri kaynağını **CDW-Seg (CC0, DOI
+10.6084/m9.figshare.28573229)** olarak beyan ediyordu. **Eğitim o veri
+setiyle yapılmamıştır.** Depo o tarihte modelin hangi veriyle eğitildiğini
+bilmiyordu; ağırlık geldiğinde `data.yaml` ile `siniflar.json` arasındaki
+uyuşmazlık ortaya çıktı ve düzeltildi (`docs/karar-kaydi.md` K-021).
+
+### 🔴 Kaynak ve lisans beyanı eksik
+
+Görüntülerin **nereden toplandığı ve hangi hakla kullanıldığı henüz
+yazılı değildir.** Madde 5.2 "kaynaklarını açıkça belirtmek kaydıyla"
+diyor; Madde 9.2 üçüncü taraf hak ihlalinin sorumluluğunu katılımcıya
+yüklüyor; Madde 10.4 veri seti lisansını beyan edilecekler arasında
+sayıyor.
+
+Bu, teslim öncesi kapatılması gereken en acil boşluktur ve kod işi
+değildir. Ayrıntı ve kapatma yolu: `docs/lisans-analizi.md` Bölüm 2.1.1.
 
 ### Bu veri setinin bilinen sınırları
 
-Bunlar `results/bilinen-sinirlar.md` Bölüm B'de ayrıntılı yazılıdır ve
-model başarımını doğrudan etkiler:
+`results/bilinen-sinirlar.md` Bölüm B'de ölçülmüş hâlleriyle:
 
-- **Cam ve seramik sınıfları veri setinde YOKTUR.** Model bu iki malzeme
-  grubunu tanımaz.
-- **Tuğla, betondan ayrılmaz** — CDW-Seg'in `concrete` sınıfı ikisini
-  birlikte kapsar.
-- **Alan uyuşmazlığı:** Görüntüler şantiye hurda konteynerlerinden
-  çekilmiştir; proje ise afet sonrası enkaz sahası iddiasındadır. Sahne,
-  ölçek, toz ve malzeme durumu farklıdır.
+- **`seramik` pratikte çalışmıyor** — testte mAP50 0,0877, en az örnekli sınıf.
+- **`beton_tugla` iki malzemeyi birlikte kapsıyor** — geri kazanım
+  yönlendirmesi açısından ikisi farklı süreçlere gider.
+- **Alan uyuşmazlığı:** görüntüler internetten toplanmış; kullanım alanı
+  afet enkaz sahası. Saha başarımı ölçülenden **düşük olacaktır** ve ne
+  kadar düşük olacağı ölçülmemiştir.
+- **Kapsanmayan gruplar:** `dolgu_toprak`, `sert_plastik`,
+  `yumusak_plastik`, `tekstil`, `karton`, `alcipan` — model bunları
+  tanımaz ve çıktıda görünmemeleri "sahada yok" anlamına gelmez.
 
 ### Bakanlık verisi
 
 Bakanlık tarafından sağlanan veriler **hiçbir dış yapay zekâ servisine
 veya bulut model sağlayıcısına gönderilmez.** Model çıkarımı yerel
-altyapıda, proje ekibinin kendi çalıştırdığı serviste yapılır. Ayrıntı:
-[`docs/veri-politikasi.md`](veri-politikasi.md).
+altyapıda yapılır. Ayrıntı: [`docs/veri-politikasi.md`](veri-politikasi.md).
 
 ---
 
@@ -175,35 +203,38 @@ belirsiz işaretleyebilir. Reddetmek kaydın bilgi değerini yok eder;
 Riskler gizlenmez; ölçülmüş sınır, ölçülmemiş iddiadan güçlüdür.
 Tam liste: [`results/bilinen-sinirlar.md`](../results/bilinen-sinirlar.md).
 
-### 6.1. Alan yanlılığı — en büyük risk
+### 6.1. Ölçülmüş başarım düşük — en büyük risk
 
-Eğitim verisi **şantiye hurda konteynerlerinden**, kullanım alanı ise
-**afet enkaz sahasından**dır.
+Genel mAP50 **0,43–0,44**. Metalin recall'ü 0,32–0,35: bulduğunu doğru
+buluyor ama **çoğunu kaçırıyor.** `seramik` testte 0,0877 ile pratikte
+çalışmıyor.
 
-| | CDW-Seg (eğitim) | Afet enkazı (kullanım) |
+**Sonuç:** Zorunlu uzman doğrulaması bir süs değil, sistemin çalışma
+koşuludur. Bir malzemenin çıktıda görünmemesi **"sahada yok" anlamına
+gelmez** — bu ilke burada sayıyla karşılanmaktadır.
+
+### 6.2. Alan yanlılığı
+
+Eğitim görüntüleri internetten toplanmış; kullanım alanı afet enkaz
+sahasıdır.
+
+| | Eğitim verisi | Afet enkazı (kullanım) |
 |---|---|---|
-| Sahne | Sınırlı, çerçevelenmiş konteyner | Açık, düzensiz saha |
-| Ölçek | Yakın çekim | Değişken, çoğu zaman uzak/havadan |
-| Toz / renk | Şantiye koşulu | Yoğun toz, renk bozulması |
-| Malzeme durumu | Ayrışmış, üst üste | Çökmüş yapı, iç içe geçmiş |
+| Sahne | Çerçevelenmiş, seçilmiş kare | Açık, düzensiz saha |
+| Ölçek | Değişken, çoğu yakın çekim | Değişken, çoğu zaman uzak/havadan |
+| Toz / renk | Temiz görüntü | Yoğun toz, renk bozulması |
+| Malzeme durumu | Genelde ayrışmış | Çökmüş yapı, iç içe geçmiş |
 
-**Sonuç:** Modelin saha başarımı, CDW-Seg üzerinde ölçülecek
-başarımından **düşük olacaktır.** Ne kadar düşük olacağı **henüz
-ölçülmemiştir** ve ölçülene kadar hiçbir genelleme iddiası
-yapılmamaktadır.
-
-### 6.2. Sınıf kapsama yanlılığı
-
-Cam ve seramik model tarafından **tanınmaz.** Kritik olan şudur: bir
-sınıfın çıktıda görünmemesi, arayüzde **"o malzeme sahada yok" anlamına
-gelecek biçimde gösterilmez.** Yokluk, kanıt değildir.
+**Sonuç:** Saha başarımı ölçülen 0,43–0,44'ten **düşük olacaktır.** Ne
+kadar düşük olacağı **ölçülmemiştir** ve ölçülene kadar hiçbir genelleme
+iddiası yapılmamaktadır.
 
 ### 6.3. Temsil yanlılığı — kutu ile maske farkı
 
-CDW-Seg etiketleri bölütleme maskesidir; sistemin arayüz sözleşmesi ise
-sınırlayıcı kutudur. İç içe geçmiş malzemelerde kutu, maskeden **kaba**
-bir temsildir ve komşu malzemeyi kendi alanına katabilir. Bu, alan
-tabanlı her hesabı yukarı yönlü saptırır.
+Sınırlayıcı kutu, iç içe geçmiş malzemelerde **kaba** bir temsildir ve
+komşu malzemeyi kendi alanına katabilir. Bu, alan tabanlı her hesabı
+yukarı yönlü saptırır. Enkaz sahnesi tanımı gereği iç içe geçmiş
+olduğundan bu sapma burada kuraldır, istisna değil.
 
 ### 6.4. Güven skoru yanlış okunabilir
 
@@ -282,9 +313,9 @@ sonradan denetleyecek kişinin ilk soracağı şey budur.
 
 | Madde 10.5 kalemi | Bu belgede | Durum |
 |---|---|---|
-| Modelin adı | Bölüm 1 | YOLO11 — henüz eğitilmedi, sahte servis işaretli |
+| Modelin adı | Bölüm 1 | YOLO11m — eğitildi, mAP50 0,43–0,44 |
 | Lisansı | Bölüm 2 | AGPL-3.0 — Madde 10.4 uyarınca ayrıca beyan |
-| Eğitim/veri kaynağı | Bölüm 3 | CDW-Seg, CC0 1.0, DOI'li |
+| Eğitim/veri kaynağı | Bölüm 3 | Takımın kendi veri seti, 5 sınıf · 🔴 lisans beyanı eksik |
 | Dış API kullanımı | Bölüm 4 | Yapay zekâ amaçlı dış API **yok** |
 | Çıktı doğrulama yöntemi | Bölüm 5 | Zorunlu uzman doğrulaması + veri katmanı kısıtları |
 | Hata/yanlılık riski | Bölüm 6 | Beş risk açıkça sayılmış |

@@ -65,3 +65,10 @@ tests/__pycache__/
 /kapak-3.png
 .venv-inceleme/
 .venv-model/
+
+# --- Ultralytics çalışma çıktıları ---
+# Depo kökünden bir eğitim/doğrulama koşusu çalıştırıldığında ultralytics
+# buraya yazar (ağırlıklar dahil, yüzlerce MB). Ağırlıklar depoya girmez;
+# bkz. model-service/agirliklar/.gitignore.
+runs/
+yolo11*.pt

@@ -84,7 +84,8 @@ def hesapla(tespit: Tespit, olcumler: list[Olcum]) -> Sonuc:
     # tahminini geçersiz kılar.
     sinif = tespit.duzeltilen_sinif or tespit.sinif
 
-    # Kural: konteyner gibi malzeme olmayan sınıflar miktara girmez (K-007).
+    # Kural: malzeme olmayan sınıflar (atığın kabı, zemin) miktara
+    # girmez — `siniflar.json` → `malzeme_mi` (K-007).
     if sinif not in malzeme_siniflari():
         return Sonuc(hesaplandi=False, neden=MALZEME_DEGIL)
 

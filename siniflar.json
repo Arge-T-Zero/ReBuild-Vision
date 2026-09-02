@@ -1,103 +1,73 @@
 {
-  "surum": "1.0",
-  "kaynak": "CDW-Seg (CC0) — DOI 10.6084/m9.figshare.28573229",
-  "karar_tarihi": "2026-08-27",
+  "surum": "2.0",
+  "kaynak": "Takımın kendi oluşturduğu veri seti (Roboflow ile etiketlendi) — 5 sınıf, 2.765 görüntü, 9.348 kutu. Künye: results/egitim/veri_seti_kunyesi.json · ⚠️ LİSANS BEYANI EKSİK, bkz. docs/lisans-analizi.md Bölüm 2.1",
+  "karar_tarihi": "2026-09-02",
   "belge": "docs/siniflar.md",
   "siniflar": [
     {
       "id": 0,
-      "ad": "beton",
-      "gorunen_ad": "Beton",
-      "cdw_seg": "concrete",
-      "malzeme_mi": true,
-      "renk": "#9085e9"
-    },
-    {
-      "id": 1,
-      "ad": "dolgu_toprak",
-      "gorunen_ad": "Dolgu toprak",
-      "cdw_seg": "fill dirt",
-      "malzeme_mi": true,
-      "renk": "#a06a2c"
-    },
-    {
-      "id": 2,
       "ad": "ahsap",
       "gorunen_ad": "Ahşap",
-      "cdw_seg": "timber",
       "malzeme_mi": true,
       "renk": "#d95926"
     },
     {
-      "id": 3,
-      "ad": "sert_plastik",
-      "gorunen_ad": "Sert plastik",
-      "cdw_seg": "hard plastic",
+      "id": 1,
+      "ad": "beton_tugla",
+      "gorunen_ad": "Beton / tuğla",
       "malzeme_mi": true,
-      "renk": "#199e70"
+      "renk": "#6b7280"
     },
     {
-      "id": 4,
-      "ad": "yumusak_plastik",
-      "gorunen_ad": "Yumuşak plastik",
-      "cdw_seg": "soft plastic",
+      "id": 2,
+      "ad": "cam",
+      "gorunen_ad": "Cam",
       "malzeme_mi": true,
       "renk": "#008300"
     },
     {
-      "id": 5,
+      "id": 3,
       "ad": "metal",
       "gorunen_ad": "Metal",
-      "cdw_seg": "steel",
       "malzeme_mi": true,
       "renk": "#3987e5"
     },
     {
-      "id": 6,
-      "ad": "tekstil",
-      "gorunen_ad": "Tekstil",
-      "cdw_seg": "fabric",
-      "malzeme_mi": true,
-      "renk": "#d55181"
-    },
-    {
-      "id": 7,
-      "ad": "karton",
-      "gorunen_ad": "Karton",
-      "cdw_seg": "cardboard",
+      "id": 4,
+      "ad": "seramik",
+      "gorunen_ad": "Seramik",
       "malzeme_mi": true,
       "renk": "#c98500"
-    },
-    {
-      "id": 8,
-      "ad": "alcipan",
-      "gorunen_ad": "Alçıpan",
-      "cdw_seg": "plasterboard",
-      "malzeme_mi": true,
-      "renk": "#e66767"
-    },
-    {
-      "id": 9,
-      "ad": "konteyner",
-      "gorunen_ad": "Konteyner",
-      "cdw_seg": "skip bin",
-      "malzeme_mi": false,
-      "renk": "#6b7280"
     }
   ],
   "kapsanmayan_gruplar": [
     {
-      "ad": "cam",
-      "not": "CDW-Seg'de sınıf yok. Raporda örnek olarak anılıyor. Model bu sınıfı tanımaz."
+      "ad": "dolgu_toprak",
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
     },
     {
-      "ad": "seramik",
-      "not": "CDW-Seg'de sınıf yok. Raporda örnek olarak anılıyor. Model bu sınıfı tanımaz."
+      "ad": "sert_plastik",
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
     },
     {
-      "ad": "tugla",
-      "not": "CDW-Seg 'concrete' sınıfı betonu kapsar; tuğla ayrı sınıf değildir."
+      "ad": "yumusak_plastik",
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+    },
+    {
+      "ad": "tekstil",
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+    },
+    {
+      "ad": "karton",
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
+    },
+    {
+      "ad": "alcipan",
+      "not": "Eğitim veri setinde sınıf yok. Model tanımaz."
     }
   ],
-  "renk_notu": "Renkler dataviz dogrulayicisiyla sinanmistir (koyu zemin #161b22): parlaklik bandi, kroma tabani, renk korlugu ayrimi, normal gorus tabani ve zemin kontrasti - besi de gecer. Komsu ikililer bu sirayla dogrulandigi icin SIRA DEGISTIRILMEMELIDIR. konteyner malzeme olmadigi icin kategorik paletten renk almaz, notr gridir. Renk hicbir yerde TEK BASINA anlam tasimaz - her rozette metin etiketi vardir."
+  "renk_notu": "Renkler renk körlüğü benzetimiyle (protanopi, dötanopi, tritanopi) yeniden seçildi: en kötü durum ΔE=6,8 — önceki 10 renkli paletin kendi skorunun (3,5) iki katı. Anlamsal olarak da tutarlı: gri beton/tuğla, koyu yeşil cam, mavi metal, turuncu ahşap, kehribar seramik. Renk TEK BAŞINA anlam taşımaz — her etikette sınıf adı yazılıdır.",
+  "egitim_data_yaml": "model-service/data.yaml",
+  "sira_notu": "SIRA MODELİN data.yaml SIRASIDIR VE DEĞİŞTİRİLEMEZ. model-service/app.py sınıf adını modelden değil buradan, id üzerinden okur; sıra kayarsa model \"ahsap\" derken arayüz başka bir malzeme gösterir ve HİÇBİR HATA VERMEZ. tests/test_sinif_tanimlari.py bu eşleşmeyi denetler.",
+  "malzeme_olmayan_sinif_notu": "Bu sürümde malzeme olmayan sınıf YOKTUR — beşi de atık malzemedir. Önceki sürümdeki `konteyner` (skip bin) sınıfı eğitim veri setinde bulunmadığı için kalktı. Ayıklama mekanizması (malzeme_mi=false) kaldırılmadı: kural kodda ve testte duruyor, yeni bir malzeme-olmayan sınıf eklendiğinde çalışır. Bkz. docs/karar-kaydi.md K-007."
 }

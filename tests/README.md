@@ -49,7 +49,7 @@ bozulmasını engellemektir.**
 | `test_rapor.py` | Dosyadaki kurallar ekrandakiyle aynı: doğrulanmamış kayıt dışa aktarılmaz, hesaplanmamış miktar boş hücre, Excel uyumu |
 | `test_guvenlik.py` | Varsayılan JWT anahtarıyla üretime çıkış engeli, parola özeti, jeton taklidi |
 | `test_agpl_siniri.py` | `api/` model kütüphanesine bağlanmaz — yorum satırına değil teste güvenilir |
-| `test_sinif_tanimlari.py` | `siniflar.json` tutarlılığı; `konteyner` malzeme değil; kapsanmayan gruplar beyan edilmiş; doğrulanmamış katsayı kullanılmaz |
+| `test_sinif_tanimlari.py` | `siniflar.json` tutarlılığı; malzeme ayıklama mekanizması duruyor; kapsanmayan gruplar beyan edilmiş; doğrulanmamış katsayı kullanılmaz; **`data.yaml` sınıf sırası `siniflar.json` ile aynı** |
 
 ## Regresyon testleri
 

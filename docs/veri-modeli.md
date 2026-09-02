@@ -232,9 +232,10 @@ değiştiğinde veri tabanı göçü gerekmesin.
 Tanım ve gerekçe: `docs/siniflar.md` · Makine tarafından okunan sürüm:
 `siniflar.json`
 
-`malzeme_mi: false` işaretli sınıflar (şu an yalnızca `konteyner`) miktar
-hesabına ve Malzeme Kaynak Haritası'na **girmez**
-(`docs/karar-kaydi.md` K-007).
+`malzeme_mi: false` işaretli sınıflar miktar hesabına ve Malzeme Kaynak
+Haritası'na **girmez** (`docs/karar-kaydi.md` K-007). Bu sürümde beş
+sınıfın beşi de malzemedir, yani liste bugün boştur; alan ve süzgeç
+kaldırılmadı.
 
 ---
 

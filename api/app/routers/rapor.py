@@ -10,7 +10,7 @@ araçlarında (QGIS, Excel) açabilmesi için.
    dosyada verilseydi kural anlamsız olurdu.
 2. Uzman düzeltmesi modelin tahminini geçersiz kılar; raporda **geçerli
    sınıf** yazar, ham tahmin ayrı bir sütunda izlenebilirlik için durur.
-3. `konteyner` gibi malzeme olmayan sınıflar dışarıda kalır (K-007).
+3. `malzeme_mi: false` işaretli sınıflar dışarıda kalır (K-007).
 4. **Miktar hesaplanmamışsa alan boştur.** CSV'de sıfır değil, boş
    hücre; JSON'da `null`. Elektronik tabloda 0 gören biri "ölçüm sıfır"
    sanardı — oysa ölçüm yapılmamıştır (Bölüm 1.1).
@@ -29,6 +29,7 @@ from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.config import model_metrik_ozeti
 from ..core.config import siniflar as sinif_tanimlari
 from ..core.permissions import RAPOR_ALABILIR
 from ..db import oturum
@@ -92,7 +93,7 @@ def _kunye() -> dict:
         "kaynak": "ReBuild Vision",
         "kapsam_uyarisi": KAPSAM_UYARISI,
         "miktar_notu": MIKTAR_NOTU,
-        "model_metrikleri": "henüz ölçülmedi — results/model-metrikleri.md",
+        "model_metrikleri": model_metrik_ozeti(),
     }
 
 

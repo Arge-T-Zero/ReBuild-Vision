@@ -42,11 +42,26 @@ BBOX_FORMAT = "pixel_absolute_original"
 
 # Uzman incelemesi eşiği.
 #
-# ⚠️ BU ÖLÇÜLMÜŞ BİR DEĞER DEĞİL. Modelin başarımı henüz ölçülmediği için
-# (results/model-metrikleri.md) eşik bir mühendislik varsayımıdır. Ölçüm
-# yapıldığında precision/recall eğrisinden türetilmelidir; o zamana kadar
-# ortam değişkeniyle değiştirilebilir tutuluyor ki kod değişikliği
-# gerekmesin.
+# ⚠️ BU HÂLÂ ÖLÇÜLMÜŞ BİR DEĞER DEĞİL — ama sebebi değişti.
+#
+# Eski gerekçe "model henüz ölçülmedi" idi; model 01.09.2026'da eğitildi
+# ve ölçüldü (results/model-metrikleri.md). Yine de eşik türetilemiyor:
+# eşiği doğru seçmek için precision ve recall'un GÜVENE GÖRE değişimi
+# gerekir, elimizdeki `results/egitim/metrikler.json` ise her sınıf için
+# tek bir çalışma noktası veriyor. Eğriler yalnızca PNG olarak var
+# (`gorseller/*_BoxF1_curve.png`); bir görselden sayı okumak ölçüm
+# değildir ve bu depoda ölçülmemiş sayı yazılmaz (Bölüm 14).
+#
+# Türetmek için gereken: eğitim ortamında `model.val()` çıktısının ham
+# p/r/f1-conf dizileri (ya da eşiği tarayan bir koşu). O gelene kadar
+# 0,50 bir mühendislik varsayımıdır ve ortam değişkeniyle
+# değiştirilebilir tutuluyor ki kod değişikliği gerekmesin.
+#
+# Pratik etkisi kayıtlıdır: modelin genel precision'ı val'de 0,53,
+# yani bu eşiğin üstünde kalan tespitlerin azımsanmayacak kısmı da
+# yanlıştır. Sistemin cevabı eşiği yükseltmek değil, DOĞRULAMA
+# KAPISIDIR: doğrulanmamış hiçbir tespit miktara, haritaya ya da rapora
+# girmez (Bölüm 1.4).
 INCELEME_ESIGI = float(os.getenv("INCELEME_ESIGI", "0.50"))
 
 AGIRLIK_YOLU = os.getenv("MODEL_AGIRLIK", str(DEPO_KOKU / "model-service/agirliklar/best.pt"))

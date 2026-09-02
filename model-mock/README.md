@@ -43,8 +43,11 @@ tekrarlanabilir olsun diye.
   `needs_review: true` olur — final demosunun 4. adımı (düşük güvenli
   kaydın otomatik uzman kuyruğuna düşmesi) her seferinde gösterilebilsin
   diye.
-- `konteyner` sınıfı üretilebilir; `malzeme_mi: false` olduğu için miktar
-  hesabına `api/` tarafında girmez (`docs/karar-kaydi.md` K-007).
+- Üretilen sınıflar `siniflar.json`'dan okunur, elle yazılmaz; sınıf
+  listesi değişince sahte servis de kendiliğinden değişir.
+- `malzeme_mi: false` işaretli bir sınıf üretilirse miktar hesabına
+  `api/` tarafında girmez (`docs/karar-kaydi.md` K-007). Bu sürümde beş
+  sınıfın beşi de malzeme; mekanizma yine de sınanır.
 
 ## Sahtelik işareti
 
@@ -53,4 +56,14 @@ Talimat Bölüm 9.5 gereği sahtelik gizlenmez:
 `yolo11-rebuild-SAHTE` ve `sahte: true` bayrağı. Arayüz bu bayrağa bakarak
 ekranda kalıcı "SAHTE MODEL SERVİSİ" rozeti gösterir.
 
-Örnek çıktı: `ornek_cikti_SAHTE.json`
+Örnek çıktı: `ornek_cikti_SAHTE.json` — elle yazılmadı, servisin
+kendisi üretti ve **yeniden üretilebilir**:
+
+```bash
+curl -s -F file=@web/public/gorseller/og-kapak.jpg \
+     http://localhost:8001/predict
+```
+
+Aynı görüntü her zaman aynı tespitleri verir (özet → tohum). Dosyadaki
+`processed_at` alanı yalnızca depoda gereksiz fark çıkmasın diye sabit
+bir ana çekilmiştir; servisin gerçek yanıtında o an yazar.

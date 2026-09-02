@@ -85,7 +85,7 @@ Durum**.
 
 ---
 
-## K-006 · Eğitim veri seti — CDW-Seg ve on sınıf
+## K-006 · Eğitim veri seti — CDW-Seg ve on sınıf ⚠️ GEÇERSİZ (02.09.2026, bkz. K-021)
 
 - **Tarih:** 27.08.2026
 - **Karar:** CDW-Seg veri seti (CC0) kullanılacak; modelin sınıf kümesi
@@ -128,6 +128,14 @@ Durum**.
 - **Uygulama yeri:** Veri katmanı (`api/app/services/queries.py`), yalnızca
   arayüzde gizleme değil.
 - **Durum:** Uygulandı.
+- **Güncelleme (02.09.2026, K-021):** Sınıf listesi 10'dan 5'e indi ve
+  `konteyner` kalktı; artık `malzeme_mi: false` işaretli **hiçbir sınıf
+  yok.** Karar geri alınmadı, **mekanizması korundu** — `malzeme_mi`
+  alanı, `malzeme_siniflari()` süzgeci ve veri katmanındaki `where`
+  yerinde duruyor. Testler de sınıf adına değil mekanizmaya bakacak
+  biçimde yeniden yazıldı (`tests/conftest.py` → `malzeme_olmayan_sinif`
+  fixture'ı koşulu üreterek sınar). Gerekçe: kuralı kaldırmak, malzeme
+  olmayan bir sınıf eklendiği gün sessiz bir hataya dönüşürdü.
 
 ---
 
@@ -288,9 +296,12 @@ Doğrulama kontrol listesi: `docker/README.md`.
   eşiği geçtiği bir sıralama permütasyon taramasıyla bulundu. Sonuç:
   en zayıf komşu renk körlüğü ΔE **8.6**, normal görüş ΔE **19.3** —
   beş kontrol de geçiyor.
-- **Not:** `konteyner` malzeme olmadığı için kategorik paletten renk almaz
-  (K-007 ile tutarlı), nötr gridir.
-- **Durum:** Uygulandı. Ayrıntı: `docs/siniflar.md`.
+- **Not:** Malzeme olmayan sınıflar kategorik paletten renk almaz (K-007
+  ile tutarlı), nötr gridir.
+- **Durum:** ⚠️ **Yerini K-022'ye bıraktı.** Bu ölçüm 10 renkli palet
+  içindir; sınıf listesi 5'e inince palet yeniden seçildi. Kayıt, yöntemin
+  (renk körlüğü benzetimi + LAB ΔE) daha önce de uygulandığını gösterdiği
+  için duruyor. Ayrıntı: `docs/siniflar.md`.
 
 ---
 
@@ -578,3 +589,58 @@ Colima durduruldu. Depoda kalıcı bir iz yok.
 5. Sunum süresi: Madde 2.6.2 **5 dakika**, Madde 5.4 **7+3 dakika** diyor.
    Hangisi esas? *(Bu netleşene kadar demo 5 dakikaya sığacak biçimde
    hazırlanıyor — genişletmek kolay, kısaltmak sahnede imkânsız.)*
+
+---
+
+## K-021 · Sınıf listesi eğitilen modele çekildi (10 → 5)
+
+- **Tarih:** 02.09.2026
+- **Karar:** `siniflar.json` on CDW-Seg sınıfından, eğitilen modelin beş
+  sınıfına indirildi: `ahsap`, `beton_tugla`, `cam`, `metal`, `seramik`.
+  Sıra `model-service/data.yaml` ile birebir aynıdır.
+- **Neden zorunluydu — sessiz bir hata vardı:** Model takımın kendi
+  veri setiyle (Roboflow etiketli, 5 sınıf) eğitildi, CDW-Seg ile değil.
+  `model-service/app.py` sınıf adını modelden değil `siniflar.json`'dan
+  **id üzerinden** okuyor. Oradaki koruma yalnızca BİLİNMEYEN id'yi
+  yakalıyordu; model 0–4 döndürdüğü sürece hepsi geçerli id olduğu için
+  istisna atılmıyor ve her tespit **sessizce yanlış adla** miktar
+  hesabına ve rapora geçiyordu:
+
+  | model ne der | servis ne kaydederdi |
+  |---|---|
+  | `ahsap` | `beton` |
+  | `beton_tugla` | `dolgu_toprak` |
+  | `cam` | `ahsap` |
+  | `metal` | `sert_plastik` |
+  | `seramik` | `yumusak_plastik` |
+
+- **Neden yeniden eğitim değil:** Teslime üç gün var ve elde ölçülmüş,
+  çalışan bir model var. CDW-Seg ile yeniden eğitmek hem takvime sığmaz
+  hem de elde edilen ölçümü çöpe atardı.
+- **Bedeli — gizlenmiyor:**
+  - `konteyner` sınıfı kalktı; K-007'nin ayıklama **mekanizması**
+    korundu (`malzeme_mi`) ve testle sabitlendi.
+  - Katsayı tablosu 4 kaynaklı sınıftan **2'ye** düştü (`ahsap`,
+    `metal`); `tekstil` ve `karton` katsayıları artık o sınıf olmadığı
+    için kaldırıldı.
+  - Renk paleti 5 sınıfa göre yeniden seçildi.
+- **Durum:** ✅ Uygulandı. Sıra koruması
+  `tests/test_sinif_tanimlari.py` ile zorlanıyor.
+
+---
+
+## K-022 · Sınıf renkleri renk körlüğü ölçümüyle yeniden seçildi
+
+- **Tarih:** 02.09.2026
+- **Karar:** Beş sınıfın rengi: `ahsap #d95926`, `beton_tugla #6b7280`,
+  `cam #008300`, `metal #3987e5`, `seramik #c98500`.
+- **Gerekçe:** Renkler protanopi, dötanopi ve tritanopi benzetimiyle
+  LAB uzayında ölçüldü. Seçilen küme en kötü durumda **ΔE = 6,8**;
+  önceki 10 renkli paletin aynı ölçüdeki skoru **3,5** idi — yani yeni
+  palet iki kat daha ayırt edilebilir.
+- **Anlamsal tutarlılık da korundu:** gri beton/tuğla, koyu yeşil cam,
+  mavi metal, turuncu ahşap, kehribar seramik.
+- **Not:** Renk hiçbir zaman TEK BAŞINA anlam taşımaz — her etikette
+  sınıf adı yazılıdır (WCAG 1.4.1). Ölçüm, rengin yardımcı olduğu
+  durumu iyileştirmek içindir, ona bağımlılık yaratmak için değil.
+- **Durum:** ✅ Uygulandı (`siniflar.json`, `mobile/lib/tema.dart`).

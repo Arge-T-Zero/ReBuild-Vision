@@ -9,7 +9,7 @@
 
 | Veri | Kaynak | Lisans/koşul | Nerede saklanıyor | Depoya girer mi |
 |---|---|---|---|---|
-| CDW-Seg eğitim veri seti | Figshare (açık akademik) | CC0 1.0 | Yerel eğitim makinesi | ❌ (boyut) |
+| Eğitim veri seti (takımın kendi topladığı) | Takımca toplandı, Roboflow etiketli | 🔴 **beyan eksik** — `docs/lisans-analizi.md` 2.1.1 | Yerel eğitim makinesi | ❌ (boyut) |
 | Bakanlık tarafından sağlanan veri | Bakanlık | **Madde 9.1 — kopyalanamaz** | `data/bakanlik/` (yalnızca yerel) | ❌ **asla** |
 | Saha fotoğrafları (maskelenmemiş) | Ekip çekimi | Kişisel veri içerebilir | `data/saha-foto/` | ❌ **asla** |
 | Maskelenmiş örnek görseller | `scripts/maskele.py` çıktısı | — | `data/ornek/` | ✅ |
@@ -34,7 +34,7 @@
 3. Bakanlık verisi **hiçbir bulut servisine gönderilmez**: Supabase,
    Google Colab, barındırılan model API'leri, nesne depolama — hiçbiri.
 4. **Model eğitimi bulut ortamında yapılacaksa yalnızca kendi ürettiğimiz
-   veya açık kaynak (CC0/CC-BY) veriyle yapılır.** CDW-Seg bu koşulu
+   veya açık kaynak (CC0/CC-BY) veriyle yapılır.** Takımın kendi veri seti bu koşulu
    karşılar; Bakanlık verisi karşılamaz.
 5. Bakanlık verisi üçüncü kişilerle paylaşılmaz, ekip dışına çıkarılmaz.
 

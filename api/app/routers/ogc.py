@@ -19,7 +19,7 @@ Kayıtlar `rapor.py` içindeki `_satirlar()` üzerinden gelir; yani rapor
 ve harita ile **birebir aynı** kural süzgecinden geçer:
 
   - yalnızca **doğrulanmış** tespitler (`sadece_dogrulanmis`)
-  - `konteyner` gibi malzeme olmayan sınıflar **hariç** (`sadece_malzeme`)
+  - `malzeme_mi: false` işaretli sınıflar **hariç** (`sadece_malzeme`)
   - uzman düzeltmesi model tahminini **geçersiz kılar** (`gecerli_sinif`)
   - rolün göremediği saha **hiç dönmez** (`gorulebilir_alanlar`)
 
@@ -103,8 +103,8 @@ def _koleksiyon_tanimi(istek: Request) -> dict:
         "description": (
             "Enkaz sahalarındaki görünür malzeme tespitleri. "
             "Yalnızca uzman doğrulamasından geçmiş kayıtlar; malzeme "
-            "olmayan sınıflar (konteyner) hariç. Uzman düzeltmesi "
-            "modelin ilk tahminini geçersiz kılar."
+            "olmayan sınıflar hariç. Uzman düzeltmesi modelin ilk "
+            "tahminini geçersiz kılar."
         ),
         "itemType": "feature",
         # Tek koordinat referans sistemi: WGS 84. Veri tabanında da

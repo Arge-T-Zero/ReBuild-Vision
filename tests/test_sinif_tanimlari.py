@@ -10,24 +10,63 @@ DEPO_KOKU = Path(__file__).resolve().parents[1]
 
 
 def test_siniflar_json_ile_belge_ayni_sayida():
-    d = siniflar()
-    assert len(d["siniflar"]) == 10
+    """Sınıf sayısı eğitilen modelin sınıf sayısıdır.
+
+    02.09.2026'da 10'dan 5'e indi: model CDW-Seg ile değil, takımın kendi
+    veri setiyle eğitildi. Sayı `data.yaml` ile birlikte değişir; aşağıdaki
+    `test_data_yaml_sinif_sayisi_siniflar_json_ile_ayni` ikisini bağlar.
+    """
+    assert len(siniflar()["siniflar"]) == 5
 
 
-def test_konteyner_malzeme_degil():
-    """K-007: hurda konteyneri atık malzeme değildir."""
-    d = {s["ad"]: s for s in siniflar()["siniflar"]}
-    assert d["konteyner"]["malzeme_mi"] is False
-    assert "konteyner" not in malzeme_siniflari()
-    assert len(malzeme_siniflari()) == 9
+def test_malzeme_olmayan_sinif_mekanizmasi_duruyor():
+    """K-007 mekanizması korunur — sınıf gitse de kural kalır.
+
+    Önceki sürümde `konteyner` (skip bin) `malzeme_mi: false` idi ve
+    miktara girmiyordu. O sınıf yeni eğitim veri setinde yok, ama
+    AYIKLAMA MEKANİZMASI kaldırılmadı: her sınıfın `malzeme_mi` alanı
+    duruyor ve `malzeme_siniflari()` yalnızca `true` olanları döner.
+
+    Mekanizmayı test etmemek, yarın malzeme olmayan bir sınıf
+    eklendiğinde kuralın sessizce çalışmamasına yol açardı.
+    """
+    hepsi = siniflar()["siniflar"]
+    for s in hepsi:
+        assert isinstance(s["malzeme_mi"], bool), (
+            f"{s['ad']} için malzeme_mi alanı yok ya da bool değil"
+        )
+    malzeme = malzeme_siniflari()
+    assert set(malzeme) == {s["ad"] for s in hepsi if s["malzeme_mi"]}
+    # Bu sürümde beşi de malzeme; sayı tutmalı.
+    assert len(malzeme) == sum(1 for s in hepsi if s["malzeme_mi"])
 
 
 def test_kapsanmayan_gruplar_beyan_edilmis():
-    """Cam ve seramik eğitim verisinde yok — gizlenmiyor."""
-    adlar = {g["ad"] for g in siniflar()["kapsanmayan_gruplar"]}
-    assert "cam" in adlar
-    assert "seramik" in adlar
-    for g in siniflar()["kapsanmayan_gruplar"]:
+    """Modelin TANIMADIĞI malzeme grupları açıkça yazılı olmalı.
+
+    ⚠️ BU TESTİN İÇERİĞİ 02.09.2026'DA TERSİNE DÖNDÜ. Önceden `cam` ve
+    `seramik`'in eğitim verisinde bulunmadığını doğruluyordu. Yeni model
+    ikisini de TANIYOR — üstelik `cam` en iyi sınıfı. Kapsanmayanlar artık
+    eski CDW-Seg sınıflarıdır.
+
+    Korunan ilke değişmedi: bir malzeme grubunun tanınmadığı gizlenmez,
+    ve çıktıda görünmemesi "o malzeme sahada yok" anlamına gelmez.
+    """
+    kapsanmayan = siniflar()["kapsanmayan_gruplar"]
+    adlar = {g["ad"] for g in kapsanmayan}
+    taninan = {s["ad"] for s in siniflar()["siniflar"]}
+
+    # Kapsanmayan bir grup, tanınan sınıflardan biri OLAMAZ.
+    assert not (adlar & taninan), (
+        f"Hem tanınan hem kapsanmayan olarak yazılmış: {adlar & taninan}"
+    )
+    # Önceki sürümün sınıfları artık tanınmıyor; beyan edilmiş olmalı.
+    for eski_sinif in ("dolgu_toprak", "sert_plastik", "tekstil", "karton"):
+        assert eski_sinif in adlar, (
+            f"{eski_sinif} artık tanınmıyor ama kapsanmayan olarak "
+            f"beyan edilmemiş"
+        )
+    for g in kapsanmayan:
         assert g["not"], f"{g['ad']} için gerekçe yazılmalı"
 
 
@@ -138,3 +177,37 @@ def test_data_yaml_sinif_sirasi_siniflar_json_ile_ayni():
         "eğitilen sıraya göre güncellenmeli. İkisi ayrı kaldığı sürece "
         "servis her tespiti yanlış adla döndürür."
     )
+
+
+# --- Arayüzdeki başarım özeti ölçümden gelir (Bölüm 14) -------------------
+
+
+def test_model_metrik_ozeti_olculen_degeri_tasir():
+    """Altbilgideki özet SABİT METİN OLAMAZ.
+
+    Bu satır iki router'da elle yazılıydı ve ikisi de "henüz ölçülmedi"
+    diyordu. Model 01.09.2026'da ölçüldükten sonra da öyle demeye devam
+    etti: arayüz jüriye ölçüm olmadığını söylerken depoda ölçüm
+    duruyordu. Sabit metnin sorunu yanlış olması değil, **sessizce
+    yanlışa dönüşebilmesidir.**
+
+    Özet artık `results/egitim/metrikler.json`'dan üretilir; bu test
+    ikisinin ayrışmasını yakalar.
+    """
+    from api.app.core.config import model_metrik_ozeti
+
+    kayitlar = json.loads(
+        (DEPO_KOKU / "results/egitim/metrikler.json").read_text(encoding="utf-8"))
+    test_satiri = next(k for k in kayitlar
+                       if k["split"] == "test" and k["sinif"] == "TÜM SINIFLAR")
+    beklenen = f"{test_satiri['mAP50']:.4f}".replace(".", ",")
+
+    ozet = model_metrik_ozeti()
+    assert beklenen in ozet, (
+        f"Özet ölçülen mAP50 değerini ({beklenen}) taşımıyor: {ozet!r}"
+    )
+    assert "ölçülmedi" not in ozet, (
+        "Ölçüm dosyası depoda dururken arayüz 'ölçülmedi' diyor"
+    )
+    # Nereye bakılacağını da söylemeli; tek sayı yeterli değil.
+    assert "results/model-metrikleri.md" in ozet

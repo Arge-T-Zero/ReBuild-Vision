@@ -5,6 +5,113 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 02.09.2026 — Sınıf listesi eğitilen modele çekildi (10 → 5)
+
+**Sorun — sessiz yanlış etiketleme**
+- Model, planlanan kamuya açık veri setiyle (CDW-Seg, 10 sınıf) değil
+  **takımın kendi topladığı 5 sınıflı veri setiyle** eğitildi:
+  `ahsap`, `beton_tugla`, `cam`, `metal`, `seramik`.
+- `siniflar.json` hâlâ 10 sınıflıydı ve sıra kaymıştı. `model-service`
+  sınıf adını modelin kendi `names` sözlüğünden değil `siniflar.json`'dan
+  okuduğu için, id 0 modelde `ahsap` iken depoda `beton` demekti. Ağırlık
+  yerine konsaydı **her tespit yanlış adla** kaydedilir, oradan miktar
+  hesabına ve rapora geçerdi — hiçbir yerde hata görünmeden.
+- Uyuşmazlığı `test_data_yaml_sinif_sirasi_siniflar_json_ile_ayni`
+  yakaladı ve bir süre bilerek kırmızı bırakıldı.
+
+**Değişti**
+- `siniflar.json` v2.0: beş sınıf, `data.yaml` sırasıyla birebir.
+- `katsayilar.json` v0.3: kaynaklı katsayı 4'ten **2'ye** düştü
+  (`ahsap`, `metal`). `tekstil` ve `karton` katsayıları sınıfları
+  kalktığı için tablodan çıktı — kaynakları geçersizleşmedi, `git`
+  geçmişinde duruyor.
+- Renk paleti 5 sınıf için **yeniden ölçülerek** seçildi (K-022):
+  protanopi/dötanopi/tritanopi benzetimi + LAB ΔE. En kötü komşu ayrımı
+  **6,8**; önceki 10 renkli paletin aynı ölçüdeki skoru 3,5 idi.
+- Etiket metni kontrastı yeni paletle yeniden ölçüldü: en düşük oran
+  **4,83** (AA eşiği 4,5). Parlaklık eşiği 0,19 tarama ile doğrulandı —
+  geçerli aralık 0,17–0,22, eşik ortada duruyor. Kod değişmedi, ölçüm
+  yenilendi.
+
+**Testler — yeşil ama YANLIŞ ŞEYİ sınıyordu**
+- Sınıf listesi değişince testlerin yarısı artık var olmayan adlarla
+  (`beton`, `sert_plastik`, `konteyner`) kayıt kuruyordu. **Hiçbiri
+  patlamadı**, çünkü tanınmayan sınıf da malzeme süzgecinden eleniyor.
+  Yani K-007'yi sınadığını sanan testler aslında "bilinmeyen sınıf
+  süzülür"ü sınıyordu. Yeşil bir test, sandığın şeyi sınamıyorsa
+  korumadan beterdir: koruma yokken var sanılır.
+- `tespit_kur` artık sınıf adını `siniflar.json` ile **doğruluyor**;
+  tanımsız bir ad açık bir hata mesajıyla patlıyor
+  (`sinif_dogrula=False` bilinçli kaçış kapısı).
+- K-007 testleri sınıf adına değil **mekanizmaya** bakacak biçimde
+  yeniden yazıldı: `malzeme_olmayan_sinif` fixture'ı `malzeme_mi: false`
+  bir sınıfı enjekte ederek koşulu üretiyor. `siniflar.json`'da böyle
+  bir sınıf kalmasa da kural sınanmaya devam ediyor.
+- "Bilinmeyen sınıf hesaba girmez" davranışı **ayrı** bir testle
+  yazıldı; iki davranış da gerçek ve ikisi de korunuyor.
+- Doğrulandı: sınıf adı elle bozulduğunda (`metal` → `demir`) suite
+  8 testte kırmızıya dönüyor; eskiden sessizce yeşil kalırdı.
+
+**Gerçek modelle uçtan uca doğrulama — üç arıza bulundu**
+
+Sınıf göçünden sonra zincir gerçek bir ultralytics ağırlığıyla (5 sınıflı,
+`nc: 5`, `data.yaml` sırasında) baştan sona çalıştırıldı: web'den yükleme
+→ model servisi → API → doğrulama → **mobil uygulamadan** ölçüm → miktar.
+Sonuç: 5 tespitin beşi de doğru sınıfla döndü (kutular sentetik görüntünün
+gerçek etiketleriyle IoU 0,61–0,98 örtüştü) ve 40 m³ ahşap ölçümü
+**4,012–6,36 ton** aralığına, EPA kaynağı yazılı olarak dönüştü.
+
+Yol boyunca üç şey bozuktu ve düzeltildi:
+
+1. **Arayüz "model henüz ölçülmedi" diyordu — ölçüm depoda dururken.**
+   Altbilgideki başarım özeti iki router'da elle yazılmış sabit metindi.
+   Model 01.09'da ölçüldü, metin değişmedi: jüri ekranda "ölçülmedi"
+   görürken `results/egitim/` dolu duruyordu. Özet artık
+   `results/egitim/metrikler.json`'dan **üretiliyor**
+   (`config.model_metrik_ozeti`) ve bir testle ölçüme bağlandı. Sabit
+   metnin sorunu yanlış olması değil, sessizce yanlışa dönüşebilmesiydi.
+
+2. **Mobil, saha personeline HAM sınıf adını gösteriyordu:**
+   `beton_tugla`, `ahsap`. Web aynı kaydı "Beton / tuğla" diye
+   gösteriyordu — iki arayüz aynı tespite iki farklı ad veriyordu.
+   `Renk.malzemeAdi` eklendi; ekranlar `Renk.sinifAdi()` kullanıyor.
+   Çevrimdışı çalışma zorunluluğu yüzünden liste mobilde sabit
+   tutulmak zorunda, o yüzden `test/sinif_adlari_test.dart` haritayı
+   `siniflar.json` ile karşılaştırıyor: renk, ad ve sınıf kümesi.
+
+3. **Mobil yükleme hatası her durumda "bağlantı" diyordu.** Tek bir
+   `catch (_)` vardı: sunucu 403 (yetki yok), 413 (dosya büyük) ya da
+   503 (model servisi kapalı) dönse bile kullanıcı "bağlantı geldiğinde
+   tekrar deneyin" görüyordu. Enkaz alanında bu, sonuçsuz bir döngü
+   demek. Artık `ApiHatasi` ayrı yakalanıyor ve sunucunun gerekçesi
+   yazılıyor; "bağlantıyı kontrol edin" yalnızca sunucuya HİÇ
+   ulaşılamadığında çıkıyor. Giriş ekranı bu ayrımı zaten yapıyordu.
+
+**Doğrulamanın sınırı — açıkça yazılıyor:** kullanılan ağırlık `best.pt`
+DEĞİLDİR. Eğitim ağırlığı henüz depoda/Release'te olmadığı için, sınıf
+sırası `data.yaml` ile birebir aynı olan **5 sınıflı bir tesisat
+ağırlığı** üretildi (sentetik renkli dikdörtgenlerle eğitildi). Bu,
+**boru hattını** kanıtlar: id → `siniflar.json` adı → renk → arayüz →
+miktar. Modelin SAHA BAŞARIMINI kanıtlamaz; o sayılar
+`results/model-metrikleri.md`'dedir ve gerçek eğitimden gelir.
+
+**Belgeler — kullanılmayan veri setine verilen kredi geri alındı**
+- `README.md` eğitim veri seti olarak CDW-Seg'e (CC0) atıf yapıyordu ve
+  "model henüz eğitilmemiştir" diyordu. **İkisi de yanlıştı.** Atıf
+  kaldırıldı, ölçülen metrikler yazıldı, CDW-Seg künyesi
+  "değerlendirildi, KULLANILMADI" notuyla `docs/lisans-analizi.md`
+  Bölüm 2.7'de kayıt olarak bırakıldı.
+- 🔴 **Açık kalan eksik:** eğitim veri setinin kaynak ve lisans beyanı
+  hâlâ yazılı değil. Madde 5.2 "kaynaklarını açıkça belirtmek kaydıyla"
+  diyor; Madde 9.2 üçüncü taraf hak ihlalinin tüm hukuki ve mali
+  sorumluluğunu katılımcıya yüklüyor; Madde 5.5 ürünü Kuruma
+  devrettiği için bu sorumluluk teslimden sonra da sürüyor. Gizlenmiyor:
+  `README.md`, `docs/lisans-analizi.md` 2.1.1, `results/model-metrikleri.md`
+  ve `results/bilinen-sinirlar.md` dördü de yazıyor.
+- `model-mock/ornek_cikti_SAHTE.json` elle düzeltilmedi; sahte servis
+  yeniden çalıştırılıp **üretildi** ve üretme komutu README'ye yazıldı.
+
+
 ### 01.09.2026 — OGC API - Features (Madde 10.8)
 
 **Eklendi — `/ogc` altında açık coğrafi servis**

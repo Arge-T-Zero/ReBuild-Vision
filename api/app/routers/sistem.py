@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.config import model_metrik_ozeti
 from ..core.config import siniflar as sinif_tanimlari
 from ..db import oturum
 from ..core.permissions import GECMIS_GORUR
@@ -51,7 +52,7 @@ async def durum():
     return {
         "model_servisi": model_durumu,
         "kapsam_uyarisi": KAPSAM_UYARISI,
-        "model_metrikleri": "henüz ölçülmedi — results/model-metrikleri.md",
+        "model_metrikleri": model_metrik_ozeti(),
     }
 
 
