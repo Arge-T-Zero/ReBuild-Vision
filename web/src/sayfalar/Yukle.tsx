@@ -3,6 +3,13 @@ import { api } from '../api'
 import { useDurum } from '../durum'
 import { useGezinme } from '../gezinme'
 import { Sayfa } from '../bilesenler/Duzen'
+
+/**
+ * Sunucunun kabul ettiği görüntü türleri.
+ * `api/app/routers/goruntuler.py` → `IZINLI_TURLER` ile BİREBİR aynı
+ * olmak zorundadır; biri değişirse ikisi birden değişmelidir.
+ */
+const IZINLI_TURLER = new Set(['image/jpeg', 'image/png', 'image/webp'])
 import {
   Baslik, Bilgi, BosDurum, Buton, Hata, KapsamUyarisi, Kart,
   OnTahminEtiketi, SinifEtiketi, girdiSinifi,
@@ -43,9 +50,16 @@ export function Yukle() {
 
   const dosyaEkle = useCallback((liste: FileList | null) => {
     if (!liste) return
-    const gorseller = Array.from(liste).filter((d) => d.type.startsWith('image/'))
+    // ⚠️ SÜZGEÇ SUNUCU SÖZLEŞMESİNDEN GENİŞTİ. `image/*` iPhone'dan
+    // gelen HEIC/HEIF dosyalarını da geçiriyordu; sunucu yalnızca
+    // JPEG/PNG/WebP kabul ediyor ve ilk dosyada BÜTÜN partiyi 415 ile
+    // düşürüyor. Kullanıcı ekranda "JPEG, PNG veya WebP" yazısını
+    // okurken uygulama başka bir şey kabul ediyordu.
+    const gorseller = Array.from(liste).filter((d) => IZINLI_TURLER.has(d.type))
     if (gorseller.length === 0) {
-      setHata('Yalnızca görüntü dosyası yükleyebilirsiniz')
+      setHata('Yalnızca JPEG, PNG veya WebP yükleyebilirsiniz. '
+        + 'iPhone HEIC dosyaları desteklenmiyor — paylaşırken '
+        + '"En Uyumlu" biçimi seçin.')
       return
     }
     setHata('')
@@ -139,7 +153,7 @@ export function Yukle() {
                 <p className="text-sm text-metin-3 mt-1">
                   ya da cihazınızdan seçin — JPEG, PNG veya WebP
                 </p>
-                <input ref={girdi} type="file" multiple accept="image/*"
+                <input ref={girdi} type="file" multiple accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={(e) => dosyaEkle(e.target.files)} />
                 <Buton tur="ikincil" className="mt-4"

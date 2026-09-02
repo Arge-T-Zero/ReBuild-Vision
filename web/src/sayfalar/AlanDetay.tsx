@@ -45,7 +45,12 @@ export function AlanDetay({ alanId, geri }: { alanId: number; geri: () => void }
   }, [alanId])
 
   useEffect(() => {
-    api.alan(alanId).then(setAlan).catch(() => {})
+    // ⚠️ HATA YUTULUYORDU (`catch(() => {})`). Künye çağrısı düşerse
+    // erişim durumu, sorumlu ve koordinat kartı sessizce kayboluyordu ve
+    // kullanıcı bunu "bu sahada bu bilgi yok" diye okuyordu. Aynı
+    // dosyadaki miktar çağrısında bu hata bilinçle düzeltilmişti
+    // ("Hatalar YUTULMAZ"); künyede kalmış.
+    api.alan(alanId).then(setAlan).catch((h) => setHata(h.message))
     yenile()
   }, [alanId, yenile])
 

@@ -21,11 +21,11 @@ düzeltildi ve düzeltmeler yeniden çalıştırılarak doğrulandı.
 |---|---|
 | İncelenen belge | 29 `.md` + 2 kök JSON beyanı |
 | İncelenen kaynak | api 3.198 · web 6.345 · mobil 2.294 · test 2.433 satır |
-| Bulgu | **46** (10 kritik · 24 önemli · 12 kozmetik) |
-| Düzeltilen | **38** |
+| Bulgu | **49** (10 kritik · 26 önemli · 13 kozmetik) |
+| Düzeltilen | **41** |
 | Açık bırakılan | 8 — hepsi gerekçesiyle Bölüm 6'da |
 | Sunucu testi | 155 → **170** |
-| Mobil testi | 18 → **27** |
+| Mobil testi | 18 → **29** |
 
 **En pahalı üç bulgu, üçü de test takımının kör noktasındaydı:** mobil
 uygulamanın ana işlevi gerçek cihazda hiç çalışmıyordu, jürinin kurulum
@@ -196,6 +196,9 @@ belgenin kendi içinde çelişmesi en pahalı hata türü. **Düzeltildi.**
 | 3.20 | `docs/cevresel-etki.md` "modelin eğitilmesi" hâlâ gereken işler listesindeydi | Kapatıldı |
 | 3.21 | `mobile/` sınıf renk/ad haritası `siniflar.json` ile elle senkron tutuluyordu | `test/sinif_adlari_test.dart` bağladı |
 | 3.22 | Mobil yükleme hatası **her durumda** "bağlantı" diyordu; 403/413/503 de öyle görünüyordu | `ApiHatasi` ayrı yakalanıyor, sunucunun gerekçesi yazılıyor |
+| 3.23 | **Yükleme yetkisi olan iki rol yükleme ekranını göremiyordu.** Sunucu `belediye` ve `yonetici`'ye izin veriyor, kılavuz da öyle diyor; menüde `yukle` yoktu ve `/yukle` derin bağlantısı ana sayfaya düşüyordu | Menüye eklendi |
+| 3.24 | **Sunucu birimi ekrana basılıyordu:** "Değer (m3)", "12,4 m2", kuyrukta "40 m3". Bunlar makine biçimidir; kullanıcı formda "m³" seçip kuyrukta "m2" görüyordu | Web ve mobilde sunucu birimi ↔ görünen birim ayrıldı; mobilde iki testle bağlandı |
+| 3.25 | İstemci dosya süzgeci sunucu sözleşmesinden **genişti** (`image/*`); iPhone HEIC dosyaları geçiyor, sunucu 415 verip **bütün partiyi** düşürüyordu | Süzgeç ve `accept` daraltıldı; hata metni HEIC'i adıyla anlatıyor |
 
 ---
 
@@ -219,6 +222,25 @@ belgenin kendi içinde çelişmesi en pahalı hata türü. **Düzeltildi.**
 | ΔE ölçümü (iki palet, iki ölçüt) | eski 3,51 / 23,6 · yeni **6,79** / 14,4 |
 | Etiket kontrastı (5 renk) | en düşük **4,83** (AA eşiği 4,5) |
 | CI (`main`) | yeşil |
+
+### Jüri gibi çalıştırma — ekranla doğrulandı
+
+Yığın yeni demo veri tabanına bağlanıp gerçek bir ultralytics ağırlığıyla
+gezildi (`belediye@demo.local`):
+
+| Ne | Sonuç |
+|---|---|
+| Giriş sonrası ilk ekran | **Boş değil**: 3 saha, 3 farklı erişim durumu, doğrulanmış malzeme dağılımları |
+| Altbilgi | **"test mAP50 = 0,4334"** — "henüz ölçülmedi" değil |
+| `/sistem/durum` | `sahte: false`, `AGPL-3.0 (ultralytics)` |
+| Menüde `Yükle` (belediye) | ✅ göründü (3.23 düzeltmesi) |
+| Her tespitte "ÖN TAHMİN" | ✅ |
+| Uzman düzeltmesi | ✅ "Seramik → Beton / tuğla" — ham tahmin ve geçerli sınıf birlikte |
+| Düşük güvenli tespit | ✅ "Uzman incelemesi gerekli" |
+| Miktar kartı | **4,012 – 6,36 ton** + "belirsizlik aralığı" + yöntem + EPA kaynağı |
+| Ölçümsüz tespitte miktar | boş — sıfır değil |
+| Tehlikeli madde bölümü | "Kayıt bulunmaması… anlamına GELMEZ" yazılı |
+| Tarayıcı konsolu | temiz (harita karo isteklerinin ağ politikasıyla engellenmesi dışında) |
 
 ---
 

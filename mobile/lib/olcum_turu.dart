@@ -50,3 +50,17 @@ const olcumTurleri = <String, OlcumTuru>{
 /// kontrol edilmesi, yazım hatasının kuyruğa hiç girmemesini sağlar.
 /// Web arayüzünde (MiktarKarti.tsx) aynı kontrol zaten vardı.
 const olcumUstSiniri = 100000.0;
+
+/// Sunucu biriminden EKRANDA görünen birime çevirir.
+///
+/// ⚠️ KUYRUK LİSTESİ SUNUCU BİRİMİNİ BASIYORDU: kullanıcı formda "m³"
+/// seçip gönderdikten sonra kuyrukta aynı kaydı "m2" olarak görüyordu.
+/// Aynı ölçüm, aynı ekranda iki farklı birimle görünüyordu.
+///
+/// Bilinmeyen bir birim gelirse OLDUĞU GİBİ gösterilir — uydurulmaz.
+String gorunenBirimi(String sunucuBirimi) {
+  for (final t in olcumTurleri.values) {
+    if (t.sunucuBirimi == sunucuBirimi) return t.gorunenBirim;
+  }
+  return sunucuBirimi;
+}
