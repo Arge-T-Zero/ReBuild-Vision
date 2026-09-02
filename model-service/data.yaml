@@ -1,0 +1,6 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['ahsap', 'beton_tugla', 'cam', 'metal', 'seramik']

@@ -1,0 +1,47 @@
+{
+  "olusturma": "2026-09-01T08:10:17.985894",
+  "siniflar": [
+    "ahsap",
+    "beton_tugla",
+    "cam",
+    "metal",
+    "seramik"
+  ],
+  "split": {
+    "train": {
+      "goruntu": 2184,
+      "kutu": 7265,
+      "sinif_dagilimi": {
+        "ahsap": 1533,
+        "beton_tugla": 2099,
+        "cam": 1500,
+        "metal": 1194,
+        "seramik": 939
+      }
+    },
+    "valid": {
+      "goruntu": 384,
+      "kutu": 1407,
+      "sinif_dagilimi": {
+        "ahsap": 347,
+        "beton_tugla": 561,
+        "cam": 137,
+        "metal": 265,
+        "seramik": 97
+      }
+    },
+    "test": {
+      "goruntu": 197,
+      "kutu": 676,
+      "sinif_dagilimi": {
+        "ahsap": 140,
+        "beton_tugla": 273,
+        "cam": 76,
+        "metal": 145,
+        "seramik": 42
+      }
+    }
+  },
+  "toplam_goruntu": 2765,
+  "toplam_kutu": 9348
+}

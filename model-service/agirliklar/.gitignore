@@ -4,3 +4,9 @@
 *.pt
 *.onnx
 *.engine
+
+# Arşivlenmiş ağırlık da girmez: bir .pt dosyası zaten zip biçimindedir,
+# ".zip" uzantısıyla gelen kopya yukarıdaki kuralları atlar.
+*.zip
+*.tar
+*.tar.gz
