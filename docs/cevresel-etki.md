@@ -103,6 +103,34 @@ bırakıldı.
 **Eksik:** Beton, dolgu toprak ve alçıpan için **aralık veren ikinci bir
 kaynak.** Plastikler için inşaat/yıkım alanından kaynak bulunamadı.
 
+#### Beton araştırması — 01.09.2026, sonuç: değer yazılmadı
+
+Beton için kaynak arandı ve **uygun kaynak bulunamadı.** Bulunan şey,
+sorunun sanılandan zor olduğuydu: yayımlanmış "beton" dönüşüm değerleri
+**860 ile 4.200 lb/yd³ arasında, yani beşe katlanıyor.**
+
+Sebep bir ölçüm belirsizliği değil, **kategori farkı**:
+
+| Kategori | Yaklaşık değer | Ne ölçüyor |
+|---|---|---|
+| Katı beton | ~4.050 lb/yd³ | Dökülmüş, boşluksuz beton |
+| Kırılmış/gevşek moloz | ~2.025 lb/yd³ | Konteynere atılmış kırık beton |
+| **EPA (elimizdeki)** | **860 lb/yd³** | Gevşek Y&D atığı |
+| Karışık Y&D atığı | ~417 lb/yd³ | Sınıflandırılmamış moloz |
+
+Enkaz sahasındaki malzeme **gevşek moloz** kategorisindedir. Bu aralığın
+ortasından bir sayı seçmek kategorileri karıştırmak olurdu ve tonajı
+katlayabilirdi — bu, dayanaksız bir sayının neden yalnızca yanlış değil
+**zararlı** olduğunun somut örneğidir.
+
+İkinci aday (Contra Costa County dönüşüm tablosu, 1.400 lb/yd³)
+**belgenin kendisine erişilemediği için doğrulanamadı**; ayrıca betonu
+asfaltla birlikte veriyor.
+
+**Gereken şey "bir sayı" değil:** gevşek yıkım molozu kategorisinde
+**alt–üst aralığı** veren, doğrulanabilir tek bir kaynak. Ayrıntı:
+`katsayilar.json` → `acik_sorular`.
+
 ### G2. Geri kazanım yönlendirme oranı
 
 **Yöntem:**

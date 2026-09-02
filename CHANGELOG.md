@@ -5,6 +5,39 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 01.09.2026 — Mobil parola göster/gizle; beton katsayısı araştırıldı
+
+**Eklendi — mobil giriş ekranında parola göster/gizle**
+- Web arayüzünde vardı, mobilde yoktu. Saha koşulunda bu bir
+  kullanılabilirlik sorunu: eldivenli parmakla, güneş altında, küçük bir
+  klavyede yanlış girilen parolada kullanıcı nerede hata yaptığını
+  göremiyor, yalnızca "giriş başarısız" görüyordu.
+- `mobile/README.md` "Bilinen eksikler" listesinden çıkarıldı.
+
+**Araştırıldı — beton dönüşüm katsayısı · sonuç: DEĞER YAZILMADI**
+- `katsayilar.json`'da 9 malzeme sınıfından 5'i kapalı ve en kritiği
+  beton. Kaynak arandı; **uygun kaynak bulunamadı ve hiçbir sayı
+  yazılmadı.**
+- Bulunan asıl şey, sorunun sanılandan zor olduğu: yayımlanmış "beton"
+  dönüşüm değerleri **860 ile 4.200 lb/yd³ arasında, beşe katlanıyor.**
+  Sebep ölçüm belirsizliği değil **kategori farkı** — kimi kaynak katı
+  betonu (~4.050), kimi kırılmış gevşek molozu (~2.025), kimi karışık
+  Y&D atığını (~417) ölçüyor. EPA'nın elimizdeki 860 değeri gevşek moloz
+  kategorisinde.
+- Enkaz sahasındaki malzeme gevşek moloz kategorisindedir. Bu aralığın
+  ortasından bir sayı seçmek kategorileri karıştırmak olurdu ve tonajı
+  katlayabilirdi — dayanaksız bir sayının neden yalnızca yanlış değil
+  **zararlı** olduğunun somut örneği.
+- İkinci aday kaynak (Contra Costa County tablosu, 1.400 lb/yd³)
+  **belgeye erişilemediği için doğrulanamadı**; ayrıca betonu asfaltla
+  birlikte veriyor.
+- Bulgu `katsayilar.json` → `acik_sorular` ve `docs/cevresel-etki.md`
+  Bölüm 2'ye işlendi. Gereken şey "bir sayı" değil: **gevşek yıkım
+  molozu kategorisinde alt–üst aralığı veren, doğrulanabilir tek bir
+  kaynak.**
+
+---
+
 ### 01.09.2026 — Şartname denetimi; lisans kararı verildi
 
 Şartnamenin güncel metni **ilk kez birincil kaynak olarak** okundu. Depo

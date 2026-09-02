@@ -26,6 +26,14 @@ class _GirisDurumu extends State<GirisEkrani> {
   final _parola = TextEditingController();
   String _hata = '';
   bool _bekliyor = false;
+  /// Parola gizli mi?
+  ///
+  /// ⚠️ MOBİLDE GÖSTER/GİZLE YOKTU, web arayüzünde vardı. Saha
+  /// koşulunda bu bir kullanılabilirlik sorunu: eldivenli parmakla,
+  /// güneş altında, küçük bir klavyede yazılan parola yanlış girildiğinde
+  /// kullanıcı nerede hata yaptığını göremiyor — yalnızca "giriş
+  /// başarısız" görüyor ve baştan yazıyordu.
+  bool _parolaGizli = true;
 
   @override
   void dispose() {
@@ -128,8 +136,24 @@ class _GirisDurumu extends State<GirisEkrani> {
                   const SizedBox(height: 14),
                   TextField(
                     controller: _parola,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Parola'),
+                    obscureText: _parolaGizli,
+                    decoration: InputDecoration(
+                      labelText: 'Parola',
+                      suffixIcon: IconButton(
+                        tooltip: _parolaGizli
+                            ? 'Parolayı göster'
+                            : 'Parolayı gizle',
+                        onPressed: () =>
+                            setState(() => _parolaGizli = !_parolaGizli),
+                        icon: Icon(
+                          _parolaGizli
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: Renk.metin3,
+                        ),
+                      ),
+                    ),
                     onSubmitted: (_) => _gonder(),
                   ),
                   if (_hata.isNotEmpty) ...[
