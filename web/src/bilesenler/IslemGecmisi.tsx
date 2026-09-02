@@ -74,7 +74,9 @@ const DEGER_ADI: Record<string, string> = {
   belediye: 'Belediye yetkilisi',
   afad: 'AFAD yetkilisi',
   yikim: 'Yıkım firması',
-  tesis: 'Geri kazanım tesisi',
+  // `roller.ts` ile AYNI ad. Burada 'Geri kazanım tesisi' yazıyordu;
+  // aynı rol iki ekranda iki farklı adla görünüyordu.
+  tesis: 'Tesis operatörü',
   agirlik: 'Ağırlık',
   hacim: 'Hacim',
   alan: 'Görünür alan',

@@ -81,7 +81,28 @@ defterinin dağıtım ağını engelliyor. `compose config` ile söz dizimi
 doğrulandı ama çalıştığı görülmedi; `docker/README.md` kutucuğu bu
 yüzden işaretsiz ve gerekçe yazılı.
 
-170 sunucu testi (155'ten), 27 mobil testi (18'den), web derlemesi ve
+**Arayüz — jüri gibi çalıştırılarak doğrulandı**
+
+Yığın yeni demo verisiyle ve gerçek bir ultralytics ağırlığıyla gezildi.
+Ek üç bulgu çıktı ve düzeltildi:
+
+- **Yükleme yetkisi olan iki rol yükleme ekranını göremiyordu.** Sunucu
+  `belediye` ve `yonetici`'ye izin veriyor, kılavuz da öyle diyor; menüde
+  `yukle` yoktu ve derin bağlantı ana sayfaya düşüyordu.
+- **Sunucu birimi ekrana basılıyordu:** "Değer (m3)", kuyrukta "40 m3".
+  Kullanıcı formda "m³" seçip kuyrukta "m2" görüyordu. Web ve mobilde
+  sunucu birimi ile görünen birim ayrıldı.
+- **İstemci dosya süzgeci sunucu sözleşmesinden genişti** (`image/*`);
+  iPhone HEIC dosyaları geçiyor, sunucu 415 verip bütün partiyi
+  düşürüyordu.
+
+Ekranla doğrulananlar: ilk ekran artık boş değil (3 saha, 3 erişim
+durumu), altbilgide **ölçülmüş** mAP, `/sistem/durum` → `sahte: false`,
+her tespitte ÖN TAHMİN, uzman düzeltmesi "Seramik → Beton / tuğla",
+miktar kartı **4,012 – 6,36 ton** + belirsizlik aralığı + EPA kaynağı,
+ölçümsüz tespitte miktar **boş**.
+
+170 sunucu testi (155'ten), 29 mobil testi (18'den), web derlemesi ve
 `flutter analyze` temiz.
 
 

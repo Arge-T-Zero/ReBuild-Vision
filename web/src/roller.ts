@@ -41,7 +41,14 @@ export const ROLLER: Record<Rol, RolTanimi> = {
   belediye: {
     ad: 'Belediye yetkilisi',
     anaSayfa: 'alanlar',
-    menu: ['alanlar', 'harita', 'gecmis'],
+    // ⚠️ `yukle` BURADA YOKTU AMA SUNUCU İZİN VERİYORDU.
+    // `permissions.GORUNTU_YUKLEYEBILIR = {yonetici, saha, belediye}` ve
+    // kullanıcı kılavuzu belediye için "görüntü yükleme" yazıyordu; menüde
+    // olmadığı için `/yukle` derin bağlantısı da ana sayfaya düşüyordu.
+    // Belediye yetkilisi yalnızca alan detayındaki tekil düğmeden
+    // yükleyebiliyordu: toplu sürükle-bırak, "ne olacak" paneli ve
+    // yükleme öncesi sahte model uyarısı ona hiç görünmüyordu.
+    menu: ['alanlar', 'yukle', 'harita', 'gecmis'],
     gorev: 'Enkaz alanlarını tanımlayın ve malzeme dağılımını izleyin.',
   },
   afad: {
@@ -65,7 +72,8 @@ export const ROLLER: Record<Rol, RolTanimi> = {
   yonetici: {
     ad: 'Yönetici',
     anaSayfa: 'alanlar',
-    menu: ['alanlar', 'kuyruk', 'harita', 'gecmis', 'yonetici'],
+    // Yönetici "sistemin tamamına erişir" diyor; yükleme yetkisi de var.
+    menu: ['alanlar', 'yukle', 'kuyruk', 'harita', 'gecmis', 'yonetici'],
     gorev: 'Sistemin tamamına erişiminiz var.',
   },
 }

@@ -74,4 +74,18 @@ void main() {
       expect(guvenYuzdesi(1.0), '100');
     });
   });
+
+  group('kuyrukta gösterilen birim', () {
+    test('sunucu biriminden tipografik birime çevrilir', () {
+      // Kuyruk listesi sunucu birimini basıyordu: kullanıcı formda "m³"
+      // seçip gönderdikten sonra aynı kaydı kuyrukta "m2" görüyordu.
+      expect(gorunenBirimi('m2'), 'm²');
+      expect(gorunenBirimi('m3'), 'm³');
+      expect(gorunenBirimi('ton'), 'ton');
+    });
+
+    test('bilinmeyen birim olduğu gibi gösterilir — uydurulmaz', () {
+      expect(gorunenBirimi('kg'), 'kg');
+    });
+  });
 }

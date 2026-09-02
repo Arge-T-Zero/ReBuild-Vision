@@ -325,7 +325,8 @@ class _OlcumDurumu extends State<OlcumEkrani> {
                   color: reddedildi ? Renk.dikkat : Renk.metin4,
                 ),
                 title: Text(
-                  'Tespit #${k.tespitId} · ${_sayi(k.deger)} ${k.birim}',
+                  'Tespit #${k.tespitId} · ${_sayi(k.deger)} '
+                  '${gorunenBirimi(k.birim)}',
                   style: TextStyle(fontSize: 13, color: Renk.metin2),
                 ),
                 subtitle: Column(

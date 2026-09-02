@@ -43,6 +43,19 @@ const OLCUM_TURU: Record<string, string> = {
   alan: 'Görünür alan',
 }
 
+/**
+ * SUNUCU birimi → EKRANDA görünen birim.
+ *
+ * Sunucu `m2`/`m3` bekler (`api/app/schemas.py` → `TURUN_BIRIMI`); bunlar
+ * makine biçimidir ve ekranda görünmemelidir. Mobil tarafta aynı ayrım
+ * `mobile/lib/olcum_turu.dart` içindedir.
+ */
+const BIRIM_GORUNEN: Record<string, string> = {
+  m2: 'm²',
+  m3: 'm³',
+  ton: 'ton',
+}
+
 export function MiktarKarti({
   miktar, olcumler, olcumEklenebilir, olcumEklendi,
 }: {
@@ -76,7 +89,9 @@ export function MiktarKarti({
         <div>
           <p className="text-2xl font-semibold tabular-nums">
             {sayi(miktar.deger_alt)} – {sayi(miktar.deger_ust)}{' '}
-            <span className="text-base font-normal text-metin-2">{miktar.birim}</span>
+            <span className="text-base font-normal text-metin-2">
+              {(miktar.birim && BIRIM_GORUNEN[miktar.birim]) ?? miktar.birim}
+            </span>
           </p>
           <p className="text-xs text-metin-3 mt-1">belirsizlik aralığı</p>
 
@@ -125,7 +140,7 @@ export function MiktarKarti({
             {olcumler.map((o) => (
               <li key={o.id} className="text-xs text-metin-2">
                 <span className="tabular-nums font-medium">
-                  {sayi(o.deger)} {o.birim}
+                  {sayi(o.deger)} {BIRIM_GORUNEN[o.birim] ?? o.birim}
                 </span>
                 {' · '}{OLCUM_TURU[o.tur] ?? o.tur}{' · '}{o.yontem}
               </li>
@@ -157,7 +172,14 @@ function OlcumFormu({ tespitId, acik, ac, eklendi }: {
   const [hata, setHata] = useState('')
   const [bekliyor, setBekliyor] = useState(false)
 
-  const birim = { alan: 'm2', hacim: 'm3', agirlik: 'ton' }[tur]
+  // ⚠️ SUNUCU BİRİMİ EKRANA BASILIYORDU: kullanıcı "Değer (m3)" ve
+  // "12,4 m2" görüyordu. Bunlar sunucunun kabul ettiği biçimdir
+  // (`api/app/schemas.py` → `TURUN_BIRIMI`), tipografik biçim değil.
+  // Mobil bu ayrımı `olcum_turu.dart`'ta zaten yapıyordu; web yapmıyordu.
+  //
+  // `sunucuBirimi` istekte gider, `gorunenBirim` ekranda görünür.
+  const sunucuBirimi = { alan: 'm2', hacim: 'm3', agirlik: 'ton' }[tur]
+  const birim = BIRIM_GORUNEN[sunucuBirimi]
 
   if (!acik) {
     return (
@@ -194,7 +216,10 @@ function OlcumFormu({ tespitId, acik, ac, eklendi }: {
     }
     setBekliyor(true)
     try {
-      await api.olcumEkle({ tespit_id: tespitId, tur, deger: sayi, birim, yontem })
+      await api.olcumEkle({
+        tespit_id: tespitId, tur, deger: sayi,
+        birim: sunucuBirimi, yontem,
+      })
       setDeger(''); setYontem('')
       eklendi()
     } catch (h) {
