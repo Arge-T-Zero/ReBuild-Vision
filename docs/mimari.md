@@ -185,7 +185,7 @@ Maddenin yedi kaleminden altısı bu belgenin önceki bölümlerinde ve
 | **Taşınabilir veri formatı** | ✅ Rapor **GeoJSON**, **CSV** (BOM'lu, Excel/Türkçe ayraç uyumlu) ve **JSON** olarak dışa aktarılır |
 | **Coğrafi standart** | ✅ Geometri **PostGIS**'te, **EPSG:4326** ile saklanır; GeoJSON çıktısı RFC 7946 koordinat sırasına uyar (boylam, enlem) |
 | **Kimlik** | ✅ JWT — standart taşıyıcı jeton; dış kimlik servisine bağımlılık yok |
-| **OGC API** | ⚠️ **yok.** GeoJSON çıktısı OGC API - Features'a geçişi kolaylaştırır ama uç nokta bu standarda göre tasarlanmadı. Kamu entegrasyonu gündeme gelirse eklenecek ilk şey budur |
+| **OGC API - Features** | ✅ `/ogc` altında · Core + GeoJSON uygunluk sınıfları. QGIS/ArcGIS doğrudan bağlanabilir. `oas30` **beyan edilmez** — sistem OpenAPI 3.1 üretir, karşılanmayan sınıf beyan edilmez |
 
 Hiçbir tescilli (proprietary) veri formatı kullanılmaz. Dışa aktarılan
 her dosya, sistem olmadan da okunabilir.
@@ -252,6 +252,5 @@ kalanında **tek satır değişmez.**
 | Uzmana/firmaya saha atama akışı yok | Uzman görünürlüğü **iş üzerinden** türetiliyor: inceleme bekleyen ya da kendi doğruladığı tespiti içeren sahaları görür. Yıkım firması ve tesis operatörü yalnızca ilişkili sahalarını görür | 🟡 ara çözüm |
 | Katsayı tablosu kısmen dolu | 9 malzeme sınıfından **4'ü** kaynaklı; beton dahil 5'i kapalı — hacim→ağırlık dönüşümü ana kütlede yapılamıyor | 🔴 kaynak bekliyor (`docs/cevresel-etki.md` Bölüm 5) |
 | Model ağırlığı yüklü değil | `model-service/` hazır ve sözleşmesi test edilmiş; eğitim çıktısı bekleniyor. O zamana kadar sahte servis kullanılıyor ve arayüzde işaretli | ⏳ eğitim sürüyor |
-| OGC API yok | Kamu coğrafi veri entegrasyonu için beklenen standart (Madde 10.8) | 🟡 GeoJSON geçişi kolaylaştırıyor |
 | Nesne depolama yok | Yatay ölçeklemede görüntüler paylaşılamaz (Bölüm 7.3) | 🟡 tek makinede sorun değil |
 | Yük testi yapılmadı | Ölçeklenebilirlik iddiası ölçülmemiştir | 🟡 beyan edilmiyor |

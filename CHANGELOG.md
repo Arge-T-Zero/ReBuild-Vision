@@ -5,6 +5,45 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 01.09.2026 — OGC API - Features (Madde 10.8)
+
+**Eklendi — `/ogc` altında açık coğrafi servis**
+- Madde 10.8 "OGC API benzeri servis yaklaşımı" bekliyordu; depoda
+  yoktu ve `docs/mimari.md` bunu açıkça boşluk olarak sayıyordu.
+- Sistem GeoJSON dışa aktarımı zaten yapıyordu ama o bir **dosya
+  indirmedir**: QGIS'te açmak için indirmek gerekir ve veri o anda
+  donar. OGC API **canlı bir servistir** — QGIS, ArcGIS ve kamu CBS
+  katmanları doğrudan adresten bağlanır, `bbox` ile ekrandaki alanı
+  ister, veri güncellendiğinde tazelenir.
+- Uç noktalar: karşılama, `/conformance`, `/collections`,
+  `/collections/tespit`, `/items` (bbox + sayfalama), `/items/{id}`.
+
+**Kritik tasarım kararı — yeni sorgu yolu AÇILMADI**
+- Kayıtlar `rapor.py` içindeki ortak sorgudan gelir; yani rapor ve
+  harita ile birebir aynı kural süzgecinden geçer: yalnızca
+  **doğrulanmış** tespitler, `konteyner` hariç, uzman düzeltmesi
+  geçerli, rol kapsamı zorunlu.
+- Sorguyu yeniden yazmak, bu dört kuralın birinin sessizce atlanması
+  demek olurdu — coğrafi bir uç noktada bu, **doğrulanmamış bir ön
+  tahminin kamu haritasına düşmesi** anlamına gelir.
+- 13 test bunu koruyor; en önemlisi `test_ogc_ve_rapor_ayni_kayitlari_verir`:
+  iki uç nokta ayrışırsa biri kuralı atlıyor demektir.
+
+**Dürüstlük — karşılanmayan uygunluk sınıfı beyan edilmedi**
+- Yalnızca `core` ve `geojson` beyan edildi. `oas30` **beyan
+  EDİLMEDİ**: sistem OpenAPI 3.1 üretir, 3.0 değil. Karşılanmayan bir
+  uygunluk sınıfını beyan etmek yanlış beyandır ve ayrı bir test bunu
+  denetliyor.
+- Kapsam uyarısı `kunye` alanında çıktının içinde taşınıyor: QGIS'ten
+  bağlanan biri README okumaz, veriyi olduğu gibi alır.
+
+**Ölçüldü:** doğrulanmamış kayıt ve `konteyner` çıktıya sızmıyor;
+`/ogc` ile `/rapor/geojson` aynı kayıtları veriyor; id ile doğrudan
+erişim de süzgeçten geçiyor (doğrulanmamış kayıt → 404). Test paketi
+138 → **151**.
+
+---
+
 ### 01.09.2026 — Mobil parola göster/gizle; beton katsayısı araştırıldı
 
 **Eklendi — mobil giriş ekranında parola göster/gizle**
