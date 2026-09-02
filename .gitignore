@@ -5,14 +5,25 @@ web/.env
 model-service/.env
 
 # --- Python ortamları ---
-.venv-mock/
-api/.venv/
-model-mock/.venv/
-model-service/.venv/
-api/app/__pycache__/
-api/**/__pycache__/
-model-mock/__pycache__/
-model-service/__pycache__/
+#
+# ⚠️ TEK TEK SAYMAK YETMEDİ. Bu bölüm 30.08.2026'da yalnızca bilinen
+# yolları listeliyordu; o gün `web/` altında açılan bir sanal ortam
+# (`web/.venv-inceleme/`) listede olmadığı için depoya girdi ve
+# **1.906 dosya** olarak izlenmeye başladı — deponun %88'i. Kural sonra
+# eklendi ama `.gitignore` ZATEN İZLENEN dosyayı geri almaz; temizlik
+# `git rm -r --cached` ile 02.09.2026'da yapıldı.
+#
+# Bu yüzden artık ad kalıbıyla ve HER DERİNLİKTE süzülüyor: yeni bir
+# sanal ortam nerede açılırsa açılsın yakalanır.
+.venv
+.venv/
+.venv*/
+**/.venv*/
+venv/
+**/venv/
+env/
+**/__pycache__/
+*.py[cod]
 
 # --- Node ---
 web/node_modules/
@@ -63,8 +74,6 @@ tests/__pycache__/
 /kapak-1.png
 /kapak-2.png
 /kapak-3.png
-.venv-inceleme/
-.venv-model/
 
 # --- Ultralytics çalışma çıktıları ---
 # Depo kökünden bir eğitim/doğrulama koşusu çalıştırıldığında ultralytics
