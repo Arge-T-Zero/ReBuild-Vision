@@ -1,0 +1,197 @@
+{
+  "_aciklama": "GERÇEK model çıktısı. Kutular ve güven skorları model-service/agirliklar/best.pt ile üretilmiştir; elle yazılmamıştır. Görüntülerin kendisi sentetiktir (web/public/gorseller/README.md). Yeniden üretmek için: scripts/demo_tespitleri_uret.py",
+  "model": "best",
+  "model_license": "AGPL-3.0 (ultralytics)",
+  "review_threshold": 0.5,
+  "goruntuler": [
+    {
+      "dosya": "ornek-enkaz-1.webp",
+      "genislik": 1200,
+      "yukseklik": 896,
+      "tespitler": [
+        {
+          "sinif": "metal",
+          "guven": 0.44457051157951355,
+          "bbox": {
+            "x": 495,
+            "y": 133,
+            "w": 514,
+            "h": 368
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        },
+        {
+          "sinif": "beton_tugla",
+          "guven": 0.3987038731575012,
+          "bbox": {
+            "x": 0,
+            "y": 579,
+            "w": 335,
+            "h": 317
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        }
+      ]
+    },
+    {
+      "dosya": "ornek-enkaz-2.webp",
+      "genislik": 1200,
+      "yukseklik": 896,
+      "tespitler": [
+        {
+          "sinif": "metal",
+          "guven": 0.7609142065048218,
+          "bbox": {
+            "x": 348,
+            "y": 161,
+            "w": 822,
+            "h": 687
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": false
+        },
+        {
+          "sinif": "beton_tugla",
+          "guven": 0.6613432168960571,
+          "bbox": {
+            "x": 183,
+            "y": 649,
+            "w": 155,
+            "h": 138
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": false
+        },
+        {
+          "sinif": "cam",
+          "guven": 0.6287594437599182,
+          "bbox": {
+            "x": 1092,
+            "y": 5,
+            "w": 74,
+            "h": 69
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": false
+        },
+        {
+          "sinif": "ahsap",
+          "guven": 0.5859890580177307,
+          "bbox": {
+            "x": 490,
+            "y": 524,
+            "w": 172,
+            "h": 153
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": false
+        },
+        {
+          "sinif": "ahsap",
+          "guven": 0.5342926383018494,
+          "bbox": {
+            "x": 41,
+            "y": 632,
+            "w": 73,
+            "h": 108
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": false
+        },
+        {
+          "sinif": "ahsap",
+          "guven": 0.4925123453140259,
+          "bbox": {
+            "x": 858,
+            "y": 543,
+            "w": 43,
+            "h": 87
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        },
+        {
+          "sinif": "ahsap",
+          "guven": 0.4900294244289398,
+          "bbox": {
+            "x": 184,
+            "y": 648,
+            "w": 158,
+            "h": 134
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        },
+        {
+          "sinif": "beton_tugla",
+          "guven": 0.41031351685523987,
+          "bbox": {
+            "x": 273,
+            "y": 678,
+            "w": 169,
+            "h": 137
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        }
+      ]
+    },
+    {
+      "dosya": "ornek-enkaz-3.webp",
+      "genislik": 1200,
+      "yukseklik": 896,
+      "tespitler": [
+        {
+          "sinif": "metal",
+          "guven": 0.5429558157920837,
+          "bbox": {
+            "x": 741,
+            "y": 360,
+            "w": 266,
+            "h": 190
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": false
+        },
+        {
+          "sinif": "metal",
+          "guven": 0.4269419014453888,
+          "bbox": {
+            "x": 844,
+            "y": 149,
+            "w": 108,
+            "h": 150
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        },
+        {
+          "sinif": "ahsap",
+          "guven": 0.39100539684295654,
+          "bbox": {
+            "x": 472,
+            "y": 89,
+            "w": 727,
+            "h": 807
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        },
+        {
+          "sinif": "ahsap",
+          "guven": 0.3150840103626251,
+          "bbox": {
+            "x": 298,
+            "y": 255,
+            "w": 267,
+            "h": 118
+          },
+          "bbox_format": "pixel_absolute_original",
+          "inceleme_gerekli": true
+        }
+      ]
+    }
+  ]
+}

@@ -249,9 +249,19 @@ gezildi (`belediye@demo.local`):
 Bu başlık bilinçli olarak ayrı. Aşağıdakiler **çalıştığı görülmemiş**
 şeylerdir; teslim öncesi çalıştırılmaları gerekir.
 
+> ✅ **03.09.2026 güncellemesi — gerçek model çalıştı.** Ağırlık
+> [`model-v1`](https://github.com/Arge-T-Zero/ReBuild-Vision/releases/tag/model-v1)
+> sürümünden indirildi (39 MB, sha256 `6864a909d1969548…`), model servisi
+> onunla ayağa kalktı (`/health` → `sahte: false`, `agirlik_yuklendi: true`),
+> deponun üç örnek görüntüsü üzerinde çıkarım yapıldı ve **14 gerçek
+> tespit** üretildi. Sınıf sırası `siniflar.json` ile birebir doğrulandı.
+> Demo verisi artık elle yazılmış kutular değil, **bu çıktıyı** kullanıyor.
+>
+> Kalan tek doğrulanamayan: imajın **docker içinde** derlenmesi.
+
 | Ne | Neden | Kim yapmalı |
 |---|---|---|
-| 🔴 **Gerçek model imajının derlenmesi ve çalışması** | Geliştirme oturumunun ağ politikası Docker kayıt defterinin dağıtım ağını (`production.cloudfront.docker.com`) engelliyor; `python:3.11-slim` indirilemiyor. Dosyalar yazıldı, `compose config` ile doğrulandı, **derlenemedi** | Teslim öncesi, gerçek bir makinede |
+| 🔴 **Gerçek model imajının DERLENMESİ** | Ağ politikası Docker kayıt defterinin dağıtım ağını (`production.cloudfront.docker.com`) engelliyor; `python:3.11-slim` indirilemiyor. Servisin kendisi ağırlıkla **çalıştı** (docker dışında); doğrulanamayan yalnızca imaj derlemesi | Teslim öncesi, gerçek bir makinede |
 | 🔴 **`docker compose up` uçtan uca** | Aynı kısıt | Teslim öncesi |
 | 🟠 Mobil `contentType` düzeltmesinin gerçek cihazda sınanması | Emülatör/cihaz yok. Birim testle bağlandı ama gerçek bir yükleme denenmedi | Teslim öncesi, tek fotoğraf yeterli |
 | 🟠 Canlı demo (Vercel/Render) | Ağ politikası dış erişimi engelliyor | Sunum öncesi bir kez uyandırın |

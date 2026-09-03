@@ -165,10 +165,16 @@ nereden toplandığı ve hangi hakla kullanıldığı henüz yazılı değildir;
 şartname Madde 5.2 bunu açıkça istiyor. Ayrıntı ve kapatma yolu:
 [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1.
 
-Ağırlık dosyası (`best.pt`) depoya girmez; `model-service/agirliklar/`
-altına konur ya da `MODEL_AGIRLIK` ile yolu verilir —
-[`model-service/README.md`](model-service/README.md). Ağırlık yokken
-servis **sahte veri üretmez**: `/predict` 503 döner.
+**Ağırlık nereden gelir:** [`model-v1`](https://github.com/Arge-T-Zero/ReBuild-Vision/releases/tag/model-v1) sürümünden indirilir
+(39 MB; büyük ikili dosyalar depoya girmez).
+
+```bash
+curl -L -o model-service/agirliklar/best.pt \
+  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
+```
+
+Ağırlık yokken servis **sahte veri üretmez**: `/predict` 503 döner.
+Ayrıntı: [`model-service/README.md`](model-service/README.md).
 
 Ağırlıksız geliştirme için `model-mock` sahte servisi kullanılır. Sahte
 servis etkinken arayüzde kalıcı bir **"SAHTE MODEL SERVİSİ"** rozeti

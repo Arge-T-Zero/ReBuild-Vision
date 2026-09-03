@@ -5,6 +5,53 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 03.09.2026 — Gerçek model çalıştı; demo kutuları artık uydurma değil
+
+Ağırlık `model-v1` sürümünden indirildi (39 MB, sha256
+`6864a909d1969548…`). Model servisi onunla ayağa kalktı:
+`/health` → `sahte: false`, `agirlik_yuklendi: true`, `sinif_sayisi: 5`.
+Modelin kendi `names` sözlüğü `siniflar.json` ile **birebir aynı**
+sırada doğrulandı.
+
+**Demo tespitleri artık GERÇEK model çıktısı**
+
+`scripts/demo_veri.py` tespit kutularını, sınıfları ve güven skorlarını
+ELLE YAZILMIŞ bir listeden alıyordu. Sayılar makul görünüyordu ama
+hiçbiri bir modelden gelmiyordu — jürinin demo ortamında gördüğü her
+kutu uydurmaydı. Ana talimat Bölüm 9.5 sahteliğin gizlenmemesini
+istiyor; en iyisi hiç üretmemek.
+
+- `scripts/demo_tespitleri_uret.py` gerçek `best.pt` ile çıkarım yapıp
+  `scripts/demo_tespitleri.json` üretir. Sahte servise bağlanırsa
+  **çalışmayı reddeder** — sahte servisten üretilmiş bir dosya, elle
+  yazılmış listeden daha iyi olmaz ama gerçek görünürdü.
+- `demo_veri.py` bu dosyayı okur; dosya yoksa uydurma kutu yazmak yerine
+  hata verir.
+- Deponun üç örnek görüntüsü üzerinde **14 gerçek tespit** üretildi.
+
+Ne gerçek, ne sentetik — ikisi de açıkça yazıldı: kutular ve güven
+skorları gerçek, görüntüler sentetik, doğrulama/ölçüm senaryosu sentetik
+(gerçek uzman ya da şerit metre yok).
+
+**Dört kural gerçek çıktı üzerinde doğrulandı**
+
+  #6  ahsap %58,60 · 40 m³ ölçüm · kaynaklı katsayı → 4,012–6,360 ton
+  #3  metal %76,09 · doğrulandı, ölçüm yok          → MİKTAR BOŞ
+  #4  beton_tugla %66,13 · ölçüm VAR, katsayı kapalı → MİKTAR YİNE BOŞ
+  #7  ahsap → beton_tugla uzman düzeltmesi           → ham tahmin saklı
+  #11 metal · doğrudan tartım                        → 3,150–3,850 ton
+  #14 belirsiz · ikinci incelemeye açık
+  6 tespit `inceleme_gerekli` → uzman kuyruğuna kendiliğinden düştü
+
+**Belgeler ağırlığın kaynağına bağlandı**
+
+README, `docs/kurulum.md`, `docker/README.md`, `model-service/README.md`
+ve demo video kontrol listesi artık `model-v1` indirme komutunu veriyor;
+"ayrıca verilir" gibi belirsiz ifade kalmadı.
+
+170 sunucu testi geçiyor.
+
+
 ### 02.09.2026 — Teslim denetimi (sıfırdan, her şey)
 
 Teslime iki gün kala yapılan tam kontrol: depo, 29 belge, kod, testler,
