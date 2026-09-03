@@ -33,13 +33,32 @@ sahnede kısaltmak mümkün değildir. Konu mentöre sorulacaktır
 | 1 | Belediye rolüyle giriş, enkaz alanı kaydı | ~40 sn | Harita üzerinde konum ve sınır çizimi |
 | 2 | Konum bilgili görüntüleri yükleme | ~30 sn | Toplu yükleme |
 | 3 | Sınıflandırma sonuçları | ~50 sn | Kutular, sınıf adları, güven skorları, **"ön tahmin" etiketi** |
-| 4 | Düşük güvenli kaydın **otomatik** kuyruğa düşmesi | ~30 sn | "1 tespit otomatik olarak uzman inceleme kuyruğuna alındı" |
+| 4 | Düşük güvenli kaydın **otomatik** kuyruğa düşmesi | ~30 sn | "N tespit otomatik olarak uzman inceleme kuyruğuna alındı" — sayı yüklenen görüntüye göre değişir, ekranda ne yazıyorsa o söylenir |
 | 5 | Uzman rolüne geçiş: bir tahmini düzelt, birini belirsiz işaretle | ~50 sn | Üç aksiyon; eski/yeni sınıfın birlikte görünmesi |
-| 6 | Saha ölçümü gir → miktarın **belirsizlik aralığıyla** çıkması | ~40 sn | `4,012 – 6,360 ton` + yöntem + katsayı kaynağı |
-| 7 | **Ölçüm olmayan kayıtta miktar alanının boş kalması** | ~40 sn | ⭐ **EN GÜÇLÜ AN** |
+| 6 | Saha ölçümü gir → miktarın **belirsizlik aralığıyla** çıkması | ~40 sn | `4,012 – 6,360 ton` + yöntem + katsayı kaynağı (demo verisinde **tespit #6**) |
+| 7 | **Ölçüm olmayan kayıtta miktar alanının boş kalması** | ~40 sn | ⭐ **EN GÜÇLÜ AN** (demo verisinde **tespit #3**) |
 | 8 | Malzeme Kaynak Haritası → filtreleme | ~30 sn | Yalnızca doğrulanmış kayıtlar; kapsam uyarısı lejandda |
 
 **Toplam:** ~5 dakika
+
+### Demo verisindeki hangi kayıt neyi gösteriyor
+
+`scripts/demo_veri.py` her çalıştığında aynı 14 tespiti üretir (kutular
+ve güven skorları gerçek modelden, `scripts/demo_tespitleri.json`).
+Çekim sırasında aranacak kayıtlar:
+
+| Kayıt | Ne gösterir | Ekranda |
+|---|---|---|
+| **#6** ahşap %58,60 | Ölçüm + kaynaklı katsayı | `4,012 – 6,360 ton`, EPA kaynağı görünür |
+| **#3** metal %76,09 | Doğrulanmış ama **ölçümsüz** | Miktar alanı **boş** — 7. adımın kaydı |
+| **#4** beton/tuğla %66,13 | Ölçüm **var**, katsayı **yok** | Miktar yine boş, gerekçesi ayrı yazılı |
+| **#7** ahşap %53,43 | Uzman düzeltmesi | "Ahşap → Beton / tuğla", ham tahmin üstü çizili |
+| **#11** metal %54,30 | Doğrudan tartım | `3,150 – 3,850 ton`, katsayı kullanılmadı |
+| **#14** ahşap %31,51 | Belirsiz işaretlenmiş | İkinci incelemeye açık |
+
+#4 ile #3'ün birlikte gösterilmesi 7. adımı güçlendirir: biri ölçümü
+olmadığı için boş, diğeri ölçümü **olduğu hâlde** katsayısı olmadığı için
+boş. Sistem iki farklı nedenle de sayı uydurmuyor.
 
 ### 7. adım özellikle vurgulanmalı
 
