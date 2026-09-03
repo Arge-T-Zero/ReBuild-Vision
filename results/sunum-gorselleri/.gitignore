@@ -1,0 +1,4 @@
+# Ham (çerçevesiz) kareler depoya girmez — 16 MB ve yeniden üretilebilir.
+# Slayta konacak olanlar cerceveli/ altında ve izleniyor.
+*.png
+!cerceveli/*.png
