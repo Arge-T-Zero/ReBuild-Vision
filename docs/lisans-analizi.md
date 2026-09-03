@@ -38,7 +38,7 @@ konuşulur · *veri* = kod değil içerik.
 
 | Paket | Sürüm | Lisans | Kullanım biçimi | Kaynak |
 |---|---|---|---|---|
-| ultralytics (YOLO11) | 8.4.0 | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
+| ultralytics (YOLO11) | 8.4.137 | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
 | model ağırlıkları (özgün eğitim) | — | **AGPL-3.0** (proje lisansıyla aynı) ⚠️ | model dosyası | proje içi |
 | **eğitim veri seti** (takımın kendi topladığı) | — | 🔴 **BEYAN EKSİK** | veri | proje içi — bkz. 2.1.1 |
 
@@ -211,7 +211,7 @@ Bu tablo bilinçli olarak ayrıdır: buradaki paketler `api/` imajına
 | uvicorn[standard] | 0.34.0 | BSD-3-Clause | |
 | python-multipart | 0.0.20 | Apache-2.0 | |
 | pillow | 11.1.0 | MIT-CMU | |
-| **ultralytics** | **8.4.0** | **AGPL-3.0** 🔴 | Bölüm 3 — yalnızca bu serviste |
+| **ultralytics** | **8.4.137** | **AGPL-3.0** 🔴 | Bölüm 3 — yalnızca bu serviste |
 
 `ultralytics` kendi bağımlılıklarını (torch, opencv, numpy…) beraberinde
 getirir. Bunlar AGPL sınırının **içinde** kalır ve yine `api/`'ye
