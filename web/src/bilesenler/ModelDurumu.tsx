@@ -90,6 +90,7 @@ export function SahteModelUyarisi() {
   if (!durum) return null
 
   const { ulasilabilir, sahte, model, hata } = durum.model_servisi
+  const olculdu = !durum.model_metrikleri.startsWith('henüz ölçülmedi')
 
   if (!ulasilabilir) {
     return (
@@ -119,8 +120,24 @@ export function SahteModelUyarisi() {
         </strong>{' '}
         etkin{model ? ` (${model})` : ''}. Sınıf, güven skoru ve kutular
         <strong className="font-semibold"> uydurmadır</strong>; gerçek bir
-        modelin çıktısı değildir. Model henüz eğitilmemiştir ve bu yüzden
-        hiçbir başarım sayısı beyan edilmemektedir.
+        modelin çıktısı değildir.
+        {/* Model VAR ve ÖLÇÜLDÜ. Bunu söylememek, sahteliği gizlemenin
+            tersi bir hata olurdu: okuyan kişi "ortada model yok" sanır.
+            Sayı buradan uydurulmaz — sunucunun kendi ölçüm özeti
+            (`/sistem/durum` → model_metrikleri) olduğu gibi basılır,
+            altbilgideki sayıyla aynı kaynaktan gelir. */}
+        <span className="block mt-1 text-metin-2">
+          Sahte olan <strong className="font-semibold">servis</strong>, model
+          değil
+          {/* Metrik özeti sunucudan gelir. Ölçüm dosyası o ortamda yoksa
+              özet "henüz ölçülmedi…" döner; o durumda "ölçüldü" DEMEYİZ,
+              yoksa bant kendi kendini yalanlar. */}
+          {olculdu
+            ? <>: model eğitildi ve ölçüldü ({durum.model_metrikleri})</>
+            : <> — model eğitildi; bu ortamda ölçüm özeti okunamıyor</>}
+          . Bu ortam gerçek modeli çalıştırmıyor; çalıştırma adımları
+          teslim paketindeki <code>docs/kurulum.md</code> içindedir.
+        </span>
       </span>
     </p>
   )

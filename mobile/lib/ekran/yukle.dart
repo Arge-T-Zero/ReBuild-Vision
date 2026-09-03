@@ -318,9 +318,15 @@ class _SonucKarti extends StatelessWidget {
               _Not(
                 renk: Renk.uyari,
                 ikon: Icons.science_outlined,
+                // Model VAR ve ÖLÇÜLDÜ; sahte olan SERVİS. Eski metin
+                // "model henüz eğitilmemiştir" diyordu — 01.09'dan beri
+                // yanlış. Sahteliği gizlememek kadar, olmayan bir eksiği
+                // beyan etmemek de gerekir.
                 metin: 'SAHTE MODEL SERVİSİ etkin. Aşağıdaki sınıflar, '
                     'güven skorları ve kutular UYDURMADIR; gerçek bir '
-                    'modelin çıktısı değildir. Model henüz eğitilmemiştir.',
+                    'modelin çıktısı değildir. Sahte olan servistir, model '
+                    'değil: model eğitildi ve ölçüldü. Bu ortam onu '
+                    'çalıştırmıyor.',
               ),
               const SizedBox(height: 12),
             ],
