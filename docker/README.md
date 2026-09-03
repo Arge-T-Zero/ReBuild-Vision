@@ -143,8 +143,9 @@ arayüzde kalıcı "SAHTE MODEL SERVİSİ" bandı gösterir. Gerçek YOLO11
 modelini çalıştırmak için:
 
 ```bash
-# 1. Ağırlığı yerine koyun (depoya girmez, ~40 MB — ayrıca verilir)
-cp best.pt model-service/agirliklar/
+# 1. Ağırlığı indirin (depoya girmez, 39 MB)
+curl -L -o model-service/agirliklar/best.pt \
+  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
 
 # 2. Gerçek model bindirmesiyle başlatın
 docker compose -f docker/compose.yaml \

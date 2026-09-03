@@ -82,9 +82,14 @@ Bu, raporun Bölüm 4'teki üçüncü yenilikçi yönünün sahnedeki karşılı
 
 ## Kontrol listesi (çekimden önce)
 
-- [ ] Gerçek model bağlandı mı? (`docker compose -f docker/compose.yaml
-      -f docker/compose.gercek-model.yaml up`) Bağlanmadıysa sahte servis
-      bandı ekranda görünüyor ve anlatımda belirtiliyor mu?
+- [ ] Gerçek model bağlandı mı?
+      `curl -L -o model-service/agirliklar/best.pt https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt`
+      sonra `docker compose -f docker/compose.yaml -f docker/compose.gercek-model.yaml up`.
+      Doğrulama: `/api/sistem/durum` → `sahte: false`.
+      Bağlanmadıysa sahte servis bandı ekranda görünüyor ve anlatımda
+      belirtiliyor mu?
+- [ ] Demo verisindeki tespitler gerçek model çıktısı mı?
+      (`scripts/demo_tespitleri.json` → `model: "best"`)
 - [ ] Altbilgide **ölçülmüş** mAP yazıyor mu ("henüz ölçülmedi" DEĞİL)?
 - [ ] Demo veri tabanı temiz mi? (`scripts/demo_veri.py`)
 - [ ] Ekranda gerçek e-posta adresi görünüyor mu? (görünmemeli)

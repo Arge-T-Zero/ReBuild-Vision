@@ -18,14 +18,19 @@ belirsizlik aralığı, rol kapsamı — kendiliğinden hiç önüne gelmiyordu.
 Aşağıdaki senaryo bunu kapatır: dört temel kuralın her biri, hiçbir şey
 yapılmadan, ilk ekranda görünür.
 
-SENTETİKLİK GİZLENMEZ
-Her saha adı "(sentetik)" taşır, görüntüler deponun kendi sentetik
-görselleridir (`web/public/gorseller/README.md`) ve tespit kutuları elle
-yazılmıştır — hiçbiri gerçek bir model çıktısı değildir.
+NE GERÇEK, NE SENTETİK — İKİSİ DE AÇIKÇA
+
+- **Tespit kutuları ve güven skorları GERÇEKTİR.** Eğitilen `best.pt`
+  ile üretilmiştir (`scripts/demo_tespitleri.json`). 02.09.2026'ya
+  kadar elle yazılıyorlardı; jürinin gördüğü her kutu uydurmaydı.
+- **Görüntüler sentetiktir** (`web/public/gorseller/README.md`).
+- **Doğrulama ve ölçüm senaryosu sentetiktir:** gerçek bir uzman ya da
+  gerçek bir şerit metre yoktur. Her saha adı "(sentetik)" taşır.
 """
 from __future__ import annotations
 
 import asyncio
+import json
 import shutil
 import sys
 from datetime import datetime, timedelta, timezone
@@ -48,7 +53,6 @@ from api.app.models import (  # noqa: E402
 from api.app.services import miktar as miktar_servisi  # noqa: E402
 
 DEMO_PAROLA = "demo1234"
-BBOX_BICIMI = "pixel_absolute_original"
 
 HESAPLAR = [
     ("yonetici@demo.local", "Demo Yönetici",        Rol.YONETICI),
@@ -92,55 +96,68 @@ KAYNAK_GORSELLER = [
 ]
 
 
-def _kutu(x: int, y: int, w: int, h: int) -> dict:
-    return {"x": x, "y": y, "w": w, "h": h}
+TESPITLER_YOLU = DEPO_KOKU / "scripts/demo_tespitleri.json"
 
 
-# Senaryo — her satır bir tespit. Dört kural da burada görünür hâle gelir.
+def _tespit_kaynagi() -> dict:
+    """GERÇEK model çıktısını okur.
+
+    ⚠️ BU KUTULAR 02.09.2026'YA KADAR ELLE YAZILIYORDU. Sayılar makul
+    görünüyordu ama hiçbiri bir modelden gelmiyordu — jürinin demo
+    ortamında gördüğü her kutu uydurmaydı. Ana talimat Bölüm 9.5
+    sahteliğin gizlenmemesini istiyor; en iyisi hiç üretmemek.
+
+    Dosya `scripts/demo_tespitleri_uret.py` ile gerçek `best.pt`
+    çalıştırılarak üretilir ve depoya girer, böylece demo verisi ağırlık
+    olmadan da kurulabilir ama içindeki her kutu gerçek kalır.
+    """
+    if not TESPITLER_YOLU.is_file():
+        raise SystemExit(
+            f"{TESPITLER_YOLU} yok. Gerçek model çıktısı olmadan demo "
+            "tespiti üretilmez — uydurma kutu yazmaktansa hiç yazmamak "
+            "doğrudur. Üretmek için: scripts/demo_tespitleri_uret.py"
+        )
+    return json.loads(TESPITLER_YOLU.read_text(encoding="utf-8"))
+
+
+# Senaryo ÖRTÜSÜ — kutular modelden, bu tablo yalnızca "sonra ne oldu"yu
+# söyler. Dört kural da böylece ilk ekranda görünür.
 #
-#   olcum:      (tür, değer, birim, yöntem) ya da None → miktar BOŞ kalır
-#   dogrulama:  beklemede / onaylandi / duzeltildi / belirsiz
+#   (görüntü sırası, tespit sırası): {dogrulama, duzeltilen, olcum}
+#   olcum: (tür, değer, birim, yöntem) ya da yok → miktar BOŞ kalır
 #
-# `ahsap` ve `metal` katsayıları kaynaklıdır (katsayilar.json v0.3), yani
-# ölçüm girildiğinde miktar ARALIKLA hesaplanır. `beton_tugla`, `cam` ve
-# `seramik` kapalıdır: ölçüm olsa bile miktar üretilmez ve sebebi yazılır
-# — bu da bir kural gösterimidir, eksiklik değil.
-SENARYO = [
-    # --- Saha A · 1. görüntü ------------------------------------------
-    # Kural 1 + belirsizlik aralığı: ölçüm var, katsayı kaynaklı.
-    dict(alan=0, goruntu=0, sinif="ahsap", guven=0.9137, kutu=(120, 90, 300, 210),
-         dogrulama="onaylandi",
-         olcum=(OlcumTuru.HACIM, 40.0, "m3", "Şerit metre ile kaba hacim")),
-    # Kural 1'in EN GÜÇLÜ hâli: ölçüm YOK → miktar alanı boş kalır.
-    dict(alan=0, goruntu=0, sinif="metal", guven=0.8412, kutu=(460, 180, 220, 160),
-         dogrulama="onaylandi", olcum=None),
-    # Kural 4: doğrulanmamış ön tahmin hiçbir hesaba girmez.
-    dict(alan=0, goruntu=0, sinif="beton_tugla", guven=0.7765, kutu=(60, 340, 380, 240),
-         dogrulama="beklemede", olcum=None),
+# `ahsap` ve `metal` katsayıları kaynaklıdır (katsayilar.json v0.3);
+# `beton_tugla`, `cam`, `seramik` kapalıdır — ölçüm olsa bile miktar
+# üretilmez ve sebebi yazılır. Bu bir eksiklik değil, kuralın kendisi.
+#
+# Gerçek uzman ve gerçek şerit metre YOKTUR: aşağısı sentetik örtüdür.
+SENARYO_ORTUSU = {
+    # --- 2. görüntü (Saha A) — modelin en güvenli çıktıları -----------
+    # Kural 1 + belirsizlik aralığı: ölçüm var, katsayı kaynaklı (ahsap).
+    (1, 3): dict(dogrulama="onaylandi",
+                 olcum=(OlcumTuru.HACIM, 40.0, "m3",
+                        "Şerit metre ile kaba hacim")),
+    # Kural 1'in EN GÜÇLÜ hâli: doğrulandı ama ölçüm YOK → miktar boş.
+    (1, 0): dict(dogrulama="onaylandi"),
+    # Katsayısı KAPALI sınıfta ölçüm var — miktar yine üretilmez.
+    # "Ölçüm girildi ama sayı çıkmadı" da bir kuraldır.
+    (1, 1): dict(dogrulama="onaylandi",
+                 olcum=(OlcumTuru.HACIM, 62.0, "m3",
+                        "Şerit metre ile kaba hacim")),
+    # Uzman düzeltmesi: model `ahsap` dedi, uzman `beton_tugla` yaptı.
+    # Ham tahmin izlenebilirlik için saklanır.
+    (1, 4): dict(dogrulama="duzeltildi", duzeltilen="beton_tugla"),
 
-    # --- Saha A · 2. görüntü ------------------------------------------
-    # Düşük güven → uzman kuyruğuna KENDİLİĞİNDEN düşer (inceleme_gerekli).
-    dict(alan=0, goruntu=1, sinif="cam", guven=0.3184, kutu=(200, 120, 180, 150),
-         dogrulama="beklemede", olcum=None, inceleme=True),
-    # Uzman düzeltmesi: model "seramik" dedi, uzman "beton_tugla" yaptı.
-    # Ham tahmin izlenebilirlik için saklanır, geçerli sınıf uzmanınkidir.
-    dict(alan=0, goruntu=1, sinif="seramik", guven=0.6023, kutu=(420, 300, 260, 190),
-         dogrulama="duzeltildi", duzeltilen="beton_tugla", olcum=None),
-
-    # --- Saha B (kısıtlı erişim) --------------------------------------
-    # İkinci kaynaklı katsayı: metal, ağırlık ölçümüyle — katsayı kullanılmaz.
-    dict(alan=1, goruntu=2, sinif="metal", guven=0.8890, kutu=(150, 200, 340, 250),
-         dogrulama="onaylandi",
-         olcum=(OlcumTuru.AGIRLIK, 3.5, "ton", "Kantar fişi (sentetik)")),
-    # Katsayısı KAPALI bir sınıfta ölçüm var — miktar yine üretilmez ve
-    # sebebi yazılır. "Ölçüm girildi ama sayı çıkmadı" da bir kuraldır.
-    dict(alan=1, goruntu=2, sinif="beton_tugla", guven=0.8051, kutu=(520, 120, 300, 320),
-         dogrulama="onaylandi",
-         olcum=(OlcumTuru.HACIM, 62.0, "m3", "Şerit metre ile kaba hacim")),
+    # --- 3. görüntü (Saha B, kısıtlı erişim) --------------------------
+    # İkinci kaynaklı katsayı: metal, doğrudan tartım — katsayı kullanılmaz.
+    (2, 0): dict(dogrulama="onaylandi",
+                 olcum=(OlcumTuru.AGIRLIK, 3.5, "ton", "Kantar fişi (sentetik)")),
     # "Belirsiz" — reddetmek yerine ikinci incelemeye açık bırakma (K-004).
-    dict(alan=1, goruntu=2, sinif="cam", guven=0.4471, kutu=(80, 480, 190, 140),
-         dogrulama="belirsiz", olcum=None, inceleme=True),
-]
+    (2, 3): dict(dogrulama="belirsiz"),
+}
+
+# Hangi görüntü hangi sahaya gider (görüntü sırası -> saha sırası).
+GORUNTU_SAHASI = [0, 0, 1]
 
 
 async def _gorselleri_kopyala() -> list[str]:
@@ -227,16 +244,20 @@ async def main() -> None:
         eklenen += [t["ad"] for t in ALANLAR]
 
         # --- Görüntüler -----------------------------------------------
+        kaynak = _tespit_kaynagi()
         yollar = await _gorselleri_kopyala()
         simdi = datetime.now(timezone.utc)
         goruntuler = []
-        for i, (alan_ix, saat) in enumerate([(0, 6), (0, 5), (1, 3)]):
+        for i, kayit in enumerate(kaynak["goruntuler"]):
+            alan_ix = GORUNTU_SAHASI[i]
             g = Goruntu(
                 enkaz_alani_id=alanlar[alan_ix].id,
                 dosya_yolu=yollar[i],
-                genislik=1200,
-                yukseklik=800,
-                cekim_tarihi=simdi - timedelta(hours=saat),
+                # Boyutlar da modelin gördüğü boyutlardır; kutular bu
+                # uzaya göre ölçeklenir (bbox_format).
+                genislik=kayit["genislik"],
+                yukseklik=kayit["yukseklik"],
+                cekim_tarihi=simdi - timedelta(hours=6 - i),
                 cihaz="Sentetik demo görüntüsü",
                 yukleyen_id=saha.id,
             )
@@ -246,29 +267,37 @@ async def main() -> None:
         await db.flush()
 
         # --- Tespitler, ölçümler, miktarlar ---------------------------
+        #
+        # Kutular, sınıflar, güven skorları ve `inceleme_gerekli` bayrağı
+        # GERÇEK model çıktısından gelir — hiçbiri elle yazılmaz.
+        # `SENARYO_ORTUSU` yalnızca "sonra ne oldu"yu söyler.
         tespitler = []
-        for k in SENARYO:
-            t = Tespit(
-                goruntu_id=goruntuler[k["goruntu"]].id,
-                sinif=k["sinif"],
-                guven_skoru=k["guven"],
-                bbox=_kutu(*k["kutu"]),
-                bbox_format=BBOX_BICIMI,
-                inceleme_gerekli=k.get("inceleme", False),
-                dogrulama_durumu=DogrulamaDurumu(k["dogrulama"]),
-                duzeltilen_sinif=k.get("duzeltilen"),
-            )
-            if k["dogrulama"] != "beklemede":
-                t.dogrulayan_id = uzman.id
-                t.dogrulama_tarihi = simdi - timedelta(hours=2)
-            db.add(t)
-            tespitler.append(t)
+        for i, kayit in enumerate(kaynak["goruntuler"]):
+            for j, ham in enumerate(kayit["tespitler"]):
+                ortu = SENARYO_ORTUSU.get((i, j), {})
+                durum = ortu.get("dogrulama", "beklemede")
+                t = Tespit(
+                    goruntu_id=goruntuler[i].id,
+                    sinif=ham["sinif"],
+                    guven_skoru=ham["guven"],
+                    bbox=ham["bbox"],
+                    bbox_format=ham["bbox_format"],
+                    inceleme_gerekli=ham["inceleme_gerekli"],
+                    dogrulama_durumu=DogrulamaDurumu(durum),
+                    duzeltilen_sinif=ortu.get("duzeltilen"),
+                )
+                if durum != "beklemede":
+                    t.dogrulayan_id = uzman.id
+                    t.dogrulama_tarihi = simdi - timedelta(hours=2)
+                db.add(t)
+                tespitler.append(((i, j), t))
         await db.flush()
 
-        for k, t in zip(SENARYO, tespitler):
-            if not k["olcum"]:
+        for anahtar, t in tespitler:
+            olcum = SENARYO_ORTUSU.get(anahtar, {}).get("olcum")
+            if not olcum:
                 continue
-            tur, deger, birim, yontem = k["olcum"]
+            tur, deger, birim, yontem = olcum
             db.add(Olcum(
                 tespit_id=t.id, tur=tur, deger=deger, birim=birim,
                 yontem=yontem, giren_id=saha.id,
@@ -278,7 +307,7 @@ async def main() -> None:
 
         # Miktar hesabı, ölçüm girildikten SONRA ve aynı servis
         # üzerinden yapılır — demo verisi kuralları atlamaz, onlara tabidir.
-        for t in tespitler:
+        for _, t in tespitler:
             olcumler = list(await db.scalars(
                 select(Olcum).where(Olcum.tespit_id == t.id)))
             if not olcumler:
@@ -298,8 +327,8 @@ async def main() -> None:
         await db.commit()
 
         eklenen.append(
-            f"{len(goruntuler)} görüntü · {len(tespitler)} tespit "
-            f"(hepsi sentetik)")
+            f"{len(goruntuler)} sentetik görüntü · {len(tespitler)} "
+            f"GERÇEK model tespiti ({kaynak['model']})")
 
     print("Demo verisi hazır.")
     for e in eklenen:
@@ -307,8 +336,11 @@ async def main() -> None:
     if not eklenen:
         print("  (her şey zaten mevcuttu)")
     print(f"\nTüm demo hesaplarının parolası: {DEMO_PAROLA}")
-    print("Madde 10.7: bu hesaplar ve veriler sentetiktir; gerçek posta "
-          "kutusu, gerçek saha ve gerçek model çıktısı yoktur.")
+    print("Madde 10.7 — neyin ne olduğu:")
+    print("  · hesaplar, sahalar ve görüntüler SENTETİKTİR")
+    print("  · doğrulama ve ölçüm senaryosu SENTETİKTİR "
+          "(gerçek uzman/şerit metre yok)")
+    print("  · tespit kutuları ve güven skorları GERÇEK model çıktısıdır")
 
 
 if __name__ == "__main__":

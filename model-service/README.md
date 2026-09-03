@@ -22,8 +22,9 @@ Eğitim Kaggle'da yapılır; çıktı `best.pt` dosyasıdır. Ağırlıklar
 sürüm yeni bir kopya bırakır).
 
 ```bash
-# varsayılan konum
-cp best.pt model-service/agirliklar/
+# varsayılan konum — model-v1 sürümünden indirilir
+curl -L -o model-service/agirliklar/best.pt \
+  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
 
 # ya da yolu ortam değişkeniyle ver
 export MODEL_AGIRLIK=/bir/yer/best.pt
