@@ -81,3 +81,6 @@ tests/__pycache__/
 # bkz. model-service/agirliklar/.gitignore.
 runs/
 yolo11*.pt
+
+# Sunum görselleri paketi — içindeki dosyalar zaten izleniyor, zip yeniden üretilebilir.
+results/ReBuild-Vision-sunum-gorselleri.zip
