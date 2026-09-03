@@ -49,9 +49,23 @@ services:
       retries: 20
     restart: unless-stopped
 
-  # Sahte model servisi. Gerçek model hazır olduğunda `model-service`
-  # eklenecek ve api'nin MODEL_SERVICE_URL değeri ona çevrilecektir —
-  # tek satırlık değişiklik (docs/lisans-analizi.md Bölüm 3.4).
+  # Sahte model servisi — BU DOSYANIN VARSAYILANI.
+  #
+  # ⚠️ GERÇEK MODEL HAZIR (01.09.2026, `model-v1` sürümü). Bu dosya onu
+  # çalıştırmaz; bindirme dosyası çalıştırır:
+  #
+  #   curl -L -o model-service/agirliklar/best.pt \
+  #     https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
+  #   docker compose -f docker/compose.yaml \
+  #                  -f docker/compose.gercek-model.yaml up --build
+  #
+  # Doğrulama: /api/sistem/durum → "sahte": false
+  #
+  # Varsayılan neden sahte: ağırlık ~40 MB, depoya girmez. Ağırlıksız
+  # `docker compose up` gerçek servisi ayağa kaldırsaydı her istek 503
+  # dönerdi ve sistem bozuk görünürdü. Sahte servis çalışır ama sahte
+  # olduğunu ekranda kalıcı bir bantla söyler (ana talimat Bölüm 9.5) —
+  # sessiz düşüş değil, bildirilen yedek.
   model-mock:
     build:
       context: ..
