@@ -49,7 +49,30 @@ README, `docs/kurulum.md`, `docker/README.md`, `model-service/README.md`
 ve demo video kontrol listesi artık `model-v1` indirme komutunu veriyor;
 "ayrıca verilir" gibi belirsiz ifade kalmadı.
 
-170 sunucu testi geçiyor.
+**Mobil taraf da gerçek modelle çalıştırıldı**
+
+02.09 denetiminin en pahalı bulgusu mobil `contentType` hatasıydı ve
+"gerçek cihazda sınanmadı" diye açık bırakılmıştı. Artık sınandı:
+
+- **Arayüz** (Flutter web derlemesi, 390×844): giriş → saha listesi →
+  gerçek modelden gelen `#1…#10` tespit listesi → `#3 · Metal` için
+  2,4 ton ölçüm girişi. Ölçüm kuyruğa alındı, şifreli tutuldu,
+  çevrimiçi olunca `yerel_kimlik` ile gönderildi; `/miktar/3` bunun
+  üzerine **2,16 – 2,64 ton** verdi. Konsolda sıfır hata.
+- **Yükleme yolu** (`mobile/lib/api.dart`, doğrudan Dart VM'de): gerçek
+  API + gerçek model servisine karşı `goruntuYukle` →
+  `sahte_model_servisi: false`, **8 gerçek tespit**, hepsinde
+  `etiket: "ön tahmin"`, güven skorları yuvarlanmamış, eşik altındaki
+  üçü inceleme kuyruğuna düşmüş.
+- **Negatif kontrol:** API geçici olarak sahte servise bağlandığında
+  mobildeki *"SAHTE MODEL SERVİSİ"* bandı **çıkıyor**; gerçek serviste
+  çıkmıyor. Band ölü kod değil, iki yön de görüldü.
+
+Kalan tek belirsizlik telefonun kamera/galeri eklentisinin cihazda
+ürettiği dosya — emülatör yok. Sınama sırasında üretilen kayıtlar demo
+verisini bozmamak için silindi.
+
+170 sunucu testi, 29 mobil testi geçiyor; `flutter analyze` temiz.
 
 
 ### 02.09.2026 — Teslim denetimi (sıfırdan, her şey)

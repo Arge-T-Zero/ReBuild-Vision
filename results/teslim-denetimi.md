@@ -55,6 +55,8 @@ yalnızca gerçek telefonda ortaya çıkıyordu.
 uzantıda `octet-stream`'e düşmez, `image/jpeg` varsayar.
 **Nöbetçi:** `mobile/test/goruntu_turu_test.dart` — izin listesini
 sunucunun `goruntuler.py` dosyasından **okuyarak** karşılaştırır.
+**03.09'da doğrulandı:** `Api.goruntuYukle` gerçek modele karşı
+çalıştırıldı, sekiz tespit döndü (bkz. 5.1).
 
 ### 2.2 🔴 Jürinin kurulum yolu gerçek modeli hiç çalıştırmıyordu
 
@@ -257,13 +259,16 @@ Bu başlık bilinçli olarak ayrı. Aşağıdakiler **çalıştığı görülmem
 > tespit** üretildi. Sınıf sırası `siniflar.json` ile birebir doğrulandı.
 > Demo verisi artık elle yazılmış kutular değil, **bu çıktıyı** kullanıyor.
 >
+> ✅ **Mobil taraf da gerçek modelle çalıştırıldı** (aynı gün, aşağıdaki
+> tablodaki 🟠 satır kapandı). Ayrıntı: 5.1.
+>
 > Kalan tek doğrulanamayan: imajın **docker içinde** derlenmesi.
 
 | Ne | Neden | Kim yapmalı |
 |---|---|---|
 | 🔴 **Gerçek model imajının DERLENMESİ** | Ağ politikası Docker kayıt defterinin dağıtım ağını (`production.cloudfront.docker.com`) engelliyor; `python:3.11-slim` indirilemiyor. Servisin kendisi ağırlıkla **çalıştı** (docker dışında); doğrulanamayan yalnızca imaj derlemesi | Teslim öncesi, gerçek bir makinede |
 | 🔴 **`docker compose up` uçtan uca** | Aynı kısıt | Teslim öncesi |
-| 🟠 Mobil `contentType` düzeltmesinin gerçek cihazda sınanması | Emülatör/cihaz yok. Birim testle bağlandı ama gerçek bir yükleme denenmedi | Teslim öncesi, tek fotoğraf yeterli |
+| 🟡 Mobil yüklemenin gerçek bir TELEFONDA sınanması | Emülatör/cihaz yok. `mobile/lib/api.dart` kodunun kendisi gerçek modele karşı çalıştırıldı (bkz. 5.1) — doğrulanmayan yalnızca kamera/galeri eklentisinin cihazdaki davranışı | Sunum öncesi, tek fotoğraf yeterli |
 | 🟠 Canlı demo (Vercel/Render) | Ağ politikası dış erişimi engelliyor | Sunum öncesi bir kez uyandırın |
 | 🟡 `ultralytics==8.4.0` sürümünün PyPI'da varlığı | CI onu hiç kurmuyor | CI'ya eklenebilir |
 
@@ -275,6 +280,62 @@ docker compose -f docker/compose.yaml \
                -f docker/compose.gercek-model.yaml up --build
 curl -s http://localhost:8080/api/sistem/durum   # sahte: false olmalı
 ```
+
+### 5.1 Mobil uygulama — gerçek modelle çalıştırma kaydı (03.09.2026)
+
+Mobil taraf iki ayrı yoldan sınandı, çünkü tek yol yetmiyordu.
+
+**(a) Arayüz — Flutter web derlemesi, telefon boyutunda (390×844).**
+`flutter build web --dart-define=API_TABAN=http://127.0.0.1:8000`, gerçek
+`best.pt` yüklü model servisine bağlı API'ye karşı:
+
+| Ne görüldü | Sonuç |
+|---|---|
+| Giriş (`saha@demo.local`) | Açıldı, konsolda **sıfır hata** |
+| SAHTE MODEL bandı | **Yok** — servis gerçek olduğu için doğru davranış |
+| Ölçüm ekranı, saha listesi | Üç saha, üçü de **"(sentetik)"** etiketli |
+| Tespit listesi | `#1…#10`, hepsi gerçek model çıktısı; veri tabanıyla birebir |
+| Sınıf adları ve renkleri | Metal / Beton-tuğla / Cam / Ahşap — beş sınıf listesinin içinde |
+| Ölçüm girişi (`#3 · Metal`, 2,4 ton) | Kuyruğa alındı, şifreli tutuldu, çevrimiçi olunca gönderildi; veri tabanına `yerel_kimlik` ile düştü (yinelenme koruması çalışıyor) |
+| Bunun sonucunda `/miktar/3` | `2,16 – 2,64 ton`, kaynak: *"Katsayı kullanılmadı — doğrudan ölçüm"* |
+
+**Negatif kontrol — band ölü kod değil.** API geçici olarak sahte
+servise (`model-mock`, port 8092) bağlandı ve aynı ekran yeniden açıldı:
+band **çıktı** (*"SAHTE MODEL SERVİSİ — sonuçlar gerçek bir modelden
+gelmiyor"*). İki yön de görüldü; sonra gerçek servise geri alındı.
+
+**(b) Yükleme yolu — `mobile/lib/api.dart` kodunun kendisi.**
+Flutter'ın web derlemesi kamera/galeri yolunu çalıştıramaz (`dart:io`
+web'de saplama). Bu yüzden `Api.goruntuYukle` **doğrudan** Dart VM'de,
+canlı API + gerçek model servisine karşı çalıştırıldı (geçici test,
+depoya girmedi — ağa çıkan bir test CI'yı kırardı):
+
+```
+sahte_model_servisi: false
+TESPİT SAYISI: 8
+  metal        guven=0.7609142065048218  inceleme=false
+  beton_tugla  guven=0.6613432168960571  inceleme=false
+  cam          guven=0.6287594437599182  inceleme=false
+  ahsap        guven=0.5859890580177307  inceleme=false
+  ahsap        guven=0.5342926383018494  inceleme=false
+  ahsap        guven=0.4925123453140259  inceleme=true
+  ahsap        guven=0.4900294244289398  inceleme=true
+  beton_tugla  guven=0.4103135168552398  inceleme=true
+inceleme_kuyruguna_dusen: 3
+```
+
+Her tespitte `etiket: "ön tahmin"`, güven skorları **yuvarlanmamış**,
+eşik altındaki üçü inceleme kuyruğuna düşmüş. Sınama sonrası üretilen
+kayıtlar (görüntü, sekiz tespit, dosya) demo verisini bozmamak için
+silindi.
+
+**Doğrulanamayan kısım net:** telefonun kendi kamera/galeri eklentisinin
+gerçek cihazda ürettiği dosya. `contentType` düzeltmesi birim testle
+(`goruntu_turu_test.dart`) ve şimdi gerçek bir yüklemeyle bağlı; kalan
+tek belirsizlik eklentinin cihazdaki davranışı.
+
+**Takım:** 170 sunucu testi, 29 mobil testi, `flutter analyze` temiz,
+`flutter build web` hatasız.
 
 ---
 
@@ -321,7 +382,9 @@ Denetimin bulduğu şeyler kadar **bulamadıkları** da anlamlı:
 1. 🔴 **Eğitim veri setinin kaynak/lisans beyanı** —
    `docs/lisans-analizi.md` Bölüm 2.1.1'de tablo hazır
 2. 🔴 **`best.pt` + `docker compose ... gercek-model` uçtan uca çalıştırma**
-3. 🟠 Mobil uygulamadan gerçek bir cihazda tek fotoğraf yükleme
-4. 🟠 Demo videosu (03.09) — senaryo ve kontrol listesi
+3. 🟠 Demo videosu (03.09) — senaryo ve kontrol listesi
    `docs/demo-video.md`'de güncel
+4. 🟡 Mobil uygulamadan gerçek bir **telefonda** tek fotoğraf yükleme
+   (kodun kendisi gerçek modele karşı çalıştı — bkz. 5.1; kalan tek
+   belirsizlik kamera eklentisinin cihazdaki davranışı)
 5. 🟡 Canlı demoyu sunumdan önce uyandırma
