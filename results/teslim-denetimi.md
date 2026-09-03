@@ -270,7 +270,7 @@ Bu başlık bilinçli olarak ayrı. Aşağıdakiler **çalıştığı görülmem
 | 🔴 **`docker compose up` uçtan uca** | Aynı kısıt | Teslim öncesi |
 | 🟡 Mobil yüklemenin gerçek bir TELEFONDA sınanması | Emülatör/cihaz yok. `mobile/lib/api.dart` kodunun kendisi gerçek modele karşı çalıştırıldı (bkz. 5.1) — doğrulanmayan yalnızca kamera/galeri eklentisinin cihazdaki davranışı | Sunum öncesi, tek fotoğraf yeterli |
 | 🟠 Canlı demo (Vercel/Render) | Ağ politikası dış erişimi engelliyor | Sunum öncesi bir kez uyandırın |
-| 🟡 `ultralytics==8.4.0` sürümünün PyPI'da varlığı | CI onu hiç kurmuyor | CI'ya eklenebilir |
+| ✅ ~~`ultralytics` sürümünün PyPI'da varlığı~~ | **03.09'da kapandı.** PyPI sorgulandı: `8.4.0` da `8.4.137` de yayımda. Ama sabitlenmiş sürüm (`8.4.0`) ile deponun bütün sayılarını ÜRETEN sürüm (`8.4.137`) ayrışıyordu; jüri hiç çalıştırılmamış bir sürümü kuracaktı. Sabitleme çalışan sürüme çekildi | — |
 
 **Komut:**
 
