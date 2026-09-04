@@ -96,6 +96,42 @@ kaydıdır. Deponun kopyasına alınırken bu blok **kırpılmamalıdır**; hatt
 `docs/lisans-analizi.md` 2.1.2'deki beyanla ayrışmasın diye
 `test_lisans_beyani.py` biçiminde bir teste bağlanması yerinde olur.
 
+## Renk paleti — göçe hazır, ÖLÇÜLDÜ (uygulanmadı)
+
+v2'de `metal` kalkıyor, `beton_tugla` ikiye ayrılıyor: iki renk yeniden
+seçilmeli. Ölçüm K-022'deki ölçütle yapıldı — *bütün ikililerin* en
+kötüsü, normal görüş + protanopi + dötanopi + tritanopi benzetimi
+birlikte. Betik artık depoda: `scripts/renk_olc.py`.
+
+| | v1 (teslimdeki) | v2 (öneri) |
+|---|---|---|
+| ahsap | `#d95926` | `#d95926` (aynı) |
+| beton / beton_tugla | `#6b7280` | `#6b7280` (aynı) |
+| cam | `#008300` | `#008300` (aynı) |
+| metal | `#3987e5` | — (sınıf kalktı) |
+| seramik | `#c98500` | **`#d4a017`** |
+| tugla | — | **`#8c1d18`** |
+| **bütün-ikili en kötü ΔE** | **8,95** | **15,45** |
+| en düşük etiket kontrastı | 4,83 | 4,83 (AA ✅) |
+
+**Neden `seramik` de değişti:** v1'in en zayıf ikilisi `cam ↔ seramik`
+(protanopi, 8,95) idi ve tuğlaya hangi rengi verirsek verelim tavanı o
+belirliyordu — sekiz aday da aynı 8,95'i verdi. Seramiği bir tık açmak
+(`#c98500` → `#d4a017`) tabanı **8,95'ten 15,45'e** çıkarıyor. Yani göç
+zorunluluğu, paletin v1'deki bilinen zayıflığını kapatma fırsatına
+dönüştü.
+
+**Anlamsal tutarlılık korunuyor:** turuncu ahşap, gri beton, koyu yeşil
+cam, altın seramik, koyu kırmızı tuğla.
+
+⚠️ **Bu sayı K-022'deki 6,79 ile karşılaştırılamaz.** `scripts/renk_olc.py`
+aynı paleti **8,95** ölçüyor; yani benzetim matrisi ya da ΔE formülü
+(CIE76 / CIEDE2000) K-022'de kullanılandan farklı. Kontrast tarafı ise
+birebir aynı çıkıyor (4,83). Yukarıdaki 8,95 → 15,45 karşılaştırması
+geçerlidir çünkü **iki palet de aynı kodla** ölçülmüştür; mutlak değeri
+eski kayıtla eşitlemeye çalışmak yanlış olur. Göç yapılırsa K-022'ye bu
+not düşülmeli.
+
 ## Miktar katsayılarına etkisi
 
 Bugün kaynaklı katsayısı olan iki sınıf `ahsap` ve `metal`'dir. v2'de
