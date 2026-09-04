@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['ahsap', 'beton', 'cam', 'seramik', 'tugla']
+
+roboflow:
+  workspace: burak-alkan
+  project: newdetect-jvc1e
+  version: 4
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/burak-alkan/newdetect-jvc1e/dataset/4

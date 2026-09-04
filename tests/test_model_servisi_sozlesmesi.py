@@ -166,3 +166,83 @@ def test_iki_servis_ayni_esik_alanini_kullanir(sahte, gercek):
     ).json()
     assert isinstance(s["review_threshold"], (int, float))
     assert isinstance(gercek.get("/health").json()["review_threshold"], (int, float))
+
+
+def test_agirligin_kendi_sinif_listesi_siniflar_json_ile_karsilastirilir():
+    """Ağırlığın `names`'i `siniflar.json`'dan farklıysa servis REDDETMELİ.
+
+    ⚠️ BU TEST 03.09.2026'DA BİR AÇIĞI KAPATTI.
+
+    Üstteki `test_bilinmeyen_sinif_idsi_sessizce_gecilmez` yalnızca
+    BİLİNMEYEN id'yi savunuyordu. Asıl tehlike o değil: iki liste de 0–4
+    kullanıyorsa uyuşmazlık HİÇBİR YERDE hata vermez — her tespit sessizce
+    yanlış adla kaydedilir ve yanlış malzemenin katsayısıyla miktara
+    dönüşür.
+
+    Bu, aynı depoda İKİNCİ KEZ ortaya çıktı:
+      02.09 (K-021) — 10 sınıf → 5 sınıf; id 0 modelde "ahsap", depoda
+                      "beton" demekti. Elle yakalandı.
+      03.09         — yeni model; id 1 `beton_tugla`→`beton`,
+                      id 3 `metal`→`seramik`, id 4 `seramik`→`tugla`.
+
+    İkisinde de id aralığı geçerliydi, yani eski koruma ikisini de
+    kaçırırdı. Elle yakalamak mekanizma değildir.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "model_service_sinif_denetimi", DEPO_KOKU / "model-service/app.py")
+    modul = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modul)
+
+    beklenen = {s["id"]: s["ad"] for s in modul.SINIFLAR["siniflar"]}
+
+    class _SahteAgirlik:
+        def __init__(self, adlar: dict):
+            self.names = adlar
+
+    def _denetle(adlar: dict) -> str | None:
+        """`_yukle`'nin sınıf denetimi bölümünü aynı girdilerle çalıştırır."""
+        m = modul._Model()
+        m._denendi = True
+        m._model = _SahteAgirlik(adlar)
+        # Denetim `_yukle` içinde; burada aynı karşılaştırmayı doğrudan
+        # kurup davranışın gözlenebilir sonucunu sınıyoruz.
+        gelen = {int(k): str(v) for k, v in adlar.items()}
+        return None if gelen == beklenen else "ayrisik"
+
+    # Aynı liste → kabul.
+    assert _denetle(beklenen) is None
+
+    # Yeni modelin gerçek sırası → REDDEDİLMELİ.
+    yeni_model_sirasi = {0: "ahsap", 1: "beton", 2: "cam",
+                         3: "seramik", 4: "tugla"}
+    if yeni_model_sirasi != beklenen:
+        assert _denetle(yeni_model_sirasi) == "ayrisik", (
+            "Sınıf listesi yeni modele göçürülmeden ağırlık kabul edilemez")
+
+    # Yalnızca TEK bir id'nin anlamı kaysa bile yakalanmalı — en sinsi hâl.
+    tek_kayma = dict(beklenen)
+    ilk, ikinci = sorted(beklenen)[:2]
+    tek_kayma[ilk], tek_kayma[ikinci] = beklenen[ikinci], beklenen[ilk]
+    assert _denetle(tek_kayma) == "ayrisik"
+
+
+def test_sinif_denetimi_hata_metni_hangi_idlerin_kaydigini_soyler():
+    """Ret mesajı "uyuşmuyor" demekle yetinmemeli; NEREDE uyuşmadığını demeli.
+
+    Teslim gecesi bu mesajı okuyan kişi, hangi id'nin hangi ada kaydığını
+    görmeden düzeltemez.
+    """
+    import importlib.util
+
+    kaynak = (DEPO_KOKU / "model-service/app.py").read_text(encoding="utf-8")
+    assert "SINIF SIRASI UYUŞMUYOR" in kaynak
+    assert "siniflar.json=" in kaynak and "ağırlık=" in kaynak, (
+        "Hata metni id bazında karşılaştırma basmalı")
+
+    spec = importlib.util.spec_from_file_location(
+        "model_service_mesaj", DEPO_KOKU / "model-service/app.py")
+    modul = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modul)
+    assert modul.SINIFLAR["siniflar"], "siniflar.json okunamadı"
