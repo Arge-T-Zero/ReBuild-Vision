@@ -64,6 +64,38 @@ sessizce yanlış adla kaydedilirdi; bunu artık `model-service`
 başlangıçta yakalayıp çalışmayı reddediyor (bkz.
 `tests/test_model_servisi_sozlesmesi.py`).
 
+## `model-service/data.yaml` ne olacak
+
+Deponun kendi kopyası (`model-service/data.yaml`) hâlâ **v1** sırasını
+taşır ve öyle kalmalıdır — çünkü teslim edilen sistem v1 ile çalışıyor.
+
+Bu dosya tek başına değiştirilemez: `siniflar.json` ile **teste
+bağlıdır** (`tests/test_sinif_tanimlari.py::
+test_data_yaml_sinif_sirasi_siniflar_json_ile_ayni`). Bu bağ K-021'den
+sonra bilerek kuruldu; birini değiştirip diğerini unutmak takımı kırmızıya
+düşürür. 03.09'da eklenen ağırlık denetimiyle birlikte artık **üç kilit**
+var:
+
+| Kilit | Neyi neye bağlar | Nerede |
+|---|---|---|
+| 1 | `data.yaml` ↔ `siniflar.json` | test |
+| 2 | ağırlığın `names`'i ↔ `siniflar.json` | `model-service/app.py`, çalışma anı |
+| 3 | `katsayilar.json` + renkler ↔ `siniflar.json` | test |
+
+Bu yüzden dört dosya **tek commit'te birlikte** göç eder ve **ağırlık
+gelmeden göç edemez**: siniflar.json v2'ye çevrilirse 2. kilit mevcut
+v1 ağırlığını reddeder ve çalışan teslim bozulur.
+
+Yeni sürüm bu klasörde (`results/egitim-v2/data.yaml`) olduğu gibi
+saklanıyor; hiçbir şey kaybolmadı.
+
+**Göç sırasında korunacak:** yeni `data.yaml` bir `roboflow:` bloğu
+taşıyor — çalışma alanı, proje, sürüm, **lisans (CC BY 4.0)** ve veri
+seti adresi. Bu, Madde 5.2 ve 10.4 için makinece okunabilir bir kaynak
+kaydıdır. Deponun kopyasına alınırken bu blok **kırpılmamalıdır**; hatta
+`docs/lisans-analizi.md` 2.1.2'deki beyanla ayrışmasın diye
+`test_lisans_beyani.py` biçiminde bir teste bağlanması yerinde olur.
+
 ## Miktar katsayılarına etkisi
 
 Bugün kaynaklı katsayısı olan iki sınıf `ahsap` ve `metal`'dir. v2'de
