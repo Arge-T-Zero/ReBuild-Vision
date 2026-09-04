@@ -377,11 +377,60 @@ Denetimin bulduğu şeyler kadar **bulamadıkları** da anlamlı:
 
 ---
 
+## 7.5. 04.09.2026 — model v2'ye geçirildi (K-024)
+
+Denetimin **tek 🔴 maddesi** (eğitim veri setinin lisans beyanı) kapandı:
+model, arama motorundan toplanmış v1 veri setinden, üçü de **CC BY 4.0**
+olan üç kamuya açık veri setiyle eğitilmiş **v2**'ye geçirildi.
+
+| | v1 (denetim sırasında) | v2 (teslim edilen) |
+|---|---|---|
+| Veri seti lisansı | 🔴 beyan eksik | ✅ CC BY 4.0 ×3 |
+| Model | YOLO11m | YOLO11s (epoch 142) |
+| Ölçüm | test mAP50 0,4334 | **val** mAP50 0,8824 |
+| Sınıflar | ahsap, beton_tugla, cam, metal, seramik | ahsap, beton, cam, seramik, tugla |
+| Kaynaklı katsayı | 2 | **1** (yalnızca ahsap) |
+| Renk paleti ΔE | 8,95 | **15,45** |
+
+**Kazanılan:** lisans güvenliği (Madde 5.2/9.2), iki katına çıkan başarım,
+daha ayırt edilebilir palet, ağırlık↔`siniflar.json` çalışma anı denetimi.
+
+**Kaybedilen ve yazılan:** `metal` sınıfı (kaynaklı katsayısı olan iki
+sınıftan biri), test kümesi ölçümü, demo görüntülerindeki tespit
+zenginliği (14 → 4).
+
+### Denetim açısından yeni üç dürüstlük notu
+
+1. **Test kümesi ölçülmedi.** `model_metrik_ozeti()` artık bölme adını ve
+   model adını dosyadan okuyor; arayüz "val mAP50" diyor. Sabit metin
+   olsaydı val, test diye beyan edilecekti.
+2. **Ölçülmüş genelleme farkı.** v2 kendi val kümesinde 0,8824, deponun
+   sentetik demo görüntülerinde 4 tespit. `results/model-metrikleri.md`
+   iki sayıyı yan yana koyuyor.
+3. **Renk ölçümü yeniden üretilemiyordu.** `scripts/renk_olc.py` eklendi;
+   K-022'deki 6,79'u üretmiyor (aynı paleti 8,95 ölçüyor) ve bu saklanmadı.
+
+### 🔴 Yeni açılan tek madde
+
+`results/sunum-gorselleri/` **eskidi** — v1 ile çekildi, artık olmayan
+`metal` ve `beton_tugla` sınıflarını gösteriyor. Sunumda kullanılırsa jüri
+sistemde bulunmayan sınıfları görür. Yeniden çekilmeleri gerekiyor.
+
+**Doğrulandı (ekranla):** web ve mobil, dört kural, sınıf adları ve
+renkler, altbilgideki val mAP50, sıfır konsol hatası. 172 sunucu testi,
+29 mobil testi, web derlemesi ve `flutter analyze` temiz.
+
+---
+
 ## 8. Teslim öncesi kalan iş
 
-1. 🔴 **Eğitim veri setinin kaynak/lisans beyanı** —
-   `docs/lisans-analizi.md` Bölüm 2.1.1'de tablo hazır
-2. 🔴 **`best.pt` + `docker compose ... gercek-model` uçtan uca çalıştırma**
+1. ✅ ~~Eğitim veri setinin kaynak/lisans beyanı~~ — **04.09'da kapandı**
+   (v2 geçişi, bkz. 7.5). Kalan tek işlem: Mendeley kaydının lisans
+   alanının gözle teyidi ve atıfta sürüm numarasının yazılması.
+2. 🔴 **Sunum görselleri yeniden çekilmeli** — mevcutlar v1 ile alındı,
+   artık olmayan sınıfları gösteriyor
+3. 🔴 **`docker compose ... gercek-model` uçtan uca çalıştırma** (ağırlık
+   artık `model-v2` sürümünde)
 3. 🟠 Demo videosu (03.09) — senaryo ve kontrol listesi
    `docs/demo-video.md`'de güncel
 4. 🟡 Mobil uygulamadan gerçek bir **telefonda** tek fotoğraf yükleme
