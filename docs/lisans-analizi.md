@@ -40,7 +40,8 @@ konuşulur · *veri* = kod değil içerik.
 |---|---|---|---|---|
 | ultralytics (YOLO11) | 8.4.137 | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
 | model ağırlıkları (özgün eğitim) | — | **AGPL-3.0** (proje lisansıyla aynı) ⚠️ | model dosyası | proje içi |
-| **eğitim veri seti** (takımın kendi topladığı) | — | 🔴 **BEYAN EKSİK** | veri | proje içi — bkz. 2.1.1 |
+| **eğitim veri seti v1** (teslim edilen model) | — | 🔴 **BEYAN EKSİK** | veri | bkz. 2.1.1 |
+| eğitim veri seti v2 (henüz teslimde değil) | — | ✅ CC BY 4.0 ×3 | veri | bkz. 2.1.2 |
 
 #### 2.1.1. 🔴 Eğitim veri setinin kaynak ve lisans beyanı EKSİK
 
@@ -87,6 +88,71 @@ teslimden önce ya belgelenmeli ya da veri setinden çıkarılıp model
 yeniden eğitilmelidir.**
 
 Bu soru mentöre de sorulacaktır (Bölüm 7, soru 10).
+
+#### 2.1.2. 🟢 v2 veri seti — kaynakları ve lisansları BEYAN EDİLDİ
+
+**Durum: bu veri seti henüz TESLİM EDİLEN modelin veri seti DEĞİLDİR.**
+03.09.2026'da yeni bir model eğitildi (`model-v2`, aşağıdaki veri
+setiyle). Ağırlık depoya/sürüme henüz konmadı; teslim edilen sistem
+bugün hâlâ `model-v1` ile, yani 2.1.1'deki beyanı eksik veri setiyle
+çalışmaktadır. **2.1.1'deki 🔴 ancak v2 teslim edilirse kapanır.**
+
+v2, üç kamuya açık veri setinin birleştirilmesiyle üretildi (Roboflow
+projesi `burak-alkan/newdetect-jvc1e` v4). Sınıflar: `ahsap`, `beton`,
+`cam`, `seramik`, `tugla`.
+
+| # | Veri seti | Kaynak | Alınan sınıf(lar) | Beyan edilen lisans | Doğrulama |
+|---|---|---|---|---|---|
+| 1 | CODD / BTC | Mendeley Data — `10.17632/24d45pf8wm` | concrete, brick, tile | CC BY 4.0 | ⚠️ **elle teyit edilmeli** — aşağıya bakınız |
+| 2 | broken-glass-kaggle | Roboflow Universe — `waste-seg-2` | broken-glass | CC BY 4.0 | veri seti sayfasında yazılı |
+| 3 | wood-0nvcu | Roboflow Universe — `asdasd-boz3q` | yalnızca `wood` (veri setinde `metal` ve `isgAyakkabı` da var, KULLANILMADI) | CC BY 4.0 | veri seti sayfasında yazılı |
+
+**CC BY 4.0 ne verir, ne ister** — üçü de aynı lisansta:
+
+- Ticari kullanım dahil her türlü kullanıma, değiştirmeye ve **türetilmiş
+  çalışma** (ince ayarlanmış model gibi) üretmeye izin verir.
+- **Tek şart atıftır.** Share-alike yoktur: eğitilen modeli istediğiniz
+  lisansla yayımlayabilirsiniz. Bu, projenin AGPL-3.0 kararıyla (K-020)
+  çelişmez — AGPL `ultralytics`ten gelir, veri setinden değil.
+- Madde 5.5'teki devir de sorunsuzdur: devredilen ürün türetilmiş
+  çalışmadır ve CC BY 4.0 bunu kısıtlamaz.
+
+##### ⚠️ Teslimden önce elle teyit edilmesi gereken iki nokta
+
+**1. Mendeley kaydının lisans alanı.** Bu satır *doğrulanmadı*.
+Geliştirme ortamının ağ politikası `data.mendeley.com` ve
+`api.datacite.org` adreslerini engelliyor; kaydın lisans alanı buradan
+okunamadı. Mendeley Data'nın yaygın varsayılanı CC BY 4.0'dır, **ama
+varsayılan bir lisans beyanı, okunmuş bir lisans beyanı değildir.**
+Madde 9.2 sorumluluğu katılımcıya yüklediği için bu alan kayıt sayfası
+açılıp gözle görülmelidir.
+
+**2. Hangi sürüm kullanıldı.** Elimizdeki kaynaklarda Mendeley kaydının
+hem `/1` hem `.2` sürümü geçiyor. Atıfta **fiilen indirilen sürüm**
+yazılmalıdır; DOI sürüm numarası taşır ve yanlış sürüme atıf, atıf
+sayılmaz.
+
+##### Rapora ve teslim paketine girecek atıf
+
+> Bu çalışmada kullanılan görüntü veri setleri CC BY 4.0 lisansı altında
+> paylaşılmıştır:
+>
+> - Demetriou, D. ve ark. Construction and Demolition Waste Object
+>   Detection Dataset. Mendeley Data.
+>   https://doi.org/10.17632/24d45pf8wm — *(sürüm numarası ve yayın yılı,
+>   indirilen sürümden teyit edilerek yazılacak)*
+> - waste seg 2. broken-glass kaggle Dataset. Roboflow Universe.
+>   https://universe.roboflow.com/waste-seg-2/broken-glass-kaggle
+> - asdasd. Wood Dataset. Roboflow Universe.
+>   https://universe.roboflow.com/asdasd-boz3q/wood-0nvcu
+>
+> Birleştirme ve yeniden etiketleme: `burak-alkan/newdetect-jvc1e` v4.
+
+**Neden bu, 2.1.1'e göre büyük bir iyileşme:** v1'in görüntüleri arama
+motorundan toplanmıştı ve hakları belirsizdi (2.1.1'deki uyarı). v2'nin
+üç kaynağı da izin verici, adı konmuş ve atıfla kullanılabilir bir
+lisansa sahiptir. Madde 5.2'nin istediği "kaynaklarını açıkça belirtmek"
+şartı bu tabloyla karşılanır.
 
 ---
 

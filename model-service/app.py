@@ -123,6 +123,53 @@ class _Model:
             self._model = YOLO(str(yol))
         except Exception as e:  # noqa: BLE001 — nedeni ekranda görünmeli
             self._hata = f"Ağırlık yüklenemedi: {type(e).__name__}: {e}"
+            return
+
+        # --- SINIF SIRASI DENETİMİ ------------------------------------
+        #
+        # ⚠️ BU DENETİM 03.09.2026'DA EKLENDİ ve K-021'in tekrarını
+        # engeller.
+        #
+        # `_sinif_adi()` yalnızca BİLİNMEYEN id'yi yakalıyordu. Ama asıl
+        # tehlike bilinmeyen id değil, BİLİNEN AMA BAŞKA ŞEYİ GÖSTEREN
+        # id'dir: iki liste de 0–4 kullanıyorsa uyuşmazlık hiçbir yerde
+        # hata vermez, yalnızca her tespit sessizce yanlış adla kaydedilir
+        # ve oradan miktar hesabına, haritaya ve rapora akar.
+        #
+        # 02.09'da tam bu oldu: model 5 sınıfla eğitilmişti, depo 10
+        # sınıflıktı ve id 0 modelde "ahsap" iken depoda "beton" demekti.
+        # O sefer elle yakalandı. Elle yakalamak, mekanizma değildir.
+        #
+        # Ağırlık kendi `names` sözlüğünü taşır. Artık onunla
+        # `siniflar.json` karşılaştırılıyor; ayrışırlarsa servis ÇALIŞMAYI
+        # REDDEDER. Yanlış adla çalışmaktansa hiç çalışmamak doğrudur —
+        # ilki fark edilmez, ikincisi ilk saniyede görünür.
+        adlar = getattr(self._model, "names", None)
+        if isinstance(adlar, dict) and adlar:
+            beklenen = {s["id"]: s["ad"] for s in SINIFLAR["siniflar"]}
+            gelen = {int(k): str(v) for k, v in adlar.items()}
+            if gelen != beklenen:
+                ayrisan = sorted(
+                    set(beklenen) | set(gelen),
+                    key=lambda i: i,
+                )
+                satirlar = [
+                    f"  id {i}: siniflar.json={beklenen.get(i, '—')!r} "
+                    f"ağırlık={gelen.get(i, '—')!r}"
+                    for i in ayrisan
+                    if beklenen.get(i) != gelen.get(i)
+                ]
+                self._model = None
+                self._hata = (
+                    "SINIF SIRASI UYUŞMUYOR — servis çalışmayı reddetti.\n"
+                    "Ağırlığın kendi sınıf listesi siniflar.json ile aynı "
+                    "değil. Bu hâlde her tespit sessizce YANLIŞ ADLA "
+                    "kaydedilir ve yanlış malzemenin katsayısıyla miktara "
+                    "dönüşür.\n"
+                    + "\n".join(satirlar)
+                    + "\nDüzeltmek için: siniflar.json'u eğitimdeki "
+                    "data.yaml sırasıyla aynı yapın (id'ler dahil)."
+                )
 
     def isim(self) -> str:
         return Path(AGIRLIK_YOLU).stem if self.hazir else "yüklenmedi"
