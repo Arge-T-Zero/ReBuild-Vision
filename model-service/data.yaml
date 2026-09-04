@@ -1,6 +1,26 @@
+# Eğitim veri setinin sınıf sırası — model-v2 (YOLO11s).
+#
+# ⚠️ BU DOSYA DEPODAKİ TEK SINIF SIRASI KANITIDIR. Ağırlık büyük olduğu
+# için depoya girmez; modelin ne öğrendiğini gösteren küçük kanıt budur.
+# `siniflar.json` ile teste bağlıdır (tests/test_sinif_tanimlari.py) ve
+# ağırlığın kendi `names` sözlüğüyle çalışma anında karşılaştırılır
+# (model-service/app.py). Üçü birden ayrışamaz.
+#
+# Aşağıdaki train/val/test yolları EĞİTİM ORTAMININ düzenini anlatır,
+# bu deponun değil; burada bir "train/" klasörü yoktur.
+
 train: ../train/images
 val: ../valid/images
 test: ../test/images
 
 nc: 5
-names: ['ahsap', 'beton_tugla', 'cam', 'metal', 'seramik']
+names: ['ahsap', 'beton', 'cam', 'seramik', 'tugla']
+
+# Kaynak kaydı — Madde 5.2 ve 10.4. Beyanın tamamı ve atıf metni:
+# docs/lisans-analizi.md Bölüm 2.1.2
+roboflow:
+  workspace: burak-alkan
+  project: newdetect-jvc1e
+  version: 4
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/burak-alkan/newdetect-jvc1e/dataset/4

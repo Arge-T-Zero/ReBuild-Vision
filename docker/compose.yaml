@@ -51,11 +51,11 @@ services:
 
   # Sahte model servisi — BU DOSYANIN VARSAYILANI.
   #
-  # ⚠️ GERÇEK MODEL HAZIR (01.09.2026, `model-v1` sürümü). Bu dosya onu
+  # ⚠️ GERÇEK MODEL HAZIR (03.09.2026, `model-v2` sürümü). Bu dosya onu
   # çalıştırmaz; bindirme dosyası çalıştırır:
   #
   #   curl -L -o model-service/agirliklar/best.pt \
-  #     https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
+  #     https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v2/best.pt
   #   docker compose -f docker/compose.yaml \
   #                  -f docker/compose.gercek-model.yaml up --build
   #

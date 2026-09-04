@@ -141,7 +141,7 @@ async def test_uzman_inceleme_bekleyen_sahayi_gorur(istemci, jeton, tespit_kur):
     Uzman kuyruktan doğrulama yaparken tespiti bağlamında görebilmeli,
     ölçüm ve laboratuvar kaydı ekleyebilmelidir.
     """
-    await tespit_kur("beton_tugla", inceleme=True)
+    await tespit_kur("beton", inceleme=True)
 
     uzman = (await istemci.get("/enkaz-alani", headers=await jeton("uzman"))).json()
     assert len(uzman) == 1, "Uzman inceleme bekleyen sahayı görmeli"
@@ -150,7 +150,7 @@ async def test_uzman_inceleme_bekleyen_sahayi_gorur(istemci, jeton, tespit_kur):
 async def test_uzman_isi_olmayan_sahayi_gormez(istemci, jeton, tespit_kur,
                                                kullanicilar):
     """Görünürlük iş üzerinden türetilir; her saha açılmaz."""
-    tid = await tespit_kur("beton_tugla")
+    tid = await tespit_kur("beton")
     # Tek tespit onaylanınca ortada bekleyen iş kalmaz.
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
@@ -172,7 +172,7 @@ async def test_saha_personeli_alanlari_gorur(istemci, jeton, tespit_kur):
     sahaya görüntü yükleyebilmek için o sahaya DAHA ÖNCE görüntü yüklemiş
     olmak zorunda kalıyordu — rol tamamen işlevsizdi.
     """
-    await tespit_kur("beton_tugla")
+    await tespit_kur("beton")
     alanlar = (await istemci.get("/enkaz-alani",
                                  headers=await jeton("saha"))).json()
     assert len(alanlar) == 1, "Saha personeli tanımlı sahayı görmeli"
@@ -184,7 +184,7 @@ async def test_dis_taraflar_atanmamis_sahayi_gormez(istemci, jeton, tespit_kur):
     Atama akışı gelene kadar boş liste görmeleri DOĞRU davranıştır;
     saha personeline tanınan genişletme bu rollere tanınmaz.
     """
-    await tespit_kur("beton_tugla")
+    await tespit_kur("beton")
     for rol in ("yikim", "tesis"):
         y = (await istemci.get("/enkaz-alani", headers=await jeton(rol))).json()
         assert y == [], f"{rol} atanmamış sahayı görmemeli"
@@ -196,7 +196,7 @@ async def test_harita_rol_kapsamiyla_sinirli(istemci, jeton, tespit_kur):
     Önceden hiçbir saha göremeyen bir rol, haritada "0 enkaz alanı"
     yazarken yanında sistemin TAMAMINA ait malzeme kırılımını okuyordu.
     """
-    tid = await tespit_kur("metal")
+    tid = await tespit_kur("tugla")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
 
@@ -216,7 +216,7 @@ async def test_gecmis_sistem_genelini_herkes_goremez(istemci, jeton, tespit_kur)
     Arayüzde sekmeyi gizlemek yetki değildir; uç nokta doğrudan
     çağrılabilir.
     """
-    tid = await tespit_kur("beton_tugla")
+    tid = await tespit_kur("beton")
 
     for rol in ("yikim", "tesis", "saha"):
         y = await istemci.get("/gecmis", headers=await jeton(rol))
@@ -236,7 +236,7 @@ async def test_gecmis_sistem_genelini_herkes_goremez(istemci, jeton, tespit_kur)
 
 async def test_gecmis_kullanici_adini_dondurur(istemci, jeton, tespit_kur):
     """Denetim kaydının vaadi "KİM, ne zaman, neyi değiştirdi"."""
-    tid = await tespit_kur("beton_tugla")
+    tid = await tespit_kur("beton")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
 
@@ -269,7 +269,7 @@ async def test_gormedigi_sahanin_tespitini_id_ile_okuyamaz(
 
     Bu test dört ucu birden tutar; biri gevşerse kırılır.
     """
-    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    tid = await tespit_kur("tugla", dogrulama="onaylandi")
     yikim = await jeton("yikim")
 
     # Önce kapsamın gerçekten dışında olduğunu doğrula — testin
@@ -312,7 +312,7 @@ async def test_gormedigi_sahanin_tespitine_olcum_giremez(
     `saha` rolü ölçüm girebilir (eylem yetkisi var) ama yalnızca
     görebildiği sahalarda (nesne yetkisi). İkisi ayrı sorulardır.
     """
-    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    tid = await tespit_kur("tugla", dogrulama="onaylandi")
 
     y = await istemci.post("/olcum", headers=await jeton("yikim"), json={
         "tespit_id": tid, "tur": "hacim", "deger": 10.0,
@@ -331,7 +331,7 @@ async def test_kapsamindaki_tespiti_okuyabilir(istemci, jeton, tespit_kur):
     `TUM_SAHALARI_GORUR` = {yonetici, afad}. `belediye` kendi oluşturduğu
     sahaları görür ve `conftest.tespit_kur` sahayı belediye adına kurar.
     """
-    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    tid = await tespit_kur("tugla", dogrulama="onaylandi")
     for rol in ("belediye", "afad", "yonetici"):
         y = await istemci.get(f"/tespit/{tid}", headers=await jeton(rol))
         assert y.status_code == 200, (
@@ -354,7 +354,7 @@ async def test_uzman_inceleme_bekleyen_tespiti_okuyabilir(
     Bu bir gerileme değil, liste ucundaki davranışın tekil uca
     uygulanmasıdır — `/enkaz-alani` o sahayı zaten döndürmüyordu.
     """
-    tid = await tespit_kur("metal", inceleme=True)
+    tid = await tespit_kur("tugla", inceleme=True)
     y = await istemci.get(f"/tespit/{tid}", headers=await jeton("uzman"))
     assert y.status_code == 200, (
         "Uzman kuyruktaki kaydı açamıyor — doğrulama akışı kırılırdı"
@@ -370,7 +370,7 @@ async def test_uzman_isi_olmayan_sahanin_tespitini_okuyamaz(
     bu uzmanın kapsamı dışındadır. Liste ucu bu sahayı zaten
     döndürmüyordu; tekil uç 02.09.2026'ya kadar döndürüyordu.
     """
-    tid = await tespit_kur("metal", dogrulama="onaylandi")
+    tid = await tespit_kur("tugla", dogrulama="onaylandi")
     alanlar = (await istemci.get(
         "/enkaz-alani", headers=await jeton("uzman"))).json()
     assert alanlar == [], "Test kurgusu bozuk: uzman bu sahayı listede görüyor"

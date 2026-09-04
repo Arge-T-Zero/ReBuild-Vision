@@ -113,14 +113,17 @@ class Renk {
   /// sınıfıyla değil. Bu liste `siniflar.json` ile birebir aynı kalmak
   /// zorundadır — ayrışırsa mobil arayüz yanlış renk gösterir.
   ///
-  /// Renkler renk körlüğü benzetimiyle seçildi (en kötü ΔE=6,8).
+  /// Renkler renk körlüğü benzetimiyle seçildi; bütün-ikili en kötü
+  /// ΔE = 15,45 (`scripts/renk_olc.py`). v2 göçünde `metal` kalktı ve
+  /// `beton_tugla` ikiye ayrıldı; seramik de tabanı yükseltmek için
+  /// değişti (bkz. K-024).
   /// Renk tek başına anlam taşımaz; etiketlerde sınıf adı yazılıdır.
   static const malzeme = <String, Color>{
     'ahsap': Color(0xFFD95926),
-    'beton_tugla': Color(0xFF6B7280),
+    'beton': Color(0xFF6B7280),
     'cam': Color(0xFF008300),
-    'metal': Color(0xFF3987E5),
-    'seramik': Color(0xFFC98500),
+    'seramik': Color(0xFFD4A017),
+    'tugla': Color(0xFF8C1D18),
   };
 
   /// Sınıfın EKRANDA görünen adı — `siniflar.json` → `gorunen_ad`.
@@ -141,10 +144,10 @@ class Renk {
   /// deponun `siniflar.json` dosyasıyla karşılaştırır.
   static const malzemeAdi = <String, String>{
     'ahsap': 'Ahşap',
-    'beton_tugla': 'Beton / tuğla',
+    'beton': 'Beton',
     'cam': 'Cam',
-    'metal': 'Metal',
     'seramik': 'Seramik',
+    'tugla': 'Tuğla',
   };
 
   static Color sinif(String ad) => malzeme[ad] ?? metin4;

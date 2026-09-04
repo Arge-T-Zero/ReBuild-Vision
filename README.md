@@ -126,18 +126,24 @@ scripts/gelistirme.sh
 
 ## Malzeme sınıfları
 
-**Beş sınıf:** `ahsap` · `beton_tugla` · `cam` · `metal` · `seramik`
+**Beş sınıf:** `ahsap` · `beton` · `cam` · `seramik` · `tugla`
 
 Tek doğruluk kaynağı [`siniflar.json`](siniflar.json) dosyasıdır; sınıf
-adları kodda elle yazılmaz. Bu liste 02.09.2026'da **10'dan 5'e indi** —
-model, planlanan kamuya açık veri setiyle değil takımın kendi topladığı
-veri setiyle eğitildi. Tanım ve gerekçe:
-[`docs/siniflar.md`](docs/siniflar.md), karar
-[`docs/karar-kaydi.md`](docs/karar-kaydi.md) **K-021**.
+adları kodda elle yazılmaz. Liste iki kez değişti: 02.09.2026'da 10'dan
+5'e indi (**K-021**), 03.09.2026'da yeni modelle birlikte içeriği değişti
+(**K-024**) — `metal` kalktı, `beton_tugla` `beton` ve `tugla` diye ikiye
+ayrıldı. Tanım ve gerekçe: [`docs/siniflar.md`](docs/siniflar.md),
+kararlar [`docs/karar-kaydi.md`](docs/karar-kaydi.md).
+
+⚠️ **`metal` artık tanınmıyor.** v1'de sınıf vardı, v2'nin eğitim veri
+setinde yok. Enkazdaki metal kayıt dışı kalır; bu bir kapsam daralmasıdır
+ve gizlenmez.
 
 Eğitimdeki sınıf **sırası** ile `siniflar.json` ayrışırsa arayüz yanlış
-malzeme gösterir; bu yüzden ikisi `model-service/data.yaml` üzerinden
-testle bağlanmıştır (`tests/test_sinif_tanimlari.py`).
+malzeme gösterir. Üç kilit birden vardır: `data.yaml` ↔ `siniflar.json`
+testle (`tests/test_sinif_tanimlari.py`), **ağırlığın kendi `names`
+sözlüğü ↔ `siniflar.json`** çalışma anında (`model-service/app.py` —
+ayrışırsa servis çalışmayı reddeder), katsayılar ve renkler yine testle.
 
 **Kapsanmayan gruplar:** model bu beşin dışındaki malzeme gruplarını
 (dolgu/toprak, plastik, tekstil, karton, alçıpan) **tanımaz.** Bir sınıfın
@@ -148,30 +154,36 @@ gösterilmez.
 
 ## Model durumu
 
-✅ **Model eğitildi ve ölçüldü** (01.09.2026, YOLO11m, 640 px, 2,03 saat).
+✅ **Model eğitildi ve ölçüldü** (03.09.2026, **YOLO11s**, 640 px, 150
+epoch / ~91 dakika). Gönderilen ağırlık **epoch 142** checkpoint'idir;
+Ultralytics `best`i fitness'a göre seçer, son epoch'a göre değil.
 
-| Bölme | mAP50 | mAP50-95 |
-|---|---|---|
-| val | 0,4424 | 0,3089 |
-| test | 0,4334 | 0,3132 |
+| Bölme | precision | recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|
+| **val** | 0,9087 | 0,8316 | **0,8824** | 0,6497 |
 
-Bütün sayılar [`results/egitim/`](results/egitim/) altındaki ham
-çıktılardan gelir. Sınıf bazlı sonuçlar ve **açıkça yazılmış zayıflıklar**
-— `cam` en iyi (test mAP50 0,7257), `seramik` pratikte çalışmıyor (test
-mAP50 0,0877) — [`results/model-metrikleri.md`](results/model-metrikleri.md).
+⚠️ **Test kümesi ölçülmedi.** v1'de test ölçümü vardı (mAP50 0,4334);
+v2 için `split=test` ile ayrı bir koşu yapılmadı. Elimizde yalnızca
+eğitim sırasındaki val ölçümü var ve arayüz de bu yüzden "val" diyor —
+val sayısını test diye beyan etmek yanlış beyan olurdu.
 
-⚠️ **Eğitim veri setinin kaynak ve lisans beyanı eksiktir.** Görüntülerin
-nereden toplandığı ve hangi hakla kullanıldığı henüz yazılı değildir;
-şartname Madde 5.2 bunu açıkça istiyor. Ayrıntı ve kapatma yolu:
-[`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1.
+⚠️ **Ölçülmüş genelleme farkı.** v2, kendi val kümesinde 0,8824 alıyor
+ama deponun üç **sentetik** demo görüntüsünde yalnızca 4 tespit üretiyor
+(v1 aynı görüntülerde 14 üretiyordu). Sebep dağılım farkıdır: v2 gerçek
+yıkım atığı fotoğraflarıyla eğitildi, demo görüntüleri ise yapay zekâ
+üretimi geniş moloz sahneleri. Bu, sistemin neden hiçbir çıktıyı
+kendiliğinden onaylamadığının somut kanıtıdır ve gizlenmez —
+[`results/model-metrikleri.md`](results/model-metrikleri.md).
 
-**Ağırlık nereden gelir:** [`model-v1`](https://github.com/Arge-T-Zero/ReBuild-Vision/releases/tag/model-v1) sürümünden indirilir
-(39 MB; büyük ikili dosyalar depoya girmez).
+**Ağırlık nereden gelir:** [`model-v2`](https://github.com/Arge-T-Zero/ReBuild-Vision/releases/tag/model-v2) sürümünden indirilir
+(18 MB; büyük ikili dosyalar depoya girmez).
 
 ```bash
 curl -L -o model-service/agirliklar/best.pt \
-  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
+  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v2/best.pt
 ```
+
+sha256: `468cf535a4e26977…`
 
 Ağırlık yokken servis **sahte veri üretmez**: `/predict` 503 döner.
 Ayrıntı: [`model-service/README.md`](model-service/README.md).
@@ -211,7 +223,7 @@ Teslim paketinde istenen belgeler (Madde 10.3) ve beyan yükümlülükleri:
 
 | Madde | Konu | Belge |
 |---|---|---|
-| **5.2** | **Veri seti kaynak beyanı** | 🔴 **EKSİK** — [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1 |
+| **5.2** | **Veri seti kaynak beyanı** | ✅ üç kaynak, CC BY 4.0 — [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.2 |
 | 5.5 | Ürünün Kuruma devri | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 3.2 |
 | 9.1 · 10.6 · 10.7 | Veri hakları, silme, KVKK | [`docs/veri-politikasi.md`](docs/veri-politikasi.md) |
 | 9.2 | Üçüncü taraf hakları | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1 |
@@ -223,10 +235,11 @@ Teslim paketinde istenen belgeler (Madde 10.3) ve beyan yükümlülükleri:
 | 10.8 | Açık coğrafi standart | **OGC API - Features** → `/ogc` |
 | **10.9** | **Çevresel etki doğrulama** | [`docs/cevresel-etki.md`](docs/cevresel-etki.md) |
 
-> **Madde 5.2 neden kırmızı:** eğitim veri setinin kaynak ve lisans
-> beyanı henüz yazılı değil. Bu tabloda gizlenmiyor çünkü teslim öncesi
-> kapatılması gereken en acil boşluk odur ve Madde 9.2 sorumluluğu
-> katılımcıya yüklüyor.
+> **Madde 5.2 nasıl kapandı:** 03.09.2026'da model, lisansı beyan
+> edilmemiş bir veri setiyle eğitilmiş v1'den, üçü de CC BY 4.0 olan üç
+> kamuya açık veri setiyle eğitilmiş **v2**'ye geçirildi. Atıf README'nin
+> "Atıf" bölümünde ve `docs/lisans-analizi.md` 2.1.2'de yazılıdır.
+> Kalan tek işlem: Mendeley kaydının lisans alanının gözle teyidi.
 
 ---
 
@@ -242,15 +255,35 @@ Bkz. [`docs/veri-politikasi.md`](docs/veri-politikasi.md) ve
 
 ## Atıf
 
-**Eğitim veri seti:** takımın kendi topladığı ve Roboflow ile etiketlediği
-5 sınıflı veri seti (2.765 görüntü · 9.348 kutu). Künye:
-[`results/egitim/veri_seti_kunyesi.json`](results/egitim/veri_seti_kunyesi.json).
+**Eğitim veri seti (v2):** üç kamuya açık veri setinin birleşimi
+(Roboflow projesi `burak-alkan/newdetect-jvc1e` v4). **Üçü de CC BY 4.0.**
 
-> 🔴 **Kaynak ve lisans beyanı henüz tamamlanmamıştır.** Görüntülerin
-> hangi kaynaklardan, hangi tarihte ve hangi hakla toplandığı yazılı
-> değildir. Bu bir teslim eksiğidir ve gizlenmemektedir —
-> [`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm 2.1.1 neyin
-> gerektiğini ve nasıl kapatılacağını yazar.
+> Bu çalışmada kullanılan görüntü veri setleri CC BY 4.0 lisansı altında
+> paylaşılmıştır:
+>
+> - Demetriou, D. ve ark. *Construction and Demolition Waste Object
+>   Detection Dataset.* Mendeley Data.
+>   <https://doi.org/10.17632/24d45pf8wm> — beton, tuğla, seramik
+> - waste seg 2. *broken-glass kaggle Dataset.* Roboflow Universe.
+>   <https://universe.roboflow.com/waste-seg-2/broken-glass-kaggle> — cam
+> - asdasd. *Wood Dataset.* Roboflow Universe.
+>   <https://universe.roboflow.com/asdasd-boz3q/wood-0nvcu> — yalnızca
+>   `wood` sınıfı alınmıştır
+
+CC BY 4.0 ticari kullanıma, değiştirmeye ve türetilmiş çalışmaya
+(ince ayarlanmış model dahil) izin verir; **tek şart atıftır.**
+Share-alike yoktur. Ayrıntı ve doğrulama notları:
+[`docs/lisans-analizi.md`](docs/lisans-analizi.md) Bölüm **2.1.2**.
+
+> ⚠️ Mendeley kaydının lisans alanı geliştirme ortamından **okunamadı**
+> (ağ politikası engelliyor). Teslimden önce kayıt sayfası açılıp gözle
+> teyit edilmelidir; atıfta fiilen indirilen **sürüm numarası** da
+> yazılmalıdır.
+
+**v1 veri seti (artık kullanılmıyor):** takımın kendi topladığı 5 sınıflı
+set — lisans beyanı eksikti ve v2 geçişinin asıl sebeplerinden biri
+buydu. Künye tarihî kayıt olarak duruyor:
+[`results/egitim/veri_seti_kunyesi.json`](results/egitim/veri_seti_kunyesi.json).
 
 Daha önce bu bölümde CDW-Seg (Sirimewan & Arashpour, *Scientific Data*
 2025, CC0 1.0) veri setine atıf yapılıyordu. **O veri seti eğitimde

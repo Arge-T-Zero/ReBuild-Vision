@@ -23,8 +23,8 @@ maddedeki sırayla yanıtlanmıştır.
 
 Sistemde **tek bir model** vardır ve yalnızca bir iş yapar: bir enkaz
 fotoğrafındaki görünür malzeme bölgelerini sınırlayıcı kutu olarak
-işaretleyip **beş sınıftan** birine atamak (`ahsap`, `beton_tugla`,
-`cam`, `metal`, `seramik`).
+işaretleyip **beş sınıftan** birine atamak (`ahsap`, `beton`,
+`cam`, `seramik`, `tugla`).
 
 Üretken yapay zekâ (LLM, görüntü üretimi vb.) **kullanılmamaktadır.**
 Sistemde metin üreten, özetleyen veya karar gerekçesi yazan hiçbir model
@@ -35,9 +35,14 @@ yoktur; ekrandaki bütün açıklama metinleri insan tarafından yazılmıştır
 | Bölme | Precision | Recall | mAP50 | mAP50-95 |
 |---|---|---|---|---|
 | val | 0,5318 | 0,4530 | **0,4424** | 0,3089 |
-| test | 0,4880 | 0,4176 | **0,4334** | 0,3132 |
+| **val** | 0,9087 | 0,8316 | **0,8824** | 0,6497 |
 
-YOLO11m, 640×640, AdamW, 2,03 saat. Tam künye ve sınıf bazlı sonuçlar:
+⚠️ **Test kümesi ölçülmedi** (v1'de ölçülmüştü: mAP50 0,4334). Val sayısını test diye beyan etmek yanlış beyan olurdu.
+
+⚠️ **Ölçülmüş genelleme farkı:** model kendi val kümesinde 0,8824 alıyor ama deponun sentetik demo görüntülerinde 4 tespit üretiyor. Ayrıntı: `results/model-metrikleri.md`.
+
+YOLO11s, 640×640, 150 epoch, ~91 dakika. Gönderilen ağırlık epoch 142
+checkpoint'idir. Tam künye ve bilinen zayıflıklar:
 `results/model-metrikleri.md`; ham çıktılar: `results/egitim/`.
 
 **Model çalışıyor ama zayıf.** mAP50 0,43–0,44 — tespitlerin ancak bir
@@ -58,7 +63,7 @@ uydurma üretmez, 503 döner.
 |---|---|
 | Ultralytics YOLO11 (çıkarım kütüphanesi) | **AGPL-3.0** 🔴 |
 | Proje kodu | AGPL-3.0 (bkz. `LICENSE`) |
-| Eğitim veri seti (takımın kendi topladığı) | 🔴 **beyan eksik** — bkz. Bölüm 3 |
+| Eğitim veri seti (üç kamuya açık kaynağın birleşimi) | ✅ **CC BY 4.0 ×3** — bkz. Bölüm 3 |
 | Model ağırlıkları (özgün eğitim) | Bkz. `docs/lisans-analizi.md` Bölüm 2.1 |
 
 AGPL-3.0, şartname **Madde 10.4**'ün "ayrıca belirtilecektir" dediği
@@ -78,10 +83,10 @@ hiçbir koşulda import etmez. Bu sınır bir yorum satırıyla değil,
 
 | Alan | Değer |
 |---|---|
-| Sınıf sayısı | **5** — `ahsap`, `beton_tugla`, `cam`, `metal`, `seramik` |
+| Sınıf sayısı | **5** — `ahsap`, `beton`, `cam`, `seramik`, `tugla` |
 | Görüntü | 2.765 (train 2.184 · valid 384 · test 197) |
 | Kutu | 9.348 |
-| Lisans / kaynak | 🔴 **BEYAN EKSİK** — aşağıya bakınız |
+| Lisans / kaynak | ✅ **CC BY 4.0 ×3** — aşağıya bakınız |
 | Künye | `results/egitim/veri_seti_kunyesi.json` |
 | Ön işleme | `results/egitim/on_isleme_kaydi.json` — sızıntı ve filigran temizliği, 750 görüntü oversample |
 
@@ -93,7 +98,14 @@ setiyle yapılmamıştır.** Depo o tarihte modelin hangi veriyle eğitildiğini
 bilmiyordu; ağırlık geldiğinde `data.yaml` ile `siniflar.json` arasındaki
 uyuşmazlık ortaya çıktı ve düzeltildi (`docs/karar-kaydi.md` K-021).
 
-### 🔴 Kaynak ve lisans beyanı eksik
+### ✅ Kaynak ve lisans beyanı — ÇÖZÜLDÜ (03.09.2026)
+
+> Bu başlık v1 için 🔴 idi. Model, üçü de **CC BY 4.0** olan üç
+> kamuya açık veri setiyle eğitilmiş v2'ye geçirildi; kaynaklar,
+> atıf metni ve teslimden önce gözle teyit edilmesi gerekenler
+> `docs/lisans-analizi.md` **Bölüm 2.1.2**'de.
+
+#### v1'de sorun neydi
 
 Görüntülerin **nereden toplandığı ve hangi hakla kullanıldığı henüz
 yazılı değildir.** Madde 5.2 "kaynaklarını açıkça belirtmek kaydıyla"
@@ -109,7 +121,9 @@ değildir. Ayrıntı ve kapatma yolu: `docs/lisans-analizi.md` Bölüm 2.1.1.
 `results/bilinen-sinirlar.md` Bölüm B'de ölçülmüş hâlleriyle:
 
 - **`seramik` pratikte çalışmıyor** — testte mAP50 0,0877, en az örnekli sınıf.
-- **`beton_tugla` iki malzemeyi birlikte kapsıyor** — geri kazanım
+- **`metal` sınıfı YOK** (v2). v1'de vardı; enkazdaki metal kayıt dışı
+  kalır. Kapsam daralmasıdır, gizlenmez.
+- **`beton` ve `tugla` artık AYRI sınıf** (v1'de birlikteydi) — geri kazanım
   yönlendirmesi açısından ikisi farklı süreçlere gider.
 - **Alan uyuşmazlığı:** görüntüler internetten toplanmış; kullanım alanı
   afet enkaz sahası. Saha başarımı ölçülenden **düşük olacaktır** ve ne
@@ -329,9 +343,9 @@ sonradan denetleyecek kişinin ilk soracağı şey budur.
 
 | Madde 10.5 kalemi | Bu belgede | Durum |
 |---|---|---|
-| Modelin adı | Bölüm 1 | YOLO11m — eğitildi, mAP50 0,43–0,44 |
+| Modelin adı | Bölüm 1 | YOLO11s — eğitildi, val mAP50 0,8824 |
 | Lisansı | Bölüm 2 | AGPL-3.0 — Madde 10.4 uyarınca ayrıca beyan |
-| Eğitim/veri kaynağı | Bölüm 3 | Takımın kendi veri seti, 5 sınıf · 🔴 lisans beyanı eksik |
+| Eğitim/veri kaynağı | Bölüm 3 | Üç kamuya açık veri setinin birleşimi, 5 sınıf · ✅ CC BY 4.0 |
 | Dış API kullanımı | Bölüm 4 | Yapay zekâ amaçlı dış API **yok** |
 | Çıktı doğrulama yöntemi | Bölüm 5 | Zorunlu uzman doğrulaması + veri katmanı kısıtları |
 | Hata/yanlılık riski | Bölüm 6 | Beş risk açıkça sayılmış |

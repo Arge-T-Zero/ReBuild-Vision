@@ -17,7 +17,7 @@ async def test_bbox_format_bos_gecilemez():
         with pytest.raises(Exception) as h:
             await db.execute(text(
                 "INSERT INTO tespit (goruntu_id, sinif, guven_skoru) "
-                "VALUES (1, 'metal', 0.8)"
+                "VALUES (1, 'tugla', 0.8)"
             ))
             await db.commit()
     assert "bbox_format" in str(h.value)
@@ -28,7 +28,7 @@ async def test_bos_metin_bbox_format_reddedilir():
         with pytest.raises(Exception) as h:
             await db.execute(text(
                 "INSERT INTO tespit (goruntu_id, sinif, guven_skoru, bbox_format) "
-                "VALUES (1, 'metal', 0.8, '')"
+                "VALUES (1, 'tugla', 0.8, '')"
             ))
             await db.commit()
     assert "ck_tespit_bbox_format_dolu" in str(h.value)
@@ -49,7 +49,7 @@ async def test_guven_skoru_araligi_zorlanir():
         with pytest.raises(Exception) as h:
             await db.execute(text(
                 "INSERT INTO tespit (goruntu_id, sinif, guven_skoru, bbox_format) "
-                "VALUES (1, 'metal', 1.5, 'pixel_absolute_original')"
+                "VALUES (1, 'tugla', 1.5, 'pixel_absolute_original')"
             ))
             await db.commit()
     assert "ck_tespit_guven_araligi" in str(h.value)

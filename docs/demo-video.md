@@ -102,7 +102,7 @@ Bu, raporun Bölüm 4'teki üçüncü yenilikçi yönünün sahnedeki karşılı
 ## Kontrol listesi (çekimden önce)
 
 - [ ] Gerçek model bağlandı mı?
-      `curl -L -o model-service/agirliklar/best.pt https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt`
+      `curl -L -o model-service/agirliklar/best.pt https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v2/best.pt`
       sonra `docker compose -f docker/compose.yaml -f docker/compose.gercek-model.yaml up`.
       Doğrulama: `/api/sistem/durum` → `sahte: false`.
       Bağlanmadıysa sahte servis bandı ekranda görünüyor ve anlatımda

@@ -1,5 +1,10 @@
 # Eğitim çıktıları (ham)
 
+> ⚠️ **TARİHÎ KAYIT — model-v1.** Bu klasördeki çıktılar 03.09.2026'da
+> `model-v2` ile değiştirilen modele aittir. Güncel ölçüm:
+> `results/model-metrikleri.md`, ham v2 çıktısı: `results/egitim-v2/`.
+> Silinmedi çünkü eski belgeler ve CHANGELOG bu sayılara atıf yapıyor.
+
 Bu klasör, 01.09.2026 tarihli eğitim koşusunun **ham çıktılarıdır**.
 Yorum eklenmemiştir; `results/model-metrikleri.md` bu dosyalara dayanarak
 **doldurulmuştur** (02.09.2026).

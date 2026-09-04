@@ -1,0 +1,103 @@
+{
+  "_uyari": "TARİHÎ KAYIT — model-v1 (YOLO11m). Bu model 03.09.2026'da model-v2 ile DEĞİŞTİRİLDİ ve artık teslim edilen sistem bunu kullanmıyor. Silinmedi çünkü depodaki eski belgeler ve CHANGELOG bu sayılara atıf yapıyor; kaldırılsaydı o atıflar kaynaksız kalırdı. GÜNCEL ölçüm: metrikler.json",
+  "model": "YOLO11m",
+  "veri_seti": "Takımın kendi topladığı 5 sınıflı veri seti (ahsap, beton_tugla, cam, metal, seramik) — lisans beyanı eksikti, v2 geçişinin asıl sebeplerinden biri buydu.",
+  "olcumler": [
+    {
+      "split": "val",
+      "sinif": "ahsap",
+      "precision": 0.4359,
+      "recall": 0.4553,
+      "mAP50": 0.4127,
+      "mAP50_95": 0.2681
+    },
+    {
+      "split": "val",
+      "sinif": "beton_tugla",
+      "precision": 0.4715,
+      "recall": 0.4367,
+      "mAP50": 0.4092,
+      "mAP50_95": 0.3072
+    },
+    {
+      "split": "val",
+      "sinif": "cam",
+      "precision": 0.7896,
+      "recall": 0.6848,
+      "mAP50": 0.7035,
+      "mAP50_95": 0.4638
+    },
+    {
+      "split": "val",
+      "sinif": "metal",
+      "precision": 0.4953,
+      "recall": 0.3482,
+      "mAP50": 0.3848,
+      "mAP50_95": 0.2782
+    },
+    {
+      "split": "val",
+      "sinif": "seramik",
+      "precision": 0.4669,
+      "recall": 0.3402,
+      "mAP50": 0.3019,
+      "mAP50_95": 0.2274
+    },
+    {
+      "split": "val",
+      "sinif": "TÜM SINIFLAR",
+      "precision": 0.5318,
+      "recall": 0.453,
+      "mAP50": 0.4424,
+      "mAP50_95": 0.3089
+    },
+    {
+      "split": "test",
+      "sinif": "ahsap",
+      "precision": 0.3887,
+      "recall": 0.4143,
+      "mAP50": 0.3607,
+      "mAP50_95": 0.2549
+    },
+    {
+      "split": "test",
+      "sinif": "beton_tugla",
+      "precision": 0.5818,
+      "recall": 0.5758,
+      "mAP50": 0.6268,
+      "mAP50_95": 0.4685
+    },
+    {
+      "split": "test",
+      "sinif": "cam",
+      "precision": 0.7928,
+      "recall": 0.6545,
+      "mAP50": 0.7257,
+      "mAP50_95": 0.4952
+    },
+    {
+      "split": "test",
+      "sinif": "metal",
+      "precision": 0.4477,
+      "recall": 0.3241,
+      "mAP50": 0.366,
+      "mAP50_95": 0.2779
+    },
+    {
+      "split": "test",
+      "sinif": "seramik",
+      "precision": 0.229,
+      "recall": 0.119,
+      "mAP50": 0.0877,
+      "mAP50_95": 0.0699
+    },
+    {
+      "split": "test",
+      "sinif": "TÜM SINIFLAR",
+      "precision": 0.488,
+      "recall": 0.4176,
+      "mAP50": 0.4334,
+      "mAP50_95": 0.3132
+    }
+  ]
+}

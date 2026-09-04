@@ -1,6 +1,6 @@
 {
-  "surum": "0.3",
-  "durum": "KISMEN KAYNAKLANDI — 5 siniftan 2'si kullanilabilir (ahsap, metal)",
+  "surum": "0.4",
+  "durum": "KISMEN KAYNAKLANDI — 5 siniftan YALNIZCA 1'i kullanilabilir (ahsap)",
   "aciklama": "Hacim -> agirlik donusum katsayilari. Her katsayi icin dogrulanmis bir kaynak ZORUNLUDUR. dogrulandi:false olan katsayi ile miktar HESAPLANMAZ (ana talimat Bolum 14: olculmemis/dayanaksiz sayi uretilmez). Miktar tek kesin deger olarak da uretilmez; bu yuzden bir katsayinin kullanilabilmesi icin KAYNAKTAN GELEN bir alt-ust araligi gerekir. Tek nokta degeri olan satirlar bilincli olarak kapali birakilmistir — aralik uydurulmamistir.",
   "birim": "ton/m3",
   "cevrim": {
@@ -9,6 +9,8 @@
     "dayanak": "1 lb = 0,45359237 kg (uluslararasi avoirdupois pound); 1 yd3 = 0,764554857984 m3"
   },
   "acik_sorular": [
+    "v2 GECISININ BEDELI: 'metal' sinifi v2 modelinde YOK. Metal, kaynakli katsayisi olan IKI siniftan biriydi (EPA 0,0279-0,1335 ton/m3). v2 ile kaynakli katsayi sayisi 2'den 1'e dustu — yalnizca ahsap kaldi. Yani hacim olcumunden tonaj uretebilen tek malzeme ahsaptir. Bu, modelin genel basarimindaki artisin (mAP50 0,43 -> 0,88) yaninda kayitli bir KAPSAM KAYBIDIR ve gizlenmemelidir.",
+    "BETON VE TUGLA AYRI SINIF OLDU. Onceki birlesik 'beton_tugla' sinifinin kaynagi zaten yoktu; simdi iki ayri kaynak gerekiyor. Beton, enkazin ana kutlesidir — kaynak bulunana kadar miktar gostergesi enkazin en buyuk bilesenini kapsamamaya devam eder.",
     "Bu degerler ABD insaat/yikim atigi karakterizasyonundan gelir. Turkiye'deki yapi malzemesi ve yikim pratigi farkli olabilir; mentore ve alan uzmanina SORULMALIDIR.",
     "beton_tugla, cam ve seramik icin aralik veren kaynak gerekiyor. beton_tugla en kritik sinif oldugu icin oncelikli: enkaz sahasinin ana kutlesi bu siniftadir ve kapali oldugu surece miktar gostergesi o kutleyi kapsamaz.",
     "cam ve seramik icin insaat/yikim atigi karakterizasyonunda aralik veren kaynak bulunamadi. EPA'nin C&D tablosunda ayri bir seramik kalemi yok; cam kalemi ise ambalaj camini olcuyor, yapi camini degil.",
@@ -32,22 +34,6 @@
       "not_": "Aralik EPA'nin kendi alt satirlarindan geliyor; uydurulmadi."
     },
     {
-      "sinif": "metal",
-      "alt": 0.0279,
-      "ust": 0.1335,
-      "kaynak": "U.S. EPA, Office of Resource Conservation and Recovery, “Volume-to-Weight Conversion Factors”, Nisan 2016, C&D tablosu — EPA'nin bu satirlar icin gosterdigi birincil kaynak (dipnot 18): California Integrated Waste Management Board, “Targeted Statewide Waste Characterization Study: Detailed Characterization of Construction and Demolition Waste”, Haziran 2006.",
-      "dogrulandi": true,
-      "epa_lb_yd3": [
-        47,
-        143,
-        145,
-        225
-      ],
-      "epa_satirlari": "Metal — HVAC Ducting 47 / Remainder-Composite 143 / Major Appliances 145 / Other Ferrous 225 / Other Non-Ferrous 225",
-      "not_": "Aralik GENIS (4,7 kat): en hafif satir hava kanali, en agir satir demir/demir disi hurda. Genis ama DURUST bir aralik; daraltmak kaynakta olmayan bir kesinlik iddia etmek olurdu."
-    },
-    {
-      "sinif": "beton_tugla",
       "alt": null,
       "ust": null,
       "kaynak": null,
@@ -56,7 +42,16 @@
         860
       ],
       "epa_satirlari": "Concrete — Large/Small Concrete, with/without Re-bar (dordu de 860)",
-      "not_": "EKSIK — aralik veren kaynak yok. Iki kat belirsizlik var: (1) EPA beton icin tek nokta deger veriyor, aralik vermiyor (860 lb/yd3 = 0,510 ton/m3); (2) bu sinif beton ILE TUGLAYI birlikte kapsiyor, ikisinin yogunlugu ayni degil. Aralik uydurulmadi. Ayrica yayimlanmis 'beton' degerleri 860-4.200 lb/yd3 arasinda bese katlaniyor (kategori farki: kati beton / kirilmis moloz / karisik atik). Bkz. acik_sorular ve docs/cevresel-etki.md."
+      "not_": "EKSIK — aralik veren kaynak yok. EPA'nin gosterdigi tek deger 860 lb/yd3 (Concrete satirlari); aralik degil tek nokta. Yayimlanmis 'beton' degerleri 860-4.200 lb/yd3 arasinda, cunku kaynaklar KATEGORI olarak ayrisiyor (kati beton / kirilmis gevsek moloz / karisik Y&D atigi). Enkaz sahasindaki malzeme gevsek moloz kategorisindedir; ortadan bir sayi secmek kategorileri karistirir ve tonaji katlayabilir. v2 NOTU: onceki 'beton_tugla' sinifi ikiye ayrildi; bu satir yalnizca BETONU kapsar.",
+      "sinif": "beton"
+    },
+    {
+      "sinif": "tugla",
+      "alt": null,
+      "ust": null,
+      "kaynak": null,
+      "dogrulandi": false,
+      "not_": "EKSIK — v2'de yeni ayrilan sinif. Onceki 'beton_tugla' birlesik sinifinin de kaynagi yoktu, yani bu bir gerileme degil; tugla artik ayri bir kaynak ariyor. Gevsek yikim molozu kategorisinde tugla icin alt-ust araligi veren dogrulanabilir bir kaynak gerekiyor."
     },
     {
       "sinif": "cam",

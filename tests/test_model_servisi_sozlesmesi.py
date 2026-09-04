@@ -146,7 +146,7 @@ def test_bilinmeyen_sinif_idsi_sessizce_gecilmez():
 
     # Geçerli id'ler sorunsuz çevrilmeli.
     assert modul._sinif_adi(0) == "ahsap"
-    assert modul._sinif_adi(4) == "seramik"
+    assert modul._sinif_adi(4) == "tugla"
 
     # Eski sürümün üst sınırı (9) artık TANIMSIZ olmalı. Sınıf listesi
     # küçüldüğünde eski bir ağırlığın döndürdüğü id sessizce geçmemeli.

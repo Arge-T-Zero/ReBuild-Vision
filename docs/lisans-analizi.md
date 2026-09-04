@@ -40,13 +40,21 @@ konuşulur · *veri* = kod değil içerik.
 |---|---|---|---|---|
 | ultralytics (YOLO11) | 8.4.137 | **AGPL-3.0** 🔴 | **ayrı süreç** (`model-service/`) | https://github.com/ultralytics/ultralytics |
 | model ağırlıkları (özgün eğitim) | — | **AGPL-3.0** (proje lisansıyla aynı) ⚠️ | model dosyası | proje içi |
-| **eğitim veri seti v1** (teslim edilen model) | — | 🔴 **BEYAN EKSİK** | veri | bkz. 2.1.1 |
-| eğitim veri seti v2 (henüz teslimde değil) | — | ✅ CC BY 4.0 ×3 | veri | bkz. 2.1.2 |
+| **eğitim veri seti v2** (TESLİM EDİLEN) | — | ✅ **CC BY 4.0 ×3** | veri | bkz. 2.1.2 |
+| eğitim veri seti v1 (artık kullanılmıyor) | — | beyan eksikti | veri | tarihî kayıt, bkz. 2.1.1 |
 
-#### 2.1.1. 🔴 Eğitim veri setinin kaynak ve lisans beyanı EKSİK
+#### 2.1.1. ✅ ÇÖZÜLDÜ (03.09.2026) — v1 veri setinin beyan eksiği
 
-**Bu, teslim öncesi kapatılması gereken en acil boşluktur ve kod işi
-değildir.**
+> **Bu bölüm artık TARİHÎ KAYITTIR.** Anlattığı sorun, modelin v2'ye
+> geçirilmesiyle çözüldü: teslim edilen sistem artık lisansı beyan
+> edilmemiş v1 veri setini değil, üçü de CC BY 4.0 olan üç kamuya açık
+> veri setini kullanıyor (**Bölüm 2.1.2**). Silinmedi çünkü kararın
+> neden alındığını ve neyin riskli olduğunu bu bölüm anlatıyor.
+
+##### Sorun neydi (v1)
+
+**Teslim öncesi kapatılması gereken en acil boşluk buydu ve kod işi
+değildi — çözüm de kodla değil, VERİ SETİNİ DEĞİŞTİREREK geldi.**
 
 Model, takımın kendi topladığı ve Roboflow ile etiketlediği 5 sınıflı bir
 veri setiyle eğitilmiştir (2.765 görüntü, 9.348 kutu —
@@ -91,11 +99,10 @@ Bu soru mentöre de sorulacaktır (Bölüm 7, soru 10).
 
 #### 2.1.2. 🟢 v2 veri seti — kaynakları ve lisansları BEYAN EDİLDİ
 
-**Durum: bu veri seti henüz TESLİM EDİLEN modelin veri seti DEĞİLDİR.**
-03.09.2026'da yeni bir model eğitildi (`model-v2`, aşağıdaki veri
-setiyle). Ağırlık depoya/sürüme henüz konmadı; teslim edilen sistem
-bugün hâlâ `model-v1` ile, yani 2.1.1'deki beyanı eksik veri setiyle
-çalışmaktadır. **2.1.1'deki 🔴 ancak v2 teslim edilirse kapanır.**
+**Durum: ✅ TESLİM EDİLEN MODELİN veri setidir** (03.09.2026'dan
+itibaren). `model-v2` sürümü yayımlandı
+(sha256 `468cf535a4e26977…`, 18 MB, YOLO11s) ve sistem ona geçirildi.
+2.1.1'deki 🔴 bu geçişle kapandı.
 
 v2, üç kamuya açık veri setinin birleştirilmesiyle üretildi (Roboflow
 projesi `burak-alkan/newdetect-jvc1e` v4). Sınıflar: `ahsap`, `beton`,

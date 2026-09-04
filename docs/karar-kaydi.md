@@ -713,3 +713,87 @@ Colima durduruldu. Depoda kalıcı bir iz yok.
 - **Durum:** ✅ Uygulandı. Üç testle korunuyor
   (`tests/test_yetki_ve_roller.py`): açığın kapandığı, süzgecin fazla
   dar olmadığı ve uzmanın kuyruktaki kaydı açabildiği.
+
+---
+
+## K-024 · Model v2'ye geçirildi — lisans boşluğu kapandı, metal kaybedildi
+
+- **Tarih:** 03.09.2026
+- **Karar:** Teslim edilen model `model-v1` (YOLO11m) yerine **`model-v2`**
+  (YOLO11s, sha256 `468cf535a4e26977…`, 18 MB). Sınıf listesi değişti:
+  `ahsap, beton, cam, seramik, tugla` — `metal` kalktı, `beton_tugla`
+  ikiye ayrıldı.
+
+### Asıl gerekçe başarım değil, LİSANSTI
+
+v1, takımın internetten (arama motoru) topladığı görüntülerle eğitilmişti
+ve **kaynak/lisans beyanı yoktu**. Bu, teslimin tek 🔴 maddesiydi:
+Madde 5.2 "kaynaklarını açıkça belirtmek kaydıyla" diyor, Madde 9.2
+üçüncü taraf hak ihlalinin sorumluluğunu katılımcıya yüklüyor ve Madde
+5.5 ürünü Kuruma devrettiği için sorumluluk teslimden sonra da sürüyor.
+
+v2 üç **kamuya açık** veri setinin birleşimiyle eğitildi ve üçü de
+**CC BY 4.0**: Mendeley CODD/BTC (beton, tuğla, seramik), Roboflow
+broken-glass-kaggle (cam), Roboflow wood-0nvcu (yalnızca `wood`).
+Beyan ve atıf: `docs/lisans-analizi.md` **2.1.2**.
+
+### Ölçüm — ve iki dürüstlük notu
+
+Gönderilen ağırlık **epoch 142** checkpoint'idir; Ultralytics `best`i
+*fitness*'a göre seçer (0,1·mAP50 + 0,9·mAP50-95), son epoch'a ya da en
+yüksek mAP50'ye göre değil. Bu, ağırlığı yayımlayan oturum tarafından
+yakalandı ve `results.csv` ile çapraz doğrulandı.
+
+| Bölme | precision | recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|
+| val | 0,9087 | 0,8316 | 0,8824 | 0,6497 |
+
+1. **Test kümesi ölçülmedi.** v1'de ölçülmüştü (test mAP50 0,4334); v2
+   için `split=test` koşusu yapılmadı. Val'i test diye beyan etmek yanlış
+   beyan olurdu, bu yüzden `model_metrik_ozeti()` bölme adını artık
+   dosyadan okuyor ve arayüz **"val mAP50 = 0,8824"** diyor. Model adı da
+   aynı sebeple sabit değil (v1 YOLO11m, v2 YOLO11s).
+2. **Ölçülmüş genelleme farkı.** v2 kendi val kümesinde 0,8824 alıyor ama
+   deponun üç **sentetik** demo görüntüsünde yalnızca **4 tespit**
+   üretiyor (v1: 14). Sebep dağılım farkıdır: v2 gerçek yıkım atığı
+   fotoğraflarıyla eğitildi, demo görüntüleri yapay zekâ üretimi geniş
+   moloz sahneleri. Gizlenmiyor — `results/model-metrikleri.md` iki
+   sayıyı yan yana koyuyor. Bu, sistemin neden hiçbir çıktıyı
+   kendiliğinden onaylamadığının somut kanıtıdır.
+
+### Bedeli: `metal`
+
+`metal`, kaynaklı katsayısı olan **iki** sınıftan biriydi (EPA
+0,0279–0,1335 ton/m³). v2'de yok; kaynaklı katsayı **2'den 1'e** düştü —
+hacim ölçümünden tonaj üretilebilen tek malzeme `ahsap` kaldı. Ayrıca
+teslim edilmiş ön değerlendirme raporu örnekleri arasında metal geçiyor;
+sapma `docs/siniflar.md`'de açıkça yazılı ve mentöre sorulacaklar
+listesine eklendi.
+
+### Renk paleti — zorunlu göç, fırsata dönüştü
+
+`metal` kalkıp `tugla` gelince iki renk yeniden seçilmeliydi. Ölçüm
+sırasında asıl bulgu: v1'in darboğazı `cam ↔ seramik` (protanopi, 8,95)
+ve tuğlaya hangi renk verilirse verilsin tavanı o belirliyordu — sekiz
+aday da aynı skoru verdi. Seramiği bir tık açmak (`#c98500` → `#d4a017`)
+tabanı **8,95 → 15,45**'e çıkardı.
+
+Ölçüm kodu artık depoda: **`scripts/renk_olc.py`** — daha önce yalnızca
+sonuç sayıları yazılıydı, ölçüm yeniden üretilemiyordu.
+
+⚠️ Betik mevcut paleti **8,95** ölçüyor, K-022 ise aynı palet için
+**6,79** diyor. Kontrast tarafı birebir aynı (4,83); fark benzetim
+matrisinde ya da ΔE formülünde. Bu saklanmadı: 8,95 → 15,45
+karşılaştırması geçerlidir çünkü iki palet de aynı kodla ölçülmüştür,
+ama 15,45 eski kayıttaki 6,79 ile yan yana konulamaz.
+
+### Göçü mümkün kılan koruma
+
+Aynı gün, ağırlığın kendi `names` sözlüğü ile `siniflar.json`'u
+karşılaştıran bir başlangıç denetimi eklendi (`model-service/app.py`).
+Eski koruma yalnızca BİLİNMEYEN id'yi yakalıyordu; v2 de 0–4 döndürdüğü
+için sessizce geçerdi ve her `metal` "Seramik", her `seramik` "Tuğla"
+olarak kaydedilirdi. Denetim çalıştırılarak doğrulandı: yeni ağırlık
+eski `siniflar.json` ile reddediliyor ve üç kaymayı isim isim bildiriyor.
+
+- **Durum:** ✅ Uygulandı. Dört kural v2 verisiyle uçtan uca doğrulandı.
