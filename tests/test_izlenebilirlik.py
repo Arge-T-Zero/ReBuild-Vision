@@ -50,7 +50,7 @@ async def test_olusturma_kaydinda_kayit_id_dolu(istemci, jeton):
 async def test_dogrulama_eski_ve_yeni_degeri_saklar(istemci, jeton, tespit_kur):
     tid = await tespit_kur("ahsap")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
-                       json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
+                       json={"durum": "duzeltildi", "duzeltilen_sinif": "tugla"})
 
     kayitlar = await _gecmis(istemci, await jeton("uzman"),
                              kayit_tipi="tespit", kayit_id=tid)
@@ -58,7 +58,7 @@ async def test_dogrulama_eski_ve_yeni_degeri_saklar(istemci, jeton, tespit_kur):
 
     assert guncelleme["eski_deger"]["dogrulama_durumu"] == "beklemede"
     assert guncelleme["yeni_deger"]["dogrulama_durumu"] == "duzeltildi"
-    assert guncelleme["yeni_deger"]["duzeltilen_sinif"] == "metal"
+    assert guncelleme["yeni_deger"]["duzeltilen_sinif"] == "tugla"
 
 
 async def test_gecmis_kimin_yaptigini_kaydeder(istemci, jeton, kullanicilar,

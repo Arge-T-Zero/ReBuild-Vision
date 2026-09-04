@@ -195,7 +195,7 @@ def malzeme_olmayan_sinif(monkeypatch):
 @pytest_asyncio.fixture
 async def tespit_kur(kullanicilar):
     """Alan → görüntü → tespit zinciri kurar, tespit id'sini döner."""
-    async def kur(sinif: str = "beton_tugla", guven: float = 0.9,
+    async def kur(sinif: str = "beton", guven: float = 0.9,
                   inceleme: bool = False,
                   dogrulama: str = "beklemede",
                   sinif_dogrula: bool = True) -> int:

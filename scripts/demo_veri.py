@@ -132,28 +132,44 @@ def _tespit_kaynagi() -> dict:
 #
 # Gerçek uzman ve gerçek şerit metre YOKTUR: aşağısı sentetik örtüdür.
 SENARYO_ORTUSU = {
-    # --- 2. görüntü (Saha A) — modelin en güvenli çıktıları -----------
-    # Kural 1 + belirsizlik aralığı: ölçüm var, katsayı kaynaklı (ahsap).
-    (1, 3): dict(dogrulama="onaylandi",
+    # ⚠️ v2 MODELİYLE YENİDEN KURULDU (03.09.2026).
+    #
+    # v2, bu üç SENTETİK görüntüde yalnızca 4 tespit üretiyor ve hepsi
+    # `ahsap`. v1 aynı görüntülerde 14 tespit / 4 sınıf veriyordu. Bu bir
+    # gerileme değil DAĞILIM FARKI: v2 gerçek yıkım atığı fotoğraflarıyla
+    # (Mendeley CODD + broken-glass + wood) eğitildi, bu görüntüler ise
+    # yapay zekâ üretimi geniş moloz sahneleri. Kendi val kümesinde v2'nin
+    # mAP50'si 0,8824; buradaki azlık ölçülmüş bir genelleme farkıdır ve
+    # results/model-metrikleri.md'de açıkça yazılıdır.
+    #
+    # Dört kural TEK SINIFLA da gösterilebiliyor, çünkü uzman düzeltmesi
+    # ETKİN SINIFI değiştiriyor (`miktar.py`: duzeltilen_sinif or sinif).
+    # `ahsap` katsayılı tek sınıf; `beton` katsayısız. Düzeltme, bir
+    # kaydın iki kuralı birden taşımasını sağlıyor.
+
+    # --- 2. görüntü (Saha A) — modelin en güvenli çıktısı (%94,20) ----
+    # Kural 1: ölçüm var + katsayı kaynaklı (ahsap) → belirsizlik aralığı.
+    (1, 0): dict(dogrulama="onaylandi",
                  olcum=(OlcumTuru.HACIM, 40.0, "m3",
                         "Şerit metre ile kaba hacim")),
-    # Kural 1'in EN GÜÇLÜ hâli: doğrulandı ama ölçüm YOK → miktar boş.
-    (1, 0): dict(dogrulama="onaylandi"),
-    # Katsayısı KAPALI sınıfta ölçüm var — miktar yine üretilmez.
-    # "Ölçüm girildi ama sayı çıkmadı" da bir kuraldır.
-    (1, 1): dict(dogrulama="onaylandi",
+
+    # --- 3. görüntü (Saha B, kısıtlı erişim) · %76,12 -----------------
+    # Kural 2 — EN GÜÇLÜ AN: doğrulandı ama ölçüm YOK → miktar BOŞ.
+    (2, 0): dict(dogrulama="onaylandi"),
+
+    # --- 1. görüntü (Saha A) · %51,00 --------------------------------
+    # Kural 4 + Kural 3 AYNI KAYITTA: model `ahsap` dedi, uzman `beton`
+    # yaptı. Ham tahmin izlenebilirlik için saklanır. Etkin sınıf artık
+    # `beton` ve betonun doğrulanmış katsayısı YOK — yani ölçüm girilmiş
+    # olmasına rağmen miktar üretilmiyor. "Ölçüm var ama sayı yok" da bir
+    # kuraldır ve gerekçesi ekranda yazılıdır.
+    (0, 0): dict(dogrulama="duzeltildi", duzeltilen="beton",
                  olcum=(OlcumTuru.HACIM, 62.0, "m3",
                         "Şerit metre ile kaba hacim")),
-    # Uzman düzeltmesi: model `ahsap` dedi, uzman `beton_tugla` yaptı.
-    # Ham tahmin izlenebilirlik için saklanır.
-    (1, 4): dict(dogrulama="duzeltildi", duzeltilen="beton_tugla"),
 
-    # --- 3. görüntü (Saha B, kısıtlı erişim) --------------------------
-    # İkinci kaynaklı katsayı: metal, doğrudan tartım — katsayı kullanılmaz.
-    (2, 0): dict(dogrulama="onaylandi",
-                 olcum=(OlcumTuru.AGIRLIK, 3.5, "ton", "Kantar fişi (sentetik)")),
-    # "Belirsiz" — reddetmek yerine ikinci incelemeye açık bırakma (K-004).
-    (2, 3): dict(dogrulama="belirsiz"),
+    # (0, 1) — %27,11: dokunulmuyor. Eşiğin (0,50) altında olduğu için
+    # sistem kendiliğinden `inceleme_gerekli` işaretleyip uzman kuyruğuna
+    # düşürüyor. Senaryo değil, mekanizma.
 }
 
 # Hangi görüntü hangi sahaya gider (görüntü sırası -> saha sırası).

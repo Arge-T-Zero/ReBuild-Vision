@@ -1,7 +1,7 @@
 {
-  "surum": "2.0",
-  "kaynak": "Takımın kendi oluşturduğu veri seti (Roboflow ile etiketlendi) — 5 sınıf, 2.765 görüntü, 9.348 kutu. Künye: results/egitim/veri_seti_kunyesi.json · ⚠️ LİSANS BEYANI EKSİK, bkz. docs/lisans-analizi.md Bölüm 2.1",
-  "karar_tarihi": "2026-09-02",
+  "surum": "3.0",
+  "kaynak": "Üç kamuya açık veri setinin birleşimi (Roboflow projesi burak-alkan/newdetect-jvc1e v4). Üçü de CC BY 4.0: Mendeley CODD/BTC (beton, tuğla, seramik), Roboflow broken-glass-kaggle (cam), Roboflow wood-0nvcu (yalnızca wood). Kaynaklar, lisanslar ve atıf metni: docs/lisans-analizi.md Bölüm 2.1.2. Model: YOLO11s, model-v2 sürümü.",
+  "karar_tarihi": "2026-09-03",
   "belge": "docs/siniflar.md",
   "siniflar": [
     {
@@ -13,8 +13,8 @@
     },
     {
       "id": 1,
-      "ad": "beton_tugla",
-      "gorunen_ad": "Beton / tuğla",
+      "ad": "beton",
+      "gorunen_ad": "Beton",
       "malzeme_mi": true,
       "renk": "#6b7280"
     },
@@ -27,20 +27,25 @@
     },
     {
       "id": 3,
-      "ad": "metal",
-      "gorunen_ad": "Metal",
-      "malzeme_mi": true,
-      "renk": "#3987e5"
-    },
-    {
-      "id": 4,
       "ad": "seramik",
       "gorunen_ad": "Seramik",
       "malzeme_mi": true,
-      "renk": "#c98500"
+      "renk": "#d4a017"
+    },
+    {
+      "id": 4,
+      "ad": "tugla",
+      "gorunen_ad": "Tuğla",
+      "malzeme_mi": true,
+      "renk": "#8c1d18"
     }
   ],
   "kapsanmayan_gruplar": [
+    {
+      "ad": "metal",
+      "gorunen_ad": "Metal",
+      "not": "v1 modelinde SINIF VARDI, v2'de YOK. Eğitim veri setinde metal sınıfı bulunmuyor (wood-0nvcu veri setinde vardı ama alınmadı). Model metali tanımaz; enkazdaki metal kayıt dışı kalır. Bu bir gerileme değil kapsam daralmasıdır ve gizlenmez."
+    },
     {
       "ad": "dolgu_toprak",
       "not": "Eğitim veri setinde sınıf yok. Model tanımaz.",
@@ -72,7 +77,7 @@
       "gorunen_ad": "Alçıpan"
     }
   ],
-  "renk_notu": "Renkler renk körlüğü benzetimiyle (protanopi, dötanopi, tritanopi) yeniden seçildi: en kötü durum ΔE=6,8 — önceki 10 renkli paletin kendi skorunun (3,5) iki katı. Anlamsal olarak da tutarlı: gri beton/tuğla, koyu yeşil cam, mavi metal, turuncu ahşap, kehribar seramik. Renk TEK BAŞINA anlam taşımaz — her etikette sınıf adı yazılıdır.",
+  "renk_notu": "Renkler renk körlüğü benzetimiyle (protanopi, dötanopi, tritanopi) LAB uzayında ölçülerek seçildi; ölçüt BÜTÜN İKİLİLERİN en kötüsüdür. Ölçüm betiği depoda: scripts/renk_olc.py. Bu palet 15,45; v1 paleti AYNI KODLA 8,95 ölçülür. ⚠️ K-022'deki 6,79 ile karşılaştırılamaz — o sayı başka bir uygulamayla üretilmişti (bkz. K-024). En düşük etiket kontrastı 4,83 (WCAG AA eşiği 4,5). Anlamsal tutarlılık: turuncu ahşap, gri beton, koyu yeşil cam, altın seramik, koyu kırmızı tuğla. Renk HİÇBİR ZAMAN tek başına anlam taşımaz — her etikette sınıf adı yazılıdır (WCAG 1.4.1).",
   "egitim_data_yaml": "model-service/data.yaml",
   "sira_notu": "SIRA MODELİN data.yaml SIRASIDIR VE DEĞİŞTİRİLEMEZ. model-service/app.py sınıf adını modelden değil buradan, id üzerinden okur; sıra kayarsa model \"ahsap\" derken arayüz başka bir malzeme gösterir ve HİÇBİR HATA VERMEZ. tests/test_sinif_tanimlari.py bu eşleşmeyi denetler.",
   "malzeme_olmayan_sinif_notu": "Bu sürümde malzeme olmayan sınıf YOKTUR — beşi de atık malzemedir. Önceki sürümdeki `konteyner` (skip bin) sınıfı eğitim veri setinde bulunmadığı için kalktı. Ayıklama mekanizması (malzeme_mi=false) kaldırılmadı: kural kodda ve testte duruyor, yeni bir malzeme-olmayan sınıf eklendiğinde çalışır. Bkz. docs/karar-kaydi.md K-007."

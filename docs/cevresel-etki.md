@@ -85,7 +85,9 @@ cinsindendir; `katsayilar.json` içinde ton/m³'e çevrilmiştir (çarpan
 | Sınıf | Aralık (ton/m³) | Durum |
 |---|---|---|
 | ahşap | 0,1003 – 0,159 | ✅ kaynaklı |
-| metal | 0,0279 – 0,1335 | ✅ kaynaklı |
+| ~~metal~~ | ~~0,0279 – 0,1335~~ | 🔴 **SINIF KALKTI (v2)** — model artık metali tanımıyor; kaynaklı katsayı 2'den 1'e düştü |
+| beton | — | ❌ kapalı (v1'de `beton_tugla` idi) |
+| tugla | — | ❌ kapalı (v2'de ayrıldı) |
 | **beton / tuğla** | — | ❌ **kapalı** |
 | cam | — | ❌ kapalı |
 | seramik | — | ❌ kapalı |
@@ -255,7 +257,7 @@ Sıraya konmuş, somut:
 | 2 | Bakanlık dönüşüm katsayısı tablosu (varsa) | Bakanlık | G1 — EPA'nın yerini alır, V4 riskini kapatır |
 | 3 | Emisyon faktörleri | Bakanlık / TÜİK | **G3'ün tamamı** |
 | 4 | Atık kodu ↔ sınıf eşlemesi | Atık Yönetimi Yönetmeliği | G2 |
-| ~~5~~ | ~~Modelin eğitilmesi ve ölçülmesi~~ ✅ **01.09.2026'da yapıldı** | Proje ekibi | `results/model-metrikleri.md` — test mAP50 0,4334 |
+| ~~5~~ | ~~Modelin eğitilmesi ve ölçülmesi~~ ✅ **03.09.2026'da v2 ile yenilendi** | Proje ekibi | `results/model-metrikleri.md` — val mAP50 0,8824 (test ölçülmedi) |
 | 6 | Pilot saha kullanımı | Madde 10.10 protokolü | G4 |
 
 1–4 arası **mentör görüşmesinde sorulacaktır** (Madde 5.2). Özellikle

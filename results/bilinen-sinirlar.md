@@ -53,7 +53,7 @@ ve yönlendirme hesaplarına girmez. *(Rapor 3.7 ve 12)*
 
 **Güncelleme — 02.09.2026.** Bu bölüm baştan yazıldı. Önceki hâli
 CDW-Seg veri setini anlatıyordu; **model o veri setiyle eğitilmedi.**
-Eğitim, takımın kendi topladığı ve Roboflow ile etiketlediği **5 sınıflı**
+Eğitim, üç kamuya açık CC BY 4.0 veri setinin birleşimiyle **5 sınıflı**
 bir veri setiyle yapıldı (`results/egitim/veri_seti_kunyesi.json`).
 
 Önceki sürümün "cam ve seramik eğitim verisinde yok, model tanımaz"
@@ -111,7 +111,7 @@ sonrası **enkaz sahası** iddiasındadır.
 kadar düşük olacağı **henüz ölçülmemiştir** ve ölçülene kadar hiçbir
 genelleme iddiası yapılmamaktadır.
 
-### B.5. 🟡 `beton_tugla` iki malzemeyi birlikte kapsıyor
+### B.5. 🔴 `metal` sınıfı YOK (v2) · beton ve tuğla artık ayrı
 
 Sınıf, betonu ve tuğlayı ayırmaz. Geri kazanım yönlendirmesi açısından
 ikisi farklı süreçlere gider. Ayrıca hacim→ağırlık katsayısı bu yüzden
@@ -119,7 +119,7 @@ iki kat belirsiz (`katsayilar.json`).
 
 ### B.6. 🟡 Katsayı 5 sınıftan yalnızca 2'sinde var
 
-`ahsap` ve `metal` kaynaklı (U.S. EPA); `beton_tugla`, `cam` ve `seramik`
+Yalnızca `ahsap` kaynaklı (U.S. EPA); `beton`, `tugla`, `cam` ve `seramik`
 kapalı. **Beton kapalı olduğu için miktar hesabı enkazın ana kütlesini
 kapsamıyor.** Ayrıntı ve neden bir sayı seçilmediği:
 `docs/cevresel-etki.md` Bölüm 2.

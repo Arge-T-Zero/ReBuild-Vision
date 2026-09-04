@@ -319,7 +319,7 @@ dağılımı görünür.
 **Ahşap · Beton / tuğla · Cam · Metal · Seramik**
 
 > Bu liste 02.09.2026'da **10 sınıftan 5'e indi**: model, planlanan
-> kamuya açık veri setiyle değil takımın kendi topladığı veri setiyle
+> üç kamuya açık CC BY 4.0 veri setinin birleşimiyle
 > eğitildi. Kılavuzun önceki sürümü "cam ve seramik tanınmıyor, tuğla
 > betondan ayrılmıyor" diyordu; **üçü de artık geçerli değil.** `Cam`
 > bugün modelin en iyi sınıfıdır.

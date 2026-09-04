@@ -198,14 +198,28 @@ def test_model_metrik_ozeti_olculen_degeri_tasir():
 
     kayitlar = json.loads(
         (DEPO_KOKU / "results/egitim/metrikler.json").read_text(encoding="utf-8"))
-    test_satiri = next(k for k in kayitlar
-                       if k["split"] == "test" and k["sinif"] == "TÜM SINIFLAR")
-    beklenen = f"{test_satiri['mAP50']:.4f}".replace(".", ",")
+    satir = next(k for k in kayitlar if k["sinif"] == "TÜM SINIFLAR")
+    beklenen = f"{satir['mAP50']:.4f}".replace(".", ",")
 
     ozet = model_metrik_ozeti()
     assert beklenen in ozet, (
         f"Özet ölçülen mAP50 değerini ({beklenen}) taşımıyor: {ozet!r}"
     )
+    # ⚠️ BÖLME ADI DA ÖZETTE GEÇMELİ.
+    #
+    # v2'de test kümesi ölçülmedi; elde yalnızca val var. Özet "test"
+    # deseydi val sayısı test diye beyan edilmiş olurdu — Madde 10.5
+    # açısından yanlış beyan. Bu satır, ölçümün hangi bölmede yapıldığının
+    # ekranda görünmesini garanti eder.
+    assert satir["split"] in ozet, (
+        f"Özet, ölçümün hangi bölmede yapıldığını söylemiyor "
+        f"(beklenen {satir['split']!r}): {ozet!r}"
+    )
+    # Model adı da sabit yazılmamalı: v1 YOLO11m, v2 YOLO11s idi.
+    if "model" in satir:
+        assert satir["model"] in ozet, (
+            f"Özet model adını taşımıyor ({satir['model']!r}): {ozet!r}"
+        )
     assert "ölçülmedi" not in ozet, (
         "Ölçüm dosyası depoda dururken arayüz 'ölçülmedi' diyor"
     )

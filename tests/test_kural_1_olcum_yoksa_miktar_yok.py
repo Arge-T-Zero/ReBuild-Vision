@@ -102,16 +102,16 @@ async def test_dogrulanmamis_katsayiyla_miktar_uretilmez(
     istemci, jeton, tespit_kur
 ):
     """Bölüm 14: dayanağı doğrulanmamış katsayıyla sayı üretilmez."""
-    tid = await tespit_kur("beton_tugla", dogrulama="onaylandi")
+    tid = await tespit_kur("beton", dogrulama="onaylandi")
     await istemci.post("/olcum", headers=await jeton("saha"), json={
         "tespit_id": tid, "tur": "hacim", "deger": 30.0,
         "birim": "m3", "yontem": "Saha tahmini",
     })
     d = (await istemci.get(f"/miktar/{tid}", headers=await jeton("belediye"))).json()
 
-    # `beton_tugla` katsayısı `dogrulandi: false` — EPA tek nokta değer
+    # `beton` katsayısı `dogrulandi: false` — EPA tek nokta değer
     # veriyor, aralık vermiyor. (Tüm katsayıların kapalı olduğu döneme
-    # ait eski yorum yanıltıcıydı: bugün `ahsap` ve `metal` açık.)
+    # ait eski yorum yanıltıcıydı: v2'de YALNIZCA `ahsap` açık.)
     assert d["hesaplandi"] is False
     assert d["deger_alt"] is None
     assert "katsayı" in d["aciklama"].lower()
@@ -138,7 +138,7 @@ async def test_malzeme_olmayan_sinif_miktara_girmez(
 
 def test_servis_katmani_olcumsuz_hesap_yapmaz():
     """Servis katmanı doğrudan sınanır — HTTP olmadan."""
-    t = Tespit(sinif="beton_tugla", dogrulama_durumu=DogrulamaDurumu.ONAYLANDI)
+    t = Tespit(sinif="beton", dogrulama_durumu=DogrulamaDurumu.ONAYLANDI)
     s = miktar_servisi.hesapla(t, [])
     assert s.hesaplandi is False
     assert s.neden == miktar_servisi.OLCUM_YOK
@@ -241,13 +241,13 @@ async def test_kaynakli_katsayi_hacimden_miktar_uretir(
 async def test_kaynaksiz_katsayi_hala_reddediyor(istemci, jeton, tespit_kur):
     """Bölüm 14 — dayanağı olmayan katsayı ile sayı üretilmez.
 
-    `beton_tugla` için EPA yalnızca TEK bir nokta değer veriyor
+    `beton` için EPA yalnızca TEK bir nokta değer veriyor
     (860 lb/yd³), aralık vermiyor. Üstelik sınıf betonu tuğlayla birlikte
     kapsıyor; ikisinin yoğunluğu aynı değil. Aralık uydurulmadığı için bu
     sınıf kapalıdır ve kapalı KALMALIDIR — enkaz sahasının ana kütlesi
     olması bunu değiştirmez, tam tersine daha da önemli kılar.
     """
-    tid = await tespit_kur("beton_tugla", dogrulama="onaylandi")
+    tid = await tespit_kur("beton", dogrulama="onaylandi")
     await istemci.post("/olcum", headers=await jeton("saha"), json={
         "tespit_id": tid, "tur": "hacim", "deger": 25.0,
         "birim": "m3", "yontem": "Şerit metre",

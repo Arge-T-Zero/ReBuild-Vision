@@ -49,7 +49,7 @@ async def test_dogrulanmamis_kayit_haritaya_girmez(
     istemci, jeton, tespit_kur
 ):
     """Beklemedeki kayıt hesaba girmez — bu bir veri katmanı kuralıdır."""
-    await tespit_kur("metal")
+    await tespit_kur("tugla")
     d = (await istemci.get("/harita", headers=await jeton("belediye"))).json()
     assert d["malzeme_dagilimi"] == []
 
@@ -58,7 +58,7 @@ async def test_belirsiz_isaretlenen_kayit_haritaya_girmez(
     istemci, jeton, tespit_kur
 ):
     """'Belirsiz' = uzman karar veremedi; hesaba katılmaz."""
-    tid = await tespit_kur("metal")
+    tid = await tespit_kur("tugla")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "belirsiz"})
     d = (await istemci.get("/harita", headers=await jeton("belediye"))).json()
@@ -66,11 +66,11 @@ async def test_belirsiz_isaretlenen_kayit_haritaya_girmez(
 
 
 async def test_onaylanan_kayit_haritaya_girer(istemci, jeton, tespit_kur):
-    tid = await tespit_kur("metal")
+    tid = await tespit_kur("tugla")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
     d = (await istemci.get("/harita", headers=await jeton("belediye"))).json()
-    assert d["malzeme_dagilimi"] == [{"sinif": "metal", "adet": 1}]
+    assert d["malzeme_dagilimi"] == [{"sinif": "tugla", "adet": 1}]
 
 
 async def test_uzman_duzeltmesi_model_tahminini_gecersiz_kilar(
@@ -79,17 +79,17 @@ async def test_uzman_duzeltmesi_model_tahminini_gecersiz_kilar(
     """İnsan denetimli yapay zekâ iddiasının kod karşılığı."""
     tid = await tespit_kur("cam")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
-                       json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
+                       json={"durum": "duzeltildi", "duzeltilen_sinif": "tugla"})
 
     d = (await istemci.get("/harita", headers=await jeton("belediye"))).json()
-    assert d["malzeme_dagilimi"] == [{"sinif": "metal", "adet": 1}], (
+    assert d["malzeme_dagilimi"] == [{"sinif": "tugla", "adet": 1}], (
         "Harita uzmanın düzelttiği sınıfı göstermeli, modelin tahminini değil"
     )
 
     # Ham tahmin izlenebilirlik için korunur.
     t = (await istemci.get(f"/tespit/{tid}", headers=await jeton("uzman"))).json()
     assert t["sinif"] == "cam"
-    assert t["duzeltilen_sinif"] == "metal"
+    assert t["duzeltilen_sinif"] == "tugla"
 
 
 async def test_malzeme_olmayana_duzeltilen_kayit_hesaptan_cikar(
@@ -97,10 +97,10 @@ async def test_malzeme_olmayana_duzeltilen_kayit_hesaptan_cikar(
 ):
     """K-007: uzmanın malzeme olmayana çevirdiği kayıt hesaptan düşer.
 
-    Süzgeç HAM tahmine değil GEÇERLİ sınıfa bakar; model "metal" demiş
+    Süzgeç HAM tahmine değil GEÇERLİ sınıfa bakar; model "tugla" demiş
     olsa da uzmanın kararı geçerlidir.
     """
-    tid = await tespit_kur("metal")
+    tid = await tespit_kur("tugla")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "duzeltildi",
                              "duzeltilen_sinif": malzeme_olmayan_sinif})
@@ -183,7 +183,7 @@ async def test_saha_ozeti_yalnizca_dogrulanmis_malzeme_gosterir(
     aksi halde saha listesi, haritanın bilinçli olarak göstermediği
     sayıları arka kapıdan göstermiş olurdu.
     """
-    tid = await tespit_kur("metal")
+    tid = await tespit_kur("tugla")
     baslik = await jeton("belediye")
 
     alanlar = (await istemci.get("/enkaz-alani", headers=baslik)).json()
@@ -199,7 +199,7 @@ async def test_saha_ozeti_yalnizca_dogrulanmis_malzeme_gosterir(
 
     a = (await istemci.get("/enkaz-alani", headers=baslik)).json()[0]
     assert a["dogrulanan_sayisi"] == 1
-    assert a["malzeme_dagilimi"] == [{"sinif": "metal", "adet": 1}]
+    assert a["malzeme_dagilimi"] == [{"sinif": "tugla", "adet": 1}]
 
 
 async def test_saha_ozeti_uzman_duzeltmesini_yansitir(
@@ -207,14 +207,14 @@ async def test_saha_ozeti_uzman_duzeltmesini_yansitir(
 ):
     tid = await tespit_kur("cam")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
-                       json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
+                       json={"durum": "duzeltildi", "duzeltilen_sinif": "tugla"})
 
     a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
-    assert a["malzeme_dagilimi"] == [{"sinif": "metal", "adet": 1}]
+    assert a["malzeme_dagilimi"] == [{"sinif": "tugla", "adet": 1}]
 
 
 async def test_saha_ozeti_inceleme_bekleyeni_sayar(istemci, jeton, tespit_kur):
-    await tespit_kur("beton_tugla", guven=0.3, inceleme=True)
+    await tespit_kur("beton", guven=0.3, inceleme=True)
     a = (await istemci.get("/enkaz-alani", headers=await jeton("belediye"))).json()[0]
     assert a["inceleme_bekleyen"] == 1
 

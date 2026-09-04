@@ -1,5 +1,19 @@
 # Sunum görselleri
 
+> 🔴 **BU GÖRSELLER ESKİDİR (03.09.2026 itibarıyla).**
+>
+> Ekran görüntüleri **model-v1** ile alındı. O modelde `metal` ve
+> `beton_tugla` sınıfları vardı; v2'de ikisi de yok (`metal` kalktı,
+> `beton_tugla` `beton` ve `tugla` diye ayrıldı). Renk paleti de değişti.
+>
+> **Sunumda bu görseller kullanılırsa jüri, sistemde olmayan sınıfları
+> görür.** Yeniden çekilmeleri gerekir; komutlar bu dosyanın sonunda.
+>
+> Ayrıca v2 bu üç sentetik görüntüde 14 değil **4 tespit** üretiyor
+> (ölçülmüş genelleme farkı — `results/model-metrikleri.md`), yani yeni
+> ekran görüntüleri daha az kutu gösterecektir. Bu bir kusur değil,
+> beyan edilmiş bir ölçümdür.
+
 Final sunumunun slaytlarında kullanılmak üzere, **çalışan sistemden**
 alınmış ekran görüntüleri. 03.09.2026.
 

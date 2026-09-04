@@ -30,7 +30,7 @@ async def konumlu_tespit(kullanicilar):
     konumsuz kaydı (doğru biçimde) eliyor. OGC testleri konuma ihtiyaç
     duyduğu için bu yardımcı ayrı duruyor; `conftest` değiştirilmedi.
     """
-    async def kur(sinif: str = "beton_tugla", dogrulama: str = "beklemede") -> int:
+    async def kur(sinif: str = "beton", dogrulama: str = "beklemede") -> int:
         async with db_modulu.OturumUret() as db:
             a = EnkazAlani(ad="OGC Test Alan",
                            olusturan_id=kullanicilar["belediye"],
@@ -59,7 +59,7 @@ async def _hazirla(istemci, jeton, konumlu_tespit, ucuncu_sinif: str = "seramik"
     Üçüncü kayıt DOĞRULANMIŞTIR; malzeme olmayan bir sınıf verildiğinde
     servisten düşmesinin tek sebebi malzeme olmaması olur.
     """
-    onayli = await konumlu_tespit("metal")
+    onayli = await konumlu_tespit("tugla")
     await istemci.post(f"/tespit/{onayli}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
     beklemede = await konumlu_tespit("ahsap")

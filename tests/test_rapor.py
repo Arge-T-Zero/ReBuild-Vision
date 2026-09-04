@@ -19,7 +19,7 @@ async def _hazirla(istemci, jeton, tespit_kur, ucuncu_sinif: str = "seramik"):
     elediği belirsiz kalırdı. Varsayılan hâlinde (`seramik`) sıradan bir
     malzeme kaydıdır ve raporda görünür.
     """
-    onayli = await tespit_kur("metal")
+    onayli = await tespit_kur("tugla")
     await istemci.post(f"/tespit/{onayli}/dogrula", headers=await jeton("uzman"),
                        json={"durum": "onaylandi"})
     beklemede = await tespit_kur("ahsap")
@@ -131,9 +131,9 @@ async def test_rapor_yetki_ister(istemci, jeton, tespit_kur):
 async def test_uzman_duzeltmesi_raporda_gecerli_sinif(istemci, jeton, tespit_kur):
     tid = await tespit_kur("cam")
     await istemci.post(f"/tespit/{tid}/dogrula", headers=await jeton("uzman"),
-                       json={"durum": "duzeltildi", "duzeltilen_sinif": "metal"})
+                       json={"durum": "duzeltildi", "duzeltilen_sinif": "tugla"})
     d = json.loads((await istemci.get("/rapor/json",
                                       headers=await jeton("belediye"))).text)
     k = next(x for x in d["kayitlar"] if x["tespit_id"] == tid)
-    assert k["sinif"] == "metal", "Geçerli sınıf uzmanın düzelttiğidir"
+    assert k["sinif"] == "tugla", "Geçerli sınıf uzmanın düzelttiğidir"
     assert k["model_tahmini"] == "cam", "Ham tahmin izlenebilir kalmalı"

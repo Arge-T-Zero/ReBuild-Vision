@@ -138,14 +138,26 @@ def model_metrik_ozeti() -> str:
         return "henüz ölçülmedi — results/model-metrikleri.md"
     try:
         kayitlar = json.loads(yol.read_text(encoding="utf-8"))
-        test = next(k for k in kayitlar
-                    if k["split"] == "test" and k["sinif"] == "TÜM SINIFLAR")
+        ozet = next(k for k in kayitlar if k["sinif"] == "TÜM SINIFLAR")
+        map50, bolme = ozet["mAP50"], ozet["split"]
     except (json.JSONDecodeError, KeyError, StopIteration):
         return "henüz ölçülmedi — results/model-metrikleri.md"
 
-    # Virgül ondalık ayracı: arayüzün geri kalanı da Türkçe yerelde.
-    map50 = f"{test['mAP50']:.4f}".replace(".", ",")
+    # ⚠️ BÖLME ADI DA DOSYADAN GELİR, SABİT DEĞİL.
+    #
+    # Eskiden metin "test mAP50 = ..." diye sabitti ve yalnızca `test`
+    # bölmesini arıyordu. v2'de test kümesi ÖLÇÜLMEDİ; elimizde val var.
+    # Sabit metin kalsaydı iki kötü seçenek doğardı: ya val sayısını
+    # "test" diye beyan edecektik (yanlış beyan), ya da özet "ölçülmedi"
+    # diyecekti (elde ölçüm dururken yalan). Bölmeyi dosyadan okumak
+    # ikisini de ortadan kaldırır.
+    #
+    # Model adı da aynı sebeple sabit değil: v1 YOLO11m, v2 YOLO11s.
+    # Sabit bir "YOLO11m" ilk model değişiminde sessizce yanlışa döner.
+    model = ozet.get("model", "model")
+    sinif_sayisi = len(siniflar()["siniflar"])
     return (
-        f"test mAP50 = {map50} (5 sınıf, YOLO11m) — sınıf bazlı sonuçlar "
-        "ve bilinen zayıflıklar: results/model-metrikleri.md"
-    )
+        f"{bolme} mAP50 = {map50:.4f} ({sinif_sayisi} sınıf, {model}) — "
+        "sınıf bazlı sonuçlar ve bilinen zayıflıklar: "
+        "results/model-metrikleri.md"
+    ).replace(f"{map50:.4f}", f"{map50:.4f}".replace(".", ","))

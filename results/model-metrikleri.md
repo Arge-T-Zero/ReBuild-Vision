@@ -1,117 +1,120 @@
-# Model Metrikleri
+# Model Metrikleri — model-v2
 
 > **Bu dosyaya ölçülmemiş hiçbir sayı yazılmaz.** *(Ana talimat Bölüm 7.4
 > ve 14)*
 
-**Son güncelleme:** 02.09.2026
+**Son güncelleme:** 03.09.2026 · **Model:** YOLO11s · **Sürüm:** `model-v2`
+· sha256 `468cf535a4e26977…` (18 MB)
+
+v1'in ölçümleri silinmedi, tarihî kayıt olarak duruyor:
+[`model-metrikleri-v1-TARIHI.md`](model-metrikleri-v1-TARIHI.md).
 
 ---
 
-## Durum: ✅ ÖLÇÜLDÜ
+## Ölçüm
 
-Model eğitildi ve ölçüldü. Aşağıdaki bütün sayılar
-[`results/egitim/`](egitim/) altındaki ham çıktılardan gelir; hiçbiri
-elle yazılmamış ya da yuvarlanmamıştır.
+150 epoch, ~91 dakika, 640 px. Gönderilen ağırlık **epoch 142**
+checkpoint'idir — Ultralytics `best`i *fitness*'a (0,1·mAP50 +
+0,9·mAP50-95) göre seçer, son epoch'a ya da en yüksek mAP50'ye göre
+değil. Sayılar `results/egitim-v2/results.csv`'nin 142. satırından gelir.
 
-### ⚠️ Önce okunması gereken üç şey
-
-1. **Veri seti CDW-Seg DEĞİL.** Önceki sürümlerde bu dosya eğitim
-   kaynağını CDW-Seg (CC0, DOI 10.6084/m9.figshare.28573229) olarak
-   beyan ediyordu. **Eğitim o veri setiyle yapılmamıştır.** Model,
-   takımın kendi topladığı ve Roboflow ile etiketlediği **5 sınıflı**
-   bir veri setiyle eğitilmiştir.
-2. **Sınıf sayısı 10 değil 5.** `siniflar.json` 02.09.2026'da eğitilen
-   modele çekildi (`docs/karar-kaydi.md` K-021).
-3. **Veri setinin lisans ve kaynak beyanı EKSİKTİR.** Görüntülerin
-   nereden toplandığı ve hangi hakla kullanıldığı henüz yazılı değildir.
-   Şartname Madde 5.2 "kaynaklarını açıkça belirtmek kaydıyla" diyor;
-   Madde 9.2 üçüncü taraf hak ihlalinin sorumluluğunu katılımcıya
-   yüklüyor. Bkz. `docs/lisans-analizi.md` Bölüm 2.1.
-
----
-
-## Deney künyesi
-
-| Alan | Değer |
-|---|---|
-| Model | **YOLO11m** (`yolo11m.pt` başlangıç ağırlığı) |
-| Girdi boyutu | 640 × 640 |
-| Eğitim veri seti | Takımın kendi veri seti, Roboflow etiketli — **5 sınıf** |
-| Sınıflar | `ahsap`, `beton_tugla`, `cam`, `metal`, `seramik` |
-| Bölme | train 2.184 · valid 384 · test 197 görüntü |
-| Nesne sayısı | 7.265 · 1.407 · 676 kutu (toplam **9.348**) |
-| Epoch hedefi | 150 (`patience: 30` ile erken durdurma) |
-| Optimizasyon | AdamW, `lr0 = 0.001`, `batch = 16` |
-| Süre | **2,03 saat** |
-| Ham çıktılar | [`results/egitim/`](egitim/) |
-
-Ön işleme: sızıntı ve filigran nedeniyle görüntü silindi, 750 görüntü
-oversample edildi — ayrıntı `results/egitim/on_isleme_kaydi.json`.
-
----
-
-## Sonuçlar
-
-### Genel
-
-| Bölme | Precision | Recall | mAP50 | mAP50-95 |
+| Bölme | precision | recall | mAP50 | mAP50-95 |
 |---|---|---|---|---|
-| val | 0,5318 | 0,4530 | **0,4424** | 0,3089 |
-| test | 0,4880 | 0,4176 | **0,4334** | 0,3132 |
+| **val** | 0,9087 | 0,8316 | **0,8824** | 0,6497 |
 
-### Sınıf bazlı
+Bağlam olarak, aynı koşudan diğer iki dikkat çekici epoch:
 
-| Bölme | Sınıf | Precision | Recall | mAP50 | mAP50-95 |
-|---|---|---|---|---|---|
-| val | ahsap | 0,4359 | 0,4553 | 0,4127 | 0,2681 |
-| val | beton_tugla | 0,4715 | 0,4367 | 0,4092 | 0,3072 |
-| val | **cam** | 0,7896 | 0,6848 | **0,7035** | 0,4638 |
-| val | metal | 0,4953 | 0,3482 | 0,3848 | 0,2782 |
-| val | seramik | 0,4669 | 0,3402 | 0,3019 | 0,2274 |
-| test | ahsap | 0,3887 | 0,4143 | 0,3607 | 0,2549 |
-| test | beton_tugla | 0,5818 | 0,5758 | 0,6268 | 0,4685 |
-| test | **cam** | 0,7928 | 0,6545 | **0,7257** | 0,4952 |
-| test | metal | 0,4477 | 0,3241 | 0,3660 | 0,2779 |
-| test | **seramik** | 0,2290 | 0,1190 | **0,0877** | 0,0699 |
+| epoch | mAP50 | mAP50-95 | not |
+|---|---|---|---|
+| 109 | 0,8900 | 0,6414 | en yüksek mAP50 |
+| **142** | 0,8824 | **0,6497** | **gönderilen ağırlık** (en yüksek fitness) |
+| 150 | 0,8855 | 0,6475 | son epoch |
 
-Eğriler ve karışıklık matrisleri:
-[`results/egitim/gorseller/`](egitim/gorseller/)
+### 🔴 TEST KÜMESİ ÖLÇÜLMEDİ
 
----
+v1'de hem val hem test ölçümü vardı (test mAP50 0,4334). v2 için
+`split=test` ile ayrı bir koşu **yapılmadı**; elimizde yalnızca eğitim
+sırasındaki val ölçümü var.
 
-## Bu sayılar ne diyor — abartmadan
+Val sayısını "test" diye beyan etmek yanlış beyan olurdu. Arayüzün
+altbilgisi de bu yüzden **"val mAP50 = 0,8824"** diyor — bölme adı
+`results/egitim/metrikler.json`'dan okunur, sabit yazılmaz.
 
-**Model çalışıyor ama zayıf.** Genel mAP50 **0,43–0,44**. Bu, tespitlerin
-ancak bir kısmının doğru bulunduğu anlamına gelir; sistemin zorunlu uzman
-doğrulaması bu yüzden bir süs değil, **çalışma koşuludur.**
+### Sınıf bazlı sayısal tablo da yok
 
-### Sınıf bazında dürüst okuma
+`results.csv` yalnızca genel ortalamayı taşır. Karışıklık matrisi ve
+F1/P eğrileri görsel olarak elimizde; sayısal per-sınıf tablo için
+`model.val()` çıktısı gerekir. Görsellerden **okunabilen** sınıf bazlı
+köşegen (normalize karışıklık matrisi):
 
-| Sınıf | Durum |
+| Sınıf | Köşegen |
 |---|---|
-| **cam** | En iyi sınıf (mAP50 0,70–0,73). Camın görsel imzası ayırt edici |
-| **beton_tugla** | Testte val'den iyi (0,63 / 0,41) — küçük test kümesinde olağan dalgalanma |
-| **ahsap**, **metal** | Orta (0,36–0,41). Metalin recall'ü düşük (0,32–0,35): **bulduğunu doğru buluyor ama çoğunu kaçırıyor** |
-| **seramik** | 🔴 **Testte 0,0877 — pratikte çalışmıyor.** val'de 0,30, testte 0,09; en az örneğe sahip sınıf (939 / 97 / 42 kutu). Bu bir sınıf değil, bir uyarıdır |
+| cam | 0,95 |
+| beton | 0,87 |
+| tugla | 0,87 |
+| seramik | 0,85 |
+| **ahsap** | **0,82** |
 
-### Ne iddia EDİLMİYOR
-
-- Bu sayılar **afet enkazı sahasında** ölçülmemiştir. Veri seti internetten
-  toplanmış görüntülerden oluşuyor; gerçek saha koşulunda (toz, ölçek,
-  iç içe geçmiş malzeme) başarım **daha düşük olacaktır** ve ne kadar
-  düşük olacağı ölçülmemiştir.
-- `seramik` sınıfının çıktısı **kullanılabilir sayılmamalıdır.**
-- Hiçbir çevresel fayda, geri kazanım oranı veya karbon sayısı bu
-  metriklerden türetilmemiştir (`docs/cevresel-etki.md`).
+`ahsap` en zayıf sınıf ve arka planın %38'ini ahşap sanıyor (83 yanlış
+pozitif). v1'de de en zayıf sınıflardan biriydi; bu tutarlı bir zayıflık.
 
 ---
 
-## Eşik
+## ⚠️ ÖLÇÜLMÜŞ GENELLEME FARKI — bu bölüm atlanmamalıdır
 
-`model-service` inceleme eşiği varsayılan **0,50**. Bu ölçülen
-metriklerden türetilmiş bir değer **değildir**, mühendislik varsayımıdır
-ve `INCELEME_ESIGI` ortam değişkeniyle değiştirilebilir.
+v2 kendi doğrulama kümesinde **mAP50 0,8824** alıyor. Deponun üç
+**sentetik** demo görüntüsünde ise yalnızca **4 tespit** üretiyor ve
+hepsi `ahsap`:
 
-Ölçüm artık elde olduğuna göre eşik PR eğrisinden türetilebilir —
-`results/egitim/gorseller/val_val__BoxPR_curve.png`. Bu henüz
-yapılmamıştır ve yapılana kadar eşik bir varsayım olarak beyan edilir.
+| Görüntü | v1 (YOLO11m) | v2 (YOLO11s) |
+|---|---|---|
+| `ornek-enkaz-1.webp` | 8 tespit | 2 (`ahsap` %51,00 · %27,11) |
+| `ornek-enkaz-2.webp` | 4 tespit | 1 (`ahsap` %94,20) |
+| `ornek-enkaz-3.webp` | 2 tespit | 1 (`ahsap` %76,12) |
+| **toplam** | **14 tespit / 4 sınıf** | **4 tespit / 1 sınıf** |
+
+**Sebep dağılım farkıdır, bozukluk değil.** v2, gerçek yıkım atığı
+fotoğraflarıyla eğitildi (Mendeley CODD yakın çekim beton/tuğla/seramik,
+kırık cam, ahşap). Demo görüntüleri ise yapay zekâ üretimi **geniş moloz
+sahneleridir** (`web/public/gorseller/README.md`) — eğitim dağılımının
+dışındadır. v1, takımın internetten topladığı benzer geniş sahnelerle
+eğitildiği için bu görüntülerde daha çok kutu üretiyordu.
+
+**Bu neden gizlenmiyor ve neden önemli:** iki sayıyı yan yana koymak,
+sistemin neden hiçbir çıktıyı kendiliğinden onaylamadığının somut
+kanıtıdır. Yüksek bir mAP50, modelin sizin sahanızda çalışacağı anlamına
+gelmez. Sistemin cevabı eşiği oynatmak değil, **doğrulama kapısıdır**:
+doğrulanmamış hiçbir tespit miktara, haritaya ya da rapora girmez.
+
+Gerçek sahada kullanım öncesi yapılması gereken açıktır: **saha
+görüntüleriyle yeniden ölçüm.**
+
+---
+
+## Bilinen sınırlar
+
+- **`metal` sınıfı YOK.** v1'de vardı, v2'nin veri setinde yok. Enkazdaki
+  metal kayıt dışı kalır. Bu aynı zamanda kaynaklı katsayısı olan iki
+  sınıftan birinin kaybı demektir — bkz. aşağıda.
+- **Kaynaklı dönüşüm katsayısı yalnızca 1 sınıfta var** (`ahsap`).
+  v1'de 2 idi (`ahsap`, `metal`). `beton`, `tugla`, `cam` ve `seramik`
+  için doğrulanmış kaynak yok; bu sınıflarda ölçüm girilse bile miktar
+  ÜRETİLMEZ ve gerekçesi ekranda yazılıdır. `katsayilar.json`
+  `acik_sorular` bölümüne işlendi.
+- Beton, enkazın ana kütlesidir ve katsayısı hâlâ kapalıdır — yani
+  miktar göstergesi enkazın en büyük bileşenini kapsamamaya devam eder.
+- Test kümesi ölçülmedi (yukarıda).
+- Yük testi yapılmadı; hiçbir kapasite sayısı beyan edilmiyor.
+
+---
+
+## Veri seti
+
+Üç kamuya açık veri setinin birleşimi, **üçü de CC BY 4.0**. Kaynaklar,
+lisansın ne verip ne istediği, atıf metni ve teslimden önce gözle teyit
+edilmesi gerekenler: [`docs/lisans-analizi.md`](../docs/lisans-analizi.md)
+**Bölüm 2.1.2**.
+
+## Ham çıktılar
+
+`results/egitim-v2/` — `results.csv`, `data.yaml`, okunan değerler.

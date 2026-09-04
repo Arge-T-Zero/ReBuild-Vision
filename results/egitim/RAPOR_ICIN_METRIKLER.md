@@ -1,5 +1,10 @@
 # ReBuild Vision — Eğitim Sonuçları (rapor için ham veri)
 
+> ⚠️ **TARİHÎ KAYIT — model-v1.** Bu klasördeki çıktılar 03.09.2026'da
+> `model-v2` ile değiştirilen modele aittir. Güncel ölçüm:
+> `results/model-metrikleri.md`, ham v2 çıktısı: `results/egitim-v2/`.
+> Silinmedi çünkü eski belgeler ve CHANGELOG bu sayılara atıf yapıyor.
+
 - Üretim tarihi: 01.09.2026 10:12
 - Model: Ultralytics YOLO11m (AGPL-3.0), girdi çözünürlüğü 640x640
 - Optimizer: AdamW, lr0=0.001, batch=16, seed=0

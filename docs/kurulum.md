@@ -27,9 +27,9 @@ Yukarıdaki komut **sahte** model servisini kaldırır; arayüzde kalıcı
 başlatın:
 
 ```bash
-# Ağırlığı model-v1 sürümünden indirin (39 MB)
+# Ağırlığı model-v2 sürümünden indirin (18 MB · sha256 468cf535a4e26977…)
 curl -L -o model-service/agirliklar/best.pt \
-  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v1/best.pt
+  https://github.com/Arge-T-Zero/ReBuild-Vision/releases/download/model-v2/best.pt
 docker compose -f docker/compose.yaml \
                -f docker/compose.gercek-model.yaml up --build
 ```

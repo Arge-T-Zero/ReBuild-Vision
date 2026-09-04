@@ -10,7 +10,7 @@
 
 | Veri | Kaynak | Lisans/koşul | Nerede saklanıyor | Depoya girer mi |
 |---|---|---|---|---|
-| Eğitim veri seti (takımın kendi topladığı) | Takımca toplandı, Roboflow etiketli | 🔴 **beyan eksik** — `docs/lisans-analizi.md` 2.1.1 | Yerel eğitim makinesi | ❌ (boyut) |
+| Eğitim veri seti v2 | Üç kamuya açık veri setinin birleşimi | ✅ **CC BY 4.0 ×3** — `docs/lisans-analizi.md` 2.1.2 | Roboflow + yerel | ❌ (boyut) |
 | Bakanlık tarafından sağlanan veri | Bakanlık | **Madde 9.1 — kopyalanamaz** | `data/bakanlik/` (yalnızca yerel) | ❌ **asla** |
 | Saha fotoğrafları (maskelenmemiş) | Ekip çekimi | Kişisel veri içerebilir | `data/saha-foto/` | ❌ **asla** |
 | Maskelenmiş örnek görseller | `scripts/maskele.py` çıktısı | — | `data/ornek/` | ✅ |
