@@ -671,7 +671,12 @@ Colima durduruldu. Depoda kalıcı bir iz yok.
 - **Not:** Renk hiçbir zaman TEK BAŞINA anlam taşımaz — her etikette
   sınıf adı yazılıdır (WCAG 1.4.1). Ölçüm, rengin yardımcı olduğu
   durumu iyileştirmek içindir, ona bağımlılık yaratmak için değil.
-- **Durum:** ✅ Uygulandı (`siniflar.json`, `mobile/lib/tema.dart`).
+- **Durum:** ⛔ **GEÇERSİZ (03.09.2026).** Bu paletin üç rengi K-024 ile
+  değişti (`metal` kalktı, `tugla` geldi, `seramik` tabanı yükseltmek için
+  açıldı). Ayrıca buradaki **6,79** sayısı `scripts/renk_olc.py` ile
+  yeniden üretilemedi — betik aynı paleti **8,95** ölçüyor; kontrast
+  tarafı birebir aynı (4,83). Fark benzetim matrisinde ya da ΔE
+  formülündedir. Güncel palet ve ölçüm: **K-024**.
 
 ---
 

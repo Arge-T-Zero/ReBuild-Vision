@@ -250,7 +250,7 @@ VALUES (1, 'guvenli', 1);
 -- ERROR: invalid input value for enum tehlikeli_durum_turu
 
 -- bbox_format boş geçilememeli
-INSERT INTO tespit (goruntu_id, sinif, guven_skoru) VALUES (1, 'metal', 0.8);
+INSERT INTO tespit (goruntu_id, sinif, guven_skoru) VALUES (1, 'beton', 0.8);
 -- ERROR: null value in column "bbox_format" violates not-null constraint
 
 -- tek değerli miktar yazılamamalı

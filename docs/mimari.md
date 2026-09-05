@@ -270,7 +270,7 @@ kalanında **tek satır değişmez.**
 | Boşluk | Etki | Durum |
 |---|---|---|
 | Uzmana/firmaya saha atama akışı yok | Uzman görünürlüğü **iş üzerinden** türetiliyor: inceleme bekleyen ya da kendi doğruladığı tespiti içeren sahaları görür. Yıkım firması ve tesis operatörü yalnızca ilişkili sahalarını görür | 🟡 ara çözüm |
-| Katsayı tablosu kısmen dolu | 5 malzeme sınıfından **2'si** kaynaklı (`ahsap`, `metal`); `beton_tugla`, `cam`, `seramik` kapalı — hacim→ağırlık dönüşümü ana kütlede yapılamıyor | 🔴 kaynak bekliyor (`docs/cevresel-etki.md` Bölüm 5) |
+| Katsayı tablosu kısmen dolu | 5 malzeme sınıfından **yalnızca 1'i** kaynaklı (`ahsap`); `beton`, `tugla`, `cam`, `seramik` kapalı — hacim→ağırlık dönüşümü ana kütlede yapılamıyor. v2 geçişinde `metal` sınıfı kalkınca kaynaklı katsayı 2'den 1'e düştü (K-024) | 🔴 kaynak bekliyor (`docs/cevresel-etki.md` Bölüm 5) |
 | Eğitim veri setinin lisans beyanı eksik | Görüntülerin kaynağı ve kullanım hakkı yazılı değil; Madde 5.2 açıkça istiyor, Madde 9.2 sorumluluğu katılımcıya yüklüyor | 🔴 **teslim öncesi kapatılmalı** (`docs/lisans-analizi.md` 2.1.1) |
 | `seramik` sınıfı pratikte çalışmıyor | Test mAP50 **0,0877**. Sınıf tanınıyor ama çıktısına güvenilemez; listede olması güvenilir olduğu anlamına gelmiyor | 🔴 beyan edildi (`results/model-metrikleri.md`) |
 | Ağırlık dosyası depoda değil | `best.pt` boyutu nedeniyle depoya girmez; `model-service/agirliklar/` altına elle konur. Ağırlık yokken servis sahte veri üretmez, `/predict` **503** döner | 🟡 bilinçli (`model-service/README.md`) |
