@@ -35,30 +35,46 @@ sahnede kısaltmak mümkün değildir. Konu mentöre sorulacaktır
 | 3 | Sınıflandırma sonuçları | ~50 sn | Kutular, sınıf adları, güven skorları, **"ön tahmin" etiketi** |
 | 4 | Düşük güvenli kaydın **otomatik** kuyruğa düşmesi | ~30 sn | "N tespit otomatik olarak uzman inceleme kuyruğuna alındı" — sayı yüklenen görüntüye göre değişir, ekranda ne yazıyorsa o söylenir |
 | 5 | Uzman rolüne geçiş: bir tahmini düzelt, birini belirsiz işaretle | ~50 sn | Üç aksiyon; eski/yeni sınıfın birlikte görünmesi |
-| 6 | Saha ölçümü gir → miktarın **belirsizlik aralığıyla** çıkması | ~40 sn | `4,012 – 6,360 ton` + yöntem + katsayı kaynağı (demo verisinde **tespit #6**) |
-| 7 | **Ölçüm olmayan kayıtta miktar alanının boş kalması** | ~40 sn | ⭐ **EN GÜÇLÜ AN** (demo verisinde **tespit #3**) |
+| 6 | Saha ölçümü gir → miktarın **belirsizlik aralığıyla** çıkması | ~40 sn | `4,012 – 6,36 ton` + yöntem + EPA kaynağı (demo verisinde **tespit #3**) |
+| 7 | **Ölçüm olmayan kayıtta miktar alanının boş kalması** | ~40 sn | ⭐ **EN GÜÇLÜ AN** (demo verisinde **tespit #4**, Saha B) |
 | 8 | Malzeme Kaynak Haritası → filtreleme | ~30 sn | Yalnızca doğrulanmış kayıtlar; kapsam uyarısı lejandda |
 
 **Toplam:** ~5 dakika
 
 ### Demo verisindeki hangi kayıt neyi gösteriyor
 
-`scripts/demo_veri.py` her çalıştığında aynı 14 tespiti üretir (kutular
-ve güven skorları gerçek modelden, `scripts/demo_tespitleri.json`).
-Çekim sırasında aranacak kayıtlar:
+`scripts/demo_veri.py` her çalıştığında aynı **4 tespiti** üretir
+(kutular ve güven skorları gerçek `model-v2` çıktısıdır,
+`scripts/demo_tespitleri.json`). Çekim sırasında aranacak kayıtlar:
 
 | Kayıt | Ne gösterir | Ekranda |
 |---|---|---|
-| **#6** ahşap %58,60 | Ölçüm + kaynaklı katsayı | `4,012 – 6,360 ton`, EPA kaynağı görünür |
-| **#3** metal %76,09 | Doğrulanmış ama **ölçümsüz** | Miktar alanı **boş** — 7. adımın kaydı |
-| **#4** beton/tuğla %66,13 | Ölçüm **var**, katsayı **yok** | Miktar yine boş, gerekçesi ayrı yazılı |
-| **#7** ahşap %53,43 | Uzman düzeltmesi | "Ahşap → Beton / tuğla", ham tahmin üstü çizili |
-| **#11** metal %54,30 | Doğrudan tartım | `3,150 – 3,850 ton`, katsayı kullanılmadı |
-| **#14** ahşap %31,51 | Belirsiz işaretlenmiş | İkinci incelemeye açık |
+| **#3** ahşap %94,1995 · Saha A | Ölçüm (40 m³) + kaynaklı katsayı | **`4,012 – 6,36 ton`**, belirsizlik aralığı, EPA kaynağı |
+| **#4** ahşap %76,1155 · Saha B | Doğrulanmış ama **ölçümsüz** | *"Ölçüm girilmediği için miktar hesaplanmadı"* — 7. adımın kaydı |
+| **#1** ahşap %50,9970 · Saha A | Uzman düzeltmesi **+** katsayısız sınıf | *"Uzman düzeltmesi: ~~Ahşap~~ → Beton"*, ölçüm **var** (62 m³) ama miktar **yok**: *"doğrulanmış dönüşüm katsayısı bulunmadığından"* |
+| **#2** ahşap %27,1051 · Saha A | Eşik altı | Kendiliğinden `inceleme_gerekli`, uzman kuyruğunda |
 
-#4 ile #3'ün birlikte gösterilmesi 7. adımı güçlendirir: biri ölçümü
-olmadığı için boş, diğeri ölçümü **olduğu hâlde** katsayısı olmadığı için
-boş. Sistem iki farklı nedenle de sayı uydurmuyor.
+**#1 tek başına iki kuralı taşıyor** ve en güçlü kayıttır: model "ahşap"
+dedi, uzman "beton" yaptı; ham tahmin üstü çizili duruyor. Etkin sınıf
+artık `beton` ve betonun doğrulanmış katsayısı **yok** — yani ölçüm
+girilmiş olmasına rağmen sistem sayı üretmiyor ve gerekçesini yazıyor.
+
+### ⚠️ Anlatımda mutlaka söylenmesi gereken: neden sadece 4 kutu
+
+Model kendi doğrulama kümesinde **mAP50 0,8824** alıyor. Bu üç
+**sentetik** demo görüntüsünde ise yalnızca 4 tespit üretiyor.
+
+Sebep dağılım farkıdır: model gerçek yıkım atığı fotoğraflarıyla eğitildi
+(Mendeley CODD, kırık cam, ahşap veri setleri), demo görüntüleri ise
+yapay zekâ üretimi geniş moloz sahneleri.
+
+**Bu bir kusur değil, projenin en güçlü argümanı.** Önerilen cümle:
+
+> "Modelimiz kendi test verisinde 0,88 alıyor. Bu görüntülerde 4 şey
+> buluyor. İkisini de size söylüyoruz. Yüksek bir skor, modelin sizin
+> sahanızda çalışacağı anlamına gelmez — sistemin cevabı eşiği oynatmak
+> değil, doğrulama kapısıdır: doğrulanmamış hiçbir tespit miktara,
+> haritaya ya da rapora girmez."
 
 ### 7. adım özellikle vurgulanmalı
 
@@ -92,7 +108,7 @@ Bu, raporun Bölüm 4'teki üçüncü yenilikçi yönünün sahnedeki karşılı
   gerçek model bağlandığında bant kendiliğinden kaybolur.
 - **Model 01.09.2026'da eğitildi ve ölçüldü** — bu kural 02.09'da
   güncellendi. Videoda **ölçülmüş** metrikler söylenebilir ve
-  söylenmelidir: test mAP50 **0,4334**, `cam` sınıfı **0,7257**. Sınırı
+  söylenmelidir: **val** mAP50 **0,8824** (test kümesi ölçülmedi). Sınırı
   da birlikte söylemek gerekir: `seramik` sınıfı test mAP50 **0,0877**,
   yani pratikte çalışmıyor. Kaynak: `results/model-metrikleri.md`.
 - **Ölçülmemiş hiçbir sayı söylenmeyecektir**: geri kazanım oranı,

@@ -5,6 +5,55 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 04.09.2026 — Model v2'ye geçirildi; teslimin tek 🔴 maddesi kapandı
+
+Teslim edilen model `model-v1` (YOLO11m) yerine **`model-v2`** (YOLO11s,
+sha256 `468cf535a4e26977…`). Sınıflar: `ahsap, beton, cam, seramik, tugla`.
+
+**Asıl gerekçe başarım değil, lisanstı.** v1 arama motorundan toplanan
+görüntülerle eğitilmişti ve kaynak/lisans beyanı yoktu — Madde 5.2/9.2
+kapsamında teslimin tek 🔴 maddesi buydu. v2, üçü de **CC BY 4.0** olan
+üç kamuya açık veri setinin birleşimiyle eğitildi (Mendeley CODD,
+broken-glass-kaggle, wood-0nvcu). Atıf: README ve
+`docs/lisans-analizi.md` 2.1.2.
+
+**Ölçüm** — gönderilen ağırlık epoch 142 checkpoint'i (Ultralytics `best`i
+fitness'a göre seçer):
+
+    val: P 0,9087 · R 0,8316 · mAP50 0,8824 · mAP50-95 0,6497
+
+**Üç dürüstlük düzeltmesi**
+
+1. **Test kümesi ölçülmedi** (v1'de 0,4334 idi). `model_metrik_ozeti()`
+   artık bölme ve model adını dosyadan okuyor; arayüz "val mAP50 = 0,8824
+   (5 sınıf, YOLO11s)" diyor. Sabit metin olsaydı val, test diye beyan
+   edilecekti.
+2. **Ölçülmüş genelleme farkı.** v2 kendi val kümesinde 0,8824 alıyor ama
+   deponun sentetik demo görüntülerinde **4 tespit** üretiyor (v1: 14).
+   Dağılım farkı; iki sayı `results/model-metrikleri.md`'de yan yana.
+3. **Renk ölçümü yeniden üretilemiyordu.** `scripts/renk_olc.py` eklendi.
+   K-022'deki 6,79'u üretmiyor (aynı paleti 8,95 ölçüyor); saklanmadı,
+   K-022'ye geçersizlik notu düşüldü.
+
+**Bedeli:** `metal` sınıfı kalktı — kaynaklı katsayısı olan iki sınıftan
+biriydi, artık yalnızca `ahsap` var. Teslim edilmiş ön değerlendirme
+raporu örneklerinde metal geçiyor; sapma `docs/siniflar.md`'de yazılı.
+
+**Renk paleti** zorunlu göç sırasında iyileşti: darboğaz `cam ↔ seramik`
+idi ve tuğlanın rengi tavanı değiştirmiyordu. Seramiği açmak
+(`#c98500` → `#d4a017`) tabanı **8,95 → 15,45**'e çıkardı.
+
+**Göçü mümkün kılan koruma:** ağırlığın kendi `names` sözlüğü artık
+`siniflar.json` ile başlangıçta karşılaştırılıyor; ayrışırlarsa servis
+çalışmayı reddediyor. Eski koruma yalnızca bilinmeyen id'yi yakalıyordu
+ve v2 de 0–4 döndürdüğü için sessizce geçerdi.
+
+172 sunucu testi, 29 mobil testi, web derlemesi ve `flutter analyze`
+temiz. Web ve mobil arayüz v2 verisiyle ekranla doğrulandı.
+
+⚠️ `results/sunum-gorselleri/` **eskidi** — v1 ile çekildi, artık olmayan
+sınıfları gösteriyor; yeniden çekilmeleri gerekiyor.
+
 ### 03.09.2026 — Gerçek model çalıştı; demo kutuları artık uydurma değil
 
 Ağırlık `model-v1` sürümünden indirildi (39 MB, sha256
