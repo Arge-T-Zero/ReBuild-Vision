@@ -31,10 +31,21 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# `opencv-python-headless` bile libglib olmadan import edilemez.
-# curl ağırlığı indirmek için (aşağıya bakın).
+# `opencv-python-headless` tekerleği (wheel) bağımlılıklarının çoğunu
+# kendi içinde taşır, ama HEPSİNİ değil. `ldd cv2.abi3.so` ile bulunan,
+# python:3.11-slim'de BULUNMAYAN paketler:
+#
+#   libxcb1  libxau6  libxdmcp6  libbsd0  libmd0
+#
+# "headless" adına aldanmayın — X kütüphaneleri yine de bağlanır.
+# Eksik olsalar `import cv2` çalışma zamanında patlardı; aşağıdaki
+# doğrulama adımı bunu DERLEME zamanına çeker.
+#
+# curl: ağırlığı indirmek için (aşağıya bakın).
 RUN apt-get update \
- && apt-get install -y --no-install-recommends libglib2.0-0 curl ca-certificates \
+ && apt-get install -y --no-install-recommends \
+      libxcb1 libxau6 libxdmcp6 libbsd0 libmd0 \
+      curl ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 COPY model-service/requirements-onnx.txt model-service/requirements-onnx.txt
@@ -42,6 +53,7 @@ RUN pip install --no-cache-dir -r model-service/requirements-onnx.txt
 
 COPY model-service/app.py model-service/app.py
 COPY model-service/onnx_cikarim.py model-service/onnx_cikarim.py
+COPY model-service/dogrula_kurulum.py model-service/dogrula_kurulum.py
 COPY model-service/data.yaml model-service/data.yaml
 COPY siniflar.json ./
 
@@ -63,6 +75,18 @@ RUN mkdir -p model-service/agirliklar \
      || echo "⚠️ ağırlık İNDİRİLEMEDİ ($AGIRLIK_URL) — servis /health ile bunu bildirecek")
 
 ENV MODEL_AGIRLIK=/uygulama/model-service/agirliklar/best.onnx
+
+# ⚠️ İMAJ KENDİNİ DERLEME ZAMANINDA SINAR.
+#
+# Eksik bir sistem kütüphanesi aksi hâlde ancak Render'da, ilk istekte
+# ortaya çıkardı: servis ayağa kalkar, /health "Ağırlık yüklenemedi:
+# ImportError…" der ve arayüz sahte model bandını geri getirir. Derleme
+# burada patlarsa sorun yayına hiç çıkmaz.
+#
+# Betik ayrıca ağırlığın yüklenebildiğini ve sınıf sırasının
+# siniflar.json ile uyuştuğunu görür. Ağırlık yoksa uyarır ve geçer —
+# yokluk zaten /health ile bildiriliyor, uydurma üretilmiyor.
+RUN python model-service/dogrula_kurulum.py
 
 RUN useradd -u 10001 -m -s /usr/sbin/nologin uygulama \
  && chown -R uygulama:uygulama /uygulama

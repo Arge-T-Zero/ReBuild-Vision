@@ -1,0 +1,108 @@
+# Canlı model imajını gerçekten derler ve ÇALIŞTIRIR.
+#
+# ## Neden ayrı bir iş
+#
+# `docker/model-service-onnx.Dockerfile` geliştirme ortamında
+# derlenemiyor: ağ politikası Docker Hub'ı engelliyor
+# (`production.cloudfront.docker.com … Forbidden`). Yani imaj katmanı —
+# temel imaj, sistem kütüphaneleri, ağırlığın yayından indirilmesi —
+# orada doğrulanamıyor.
+#
+# Doğrulanmamış bir imaj Render'a gitmemeli: derleme orada patlarsa
+# canlı demo sahte servisten de kötü duruma düşer (servis hiç
+# kalkmaz). Bu iş o boşluğu kapatır — imajı derler, kaldırır ve
+# /health ile /predict'i gerçekten çağırır.
+name: Model imajı
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docker/model-service-onnx.Dockerfile"
+      - "model-service/**"
+      - "siniflar.json"
+      - ".github/workflows/imaj.yml"
+  workflow_dispatch:
+
+jobs:
+  imaj:
+    name: ONNX model imajını derle ve çalıştır
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Derleme sırasında ağırlık yayından indirilir; imajın kendi
+      # doğrulama betiği (model-service/dogrula_kurulum.py) içe
+      # aktarmaları, ağırlığı ve sınıf sırasını sınar. Eksik bir sistem
+      # kütüphanesi burada derlemeyi durdurur.
+      - name: Derle
+        run: docker build -f docker/model-service-onnx.Dockerfile -t rv-onnx .
+
+      - name: İmaj boyutu
+        run: |
+          docker image inspect rv-onnx --format '{{.Size}}' \
+            | awk '{printf "imaj boyutu: %.0f MB\n", $1/1024/1024}'
+
+      - name: Çalıştır
+        run: |
+          set -euo pipefail
+          docker run -d --name rv --memory=512m -p 8090:8090 rv-onnx
+          for i in $(seq 1 30); do
+            if curl -fsS localhost:8090/health >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+          curl -fsS localhost:8090/health | tee /tmp/saglik.json
+          echo
+
+      # ⚠️ `--memory=512m` yukarıda bilinçli: Render ücretsiz katmanının
+      # sınırı bu. Servis o sınırın içinde ÇALIŞMALI; torch yolu
+      # (tepe 810 MB) burada OOM ile ölürdü.
+      - name: Sağlık çıktısını denetle
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/saglik.json"))
+          print(json.dumps(d, ensure_ascii=False, indent=2))
+          hata = []
+          if d.get("sahte") is not False:      hata.append("sahte True olmamalı")
+          if d.get("durum") != "calisiyor":     hata.append(f"durum={d.get('durum')}")
+          if not d.get("agirlik_yuklendi"):     hata.append("ağırlık yüklenmedi: " + str(d.get("hata")))
+          if d.get("calisma_zamani") != "onnx": hata.append(f"çalışma zamanı={d.get('calisma_zamani')}")
+          if d.get("sinif_sayisi") != 5:        hata.append(f"sınıf sayısı={d.get('sinif_sayisi')}")
+          if hata:
+              print("::error::" + " | ".join(hata)); sys.exit(1)
+          print("✅ gerçek model, ONNX çalışma zamanı, 5 sınıf")
+          PY
+
+      - name: Gerçek bir görüntüyle çıkarım
+        run: |
+          set -euo pipefail
+          curl -fsS -F "file=@web/public/gorseller/og-kapak-1.jpg" \
+               localhost:8090/predict | tee /tmp/tahmin.json
+          echo
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/tahmin.json"))
+          t = d["detections"]
+          print(f"{len(t)} tespit:", [(x["class_name"], round(x["confidence"], 4)) for x in t])
+          # Bu görüntüde beklenen çıktı ölçülmüştür
+          # (results/onnx-dogrulama.md): cam 0,5858 · ahsap 0,3715 · cam 0,3064
+          if d.get("sahte") is not False: print("::error::sahte True"); sys.exit(1)
+          if len(t) != 3: print(f"::error::3 tespit bekleniyordu, {len(t)} geldi"); sys.exit(1)
+          beklenen = [("cam", 0.5858), ("ahsap", 0.3715), ("cam", 0.3064)]
+          for (ad, g), x in zip(beklenen, t):
+              if x["class_name"] != ad or abs(x["confidence"] - g) > 1e-3:
+                  print(f"::error::beklenen {ad} {g}, gelen {x['class_name']} {x['confidence']}")
+                  sys.exit(1)
+          print("✅ tespitler ölçülen değerlerle aynı")
+          PY
+
+      - name: Bellek kullanımı (512 MB sınırına göre)
+        run: |
+          docker stats rv --no-stream --format '{{.MemUsage}} / {{.MemPerc}}'
+
+      - name: Kayıtlar
+        if: always()
+        run: docker logs rv 2>&1 | tail -30
