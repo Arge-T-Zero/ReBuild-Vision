@@ -126,7 +126,32 @@ bir lisans kaçışı değildir; **bellek** çözümüdür.
 
 ---
 
-## 5. Bu ortamda doğrulanamayan tek şey: imajın kendisi
+## 5. Yayımlanan dosya ve tekrar üretilebilirlik
+
+`model-v2` yayınına yüklenen dosya:
+
+| | |
+|---|---|
+| ad | `best.onnx` |
+| boyut | 38.052.133 bayt |
+| sha256 | `8955d9ca9414f499357b7706e9d581a3e7efe099866f775032b7112f7866e8ea` |
+| üreten | GitHub Actions — *ONNX dışa aktarımı* (koşu #1) |
+| kaynak | `best.pt`, sha256 `468cf535a4e26977…` |
+
+⚠️ **Dışa aktarım bayt bayt tekrar üretilebilir DEĞİLDİR.** Ultralytics
+üretilen dosyanın meta verisine dışa aktarım zamanını (`date`) yazar;
+`onnxslim`/`onnx` sürüm farkları da grafı biraz değiştirebilir. Aynı
+`best.pt`den bu ortamda üretilen dosya 38.385.572 bayt ve farklı bir
+sha256 taşıyordu — **işlevsel olarak aynı, baytça farklı.**
+
+Bu yüzden güvence checksum'a değil **teste** bağlandı: dışa aktarım işi
+`tests/test_onnx_esdegerlik.py`'yi kendi ürettiği dosya üzerinde
+çalıştırır ve **yalnızca geçerse** yayına yükler. Yukarıdaki sha256
+o koşuda doğrulanmış dosyaya aittir.
+
+---
+
+## 6. Bu ortamda doğrulanamayan tek şey: imajın kendisi
 
 `docker build` bu oturumda çalıştırılamadı — ağ politikası Docker Hub'ı
 engelliyor:
