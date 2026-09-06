@@ -230,6 +230,7 @@ Teslim paketinde istenen belgeler (Madde 10.3) ve beyan yükümlülükleri:
 | 10.3 | Kurulum ve çalıştırılabilirlik | [`docs/kurulum.md`](docs/kurulum.md) · [`docs/kullanici-kilavuzu.md`](docs/kullanici-kilavuzu.md) · [`docker/`](docker/) |
 | 10.3 · 10.4 | Kütüphane ve lisans listesi | [`docs/lisans-analizi.md`](docs/lisans-analizi.md) |
 | 10.3 | Demo videosu | [`docs/demo-video.md`](docs/demo-video.md) |
+| 10.3 | **Mobil uygulama kurulumu (APK)** | [`docs/apk-kurulumu.md`](docs/apk-kurulumu.md) |
 | **10.5** | **Yapay zekâ beyanı** | [`docs/yapay-zeka-beyani.md`](docs/yapay-zeka-beyani.md) |
 | 10.8 | Teknik mimari, veri modeli, ölçeklenebilirlik | [`docs/mimari.md`](docs/mimari.md) · [`docs/veri-modeli.md`](docs/veri-modeli.md) |
 | 10.8 | Açık coğrafi standart | **OGC API - Features** → `/ogc` |

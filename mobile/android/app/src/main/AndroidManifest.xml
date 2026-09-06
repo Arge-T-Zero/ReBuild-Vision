@@ -1,6 +1,43 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ⚠️ BU İZİNLER 04.09.2026'DA EKLENDİ VE BİR ARIZAYI KAPATTI.
+         `INTERNET` yalnızca src/debug ve src/profile manifestlerinde
+         vardı — Flutter'ın varsayılanı böyle. Sonuç: `flutter run`
+         çalışıyordu ama `flutter build apk` ile üretilen RELEASE APK
+         internet izni TAŞIMIYORDU; jüriye verilecek sürümde her API
+         çağrısı sessizce ölürdü.
+         Kamera ve konum izinleri de hiç yoktu; eklentiler (image_picker,
+         geolocator) cihazda izin isteyemez ve başarısız olurdu. -->
+
+    <!-- Sunucudaki modele görüntü göndermek ve kayıtları eşitlemek için.
+         Sınıflandırma cihazda değil sunucuda yapılır (AGPL sınırı). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Çevrimdışı kuyruğun ne zaman gönderileceğini bilmek için
+         (connectivity_plus). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- Saha görüntüsü çekmek için (image_picker · kamera). -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- Görüntünün ÇEKİLDİĞİ yeri kaydetmek için (geolocator).
+         Konum İSTEĞE BAĞLIDIR: alınamazsa yükleme yine yapılır. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Galeriden seçim. Android 13+ için READ_MEDIA_IMAGES, öncesi için
+         READ_EXTERNAL_STORAGE (maxSdkVersion ile sınırlı — yeni
+         sürümlerde istenmez). -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+
+    <!-- Kamera ZORUNLU DEĞİL: tablet gibi kamerasız cihazlarda da
+         uygulama kurulabilmeli, galeriden seçim çalışır. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.location" android:required="false"/>
     <application
-        android:label="rebuild_vision_mobil"
+        android:label="ReBuild Vision"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
