@@ -64,7 +64,22 @@ BBOX_FORMAT = "pixel_absolute_original"
 # girmez (Bölüm 1.4).
 INCELEME_ESIGI = float(os.getenv("INCELEME_ESIGI", "0.50"))
 
-AGIRLIK_YOLU = os.getenv("MODEL_AGIRLIK", str(DEPO_KOKU / "model-service/agirliklar/best.pt"))
+def _varsayilan_agirlik() -> str:
+    """Elde hangi biçim varsa onu seçer: önce `.pt`, sonra `.onnx`.
+
+    İki biçim AYNI ağırlıktır ve aynı sayıları üretir
+    (`tests/test_onnx_esdegerlik.py`). Ayrı olmalarının tek sebebi
+    bellek: torch yolu 810 MB, ONNX yolu 281 MB tepe bellek ister ve
+    canlı ortamın sınırı 512 MB'dır.
+    """
+    dizin = DEPO_KOKU / "model-service/agirliklar"
+    for ad in ("best.pt", "best.onnx"):
+        if (dizin / ad).is_file():
+            return str(dizin / ad)
+    return str(dizin / "best.pt")  # yok; hata mesajı bu yolu gösterir
+
+
+AGIRLIK_YOLU = os.getenv("MODEL_AGIRLIK", _varsayilan_agirlik())
 
 app = FastAPI(
     title="ReBuild Vision — model servisi",
@@ -92,6 +107,7 @@ class _Model:
         self._model = None
         self._hata: str | None = None
         self._denendi = False
+        self._bicim = "—"  # "torch" | "onnx"
 
     @property
     def hazir(self) -> bool:
@@ -115,12 +131,22 @@ class _Model:
                 "MODEL_AGIRLIK ortam değişkeniyle yol verilebilir."
             )
             return
+        # İçe aktarmalar FONKSİYON İÇİNDE: paket kurulu değilse servis
+        # yine de ayağa kalkar ve nedenini `/health` ile söyler.
         try:
-            # İçe aktarma FONKSİYON İÇİNDE: ultralytics kurulu değilse
-            # servis yine de ayağa kalkar ve nedenini `/health` ile söyler.
-            from ultralytics import YOLO  # noqa: PLC0415
+            if yol.suffix == ".onnx":
+                # ONNX yolu ultralytics İÇE AKTARMAZ; bu görüntüde AGPL
+                # bir paket kurulu değildir. (Ağırlığın kendi lisans
+                # beyanı değişmez — docs/lisans-analizi.md Bölüm 3.)
+                from onnx_cikarim import OnnxModel  # noqa: PLC0415
 
-            self._model = YOLO(str(yol))
+                self._model = OnnxModel(str(yol))
+                self._bicim = "onnx"
+            else:
+                from ultralytics import YOLO  # noqa: PLC0415
+
+                self._model = YOLO(str(yol))
+                self._bicim = "torch"
         except Exception as e:  # noqa: BLE001 — nedeni ekranda görünmeli
             self._hata = f"Ağırlık yüklenemedi: {type(e).__name__}: {e}"
             return
@@ -174,28 +200,37 @@ class _Model:
     def isim(self) -> str:
         return Path(AGIRLIK_YOLU).stem if self.hazir else "yüklenmedi"
 
+    def calisma_zamani(self) -> str:
+        """Hangi arka uçla koştuğu — `/health` bunu açıkça bildirir.
+
+        Gizlenecek bir şey değil: iki arka uç aynı sayıları üretiyor
+        (`tests/test_onnx_esdegerlik.py`), ama jüri hangisinin
+        çalıştığını görebilmelidir.
+        """
+        self._yukle()
+        return self._bicim
+
     def tahmin(self, icerik: bytes) -> list[dict]:
         assert self._model is not None
         with Image.open(io.BytesIO(icerik)) as im:
             goruntu = im.convert("RGB")
-            sonuc = self._model.predict(goruntu, verbose=False)[0]
+            ham = (
+                self._onnx_ham(goruntu)
+                if self._bicim == "onnx"
+                else self._torch_ham(goruntu)
+            )
 
+        # ⚠️ YANIT BİÇİMİ TEK YERDE KURULUR. İki arka uç için iki ayrı
+        # sözlük kurmak, alanların zamanla ayrışmasının en kısa yoludur;
+        # arka uçlar yalnızca (sinif_id, guven, kutu) üçlüsü döner.
         tespitler: list[dict] = []
-        kutular = getattr(sonuc, "boxes", None)
-        if kutular is None:
-            return tespitler
-
-        for kutu in kutular:
-            sinif_id = int(kutu.cls.item())
-            guven = float(kutu.conf.item())
-            x1, y1, x2, y2 = (float(v) for v in kutu.xyxy[0].tolist())
-
+        for sinif_id, guven, (x1, y1, x2, y2) in ham:
             tespitler.append({
                 "class_id": sinif_id,
                 # Sınıf adı MODELDEN değil, siniflar.json'dan alınır.
                 # Model kendi `names` sözlüğünü taşır; eğitimdeki sıra
                 # kayarsa arayüz yanlış malzeme gösterir. Tek kaynak
-                # siniflar.json'dur ve uyuşmazlık aşağıda yakalanır.
+                # siniflar.json'dur ve uyuşmazlık yüklemede yakalanır.
                 "class_name": _sinif_adi(sinif_id),
                 # Güven skoru YUVARLANMAZ (ana talimat Bölüm 9.2).
                 "confidence": guven,
@@ -209,6 +244,28 @@ class _Model:
                 "needs_review": guven < INCELEME_ESIGI,
             })
         return tespitler
+
+    def _torch_ham(self, goruntu) -> list[tuple[int, float, list[float]]]:
+        sonuc = self._model.predict(goruntu, verbose=False)[0]
+        kutular = getattr(sonuc, "boxes", None)
+        if kutular is None:
+            return []
+        return [
+            (
+                int(k.cls.item()),
+                float(k.conf.item()),
+                [float(v) for v in k.xyxy[0].tolist()],
+            )
+            for k in kutular
+        ]
+
+    def _onnx_ham(self, goruntu) -> list[tuple[int, float, list[float]]]:
+        import numpy as np  # noqa: PLC0415
+
+        return [
+            (d["sinif_id"], d["guven"], d["kutu"])
+            for d in self._model.tahmin(np.asarray(goruntu))
+        ]
 
 
 _ID_ADI = {s["id"]: s["ad"] for s in SINIFLAR["siniflar"]}
@@ -247,8 +304,15 @@ def health() -> dict:
         "sahte": False,
         "agirlik_yuklendi": hazir,
         "model": model.isim(),
+        # Hangi çalışma zamanı: "torch" ya da "onnx". İkisi aynı
+        # ağırlıktır ve aynı sayıları üretir; yine de görünür olsun.
+        "calisma_zamani": model.calisma_zamani(),
         # AGPL-3.0 beyanı gizlenmez; jüri lisans sorusunu buradan da
         # doğrulayabilmelidir (docs/lisans-analizi.md Bölüm 3).
+        #
+        # ⚠️ ONNX yolunda ÇALIŞMA ZAMANINDA ultralytics kurulu değildir,
+        # ama beyan DEĞİŞMEZ: ağırlık ultralytics ile eğitildi ve dışa
+        # aktarılan .onnx dosyası kendi meta verisinde bu lisansı taşır.
         "model_license": "AGPL-3.0 (ultralytics)",
         "sinif_sayisi": len(SINIFLAR["siniflar"]),
         "review_threshold": INCELEME_ESIGI,

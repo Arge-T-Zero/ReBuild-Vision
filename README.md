@@ -193,6 +193,22 @@ servis etkinken arayüzde kalıcı bir **"SAHTE MODEL SERVİSİ"** rozeti
 gösterilir — demo sırasında yanlışlıkla "gerçek model çalışıyor" izlenimi
 verilmez.
 
+### İki çalışma zamanı, tek ağırlık
+
+| Yol | Nerede | Tepe bellek |
+|---|---|---|
+| torch + ultralytics | yerel `docker compose` (Madde 10.3 paketi) | 809,4 MB |
+| ONNX Runtime | canlı ortam (Render, 512 MB sınırı) | 280,9 MB |
+
+İkisi **aynı ağırlıktır ve aynı sayıları üretir**: 24 görüntüde
+tespitler birebir aynı, ön işleme ultralytics `LetterBox` ile bit bit
+aynı. Ölçüm: [`results/onnx-dogrulama.md`](results/onnx-dogrulama.md),
+mekanizma: `tests/test_onnx_esdegerlik.py`.
+
+ONNX imajında `ultralytics` kurulu değildir; bu **lisans beyanını
+değiştirmez** — ağırlık ultralytics ile eğitildi, `.onnx` dosyası
+meta verisinde `AGPL-3.0` taşır ve `/health` bunu bildirir.
+
 ---
 
 ## Lisans

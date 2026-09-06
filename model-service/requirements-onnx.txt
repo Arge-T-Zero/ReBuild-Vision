@@ -1,0 +1,24 @@
+# ONNX çalışma zamanı — canlı ortam (Render, 512 MB RAM) için.
+#
+# ⚠️ BU DOSYADA AGPL BİR PAKET YOKTUR. `ultralytics` bilinçli olarak
+# kurulmaz: ONNX yolu onu içe aktarmaz.
+#
+# Bu, ağırlığın lisans beyanını DEĞİŞTİRMEZ. Ağırlık ultralytics ile
+# eğitildi; `.onnx` dosyası meta verisinde `AGPL-3.0` taşır ve `/health`
+# bunu bildirmeye devam eder. Değişen tek şey, çalışan görüntüde AGPL
+# bir paketin bulunmaması.
+#
+# Neden torch değil: torch yolu tepe 810 MB RSS ister, ücretsiz katman
+# 512 MB verir. ONNX yolu 281 MB. Ölçüm: results/onnx-dogrulama.md
+
+fastapi==0.115.6            # MIT
+uvicorn[standard]==0.34.0   # BSD-3-Clause
+python-multipart==0.0.20    # Apache-2.0
+pillow==11.1.0              # MIT-CMU
+
+onnxruntime==1.29.0         # MIT
+numpy==2.4.6                # BSD-3-Clause
+# Ölçekleme MUTLAKA OpenCV INTER_LINEAR ile yapılır; Pillow'un BILINEAR'ı
+# küçültürken kenar yumuşatma uygular ve tespitler ayrışır
+# (model-service/onnx_cikarim.py dosya başı, 1. madde).
+opencv-python-headless==4.13.0.90  # Apache-2.0

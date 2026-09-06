@@ -286,11 +286,42 @@ Bu tablo bilinçli olarak ayrıdır: buradaki paketler `api/` imajına
 | pillow | 11.1.0 | MIT-CMU | |
 | **ultralytics** | **8.4.137** | **AGPL-3.0** 🔴 | Bölüm 3 — yalnızca bu serviste |
 
+Yukarıdaki liste **torch yolu** içindir (`docker/model-service.Dockerfile`,
+yerel `docker compose`). Canlı ortamın listesi bir alt başlıktadır.
+
 `ultralytics` kendi bağımlılıklarını (torch, opencv, numpy…) beraberinde
 getirir. Bunlar AGPL sınırının **içinde** kalır ve yine `api/`'ye
 girmez; torch **BSD-3-Clause**, opencv **Apache-2.0**, numpy
 **BSD-3-Clause** lisanslıdır — hiçbiri ek bir kopyaleft yükümlülüğü
 doğurmaz. Kopyaleft tetikleyicisi yalnızca `ultralytics`'in kendisidir.
+
+#### `model-service/requirements-onnx.txt` — canlı ortamın listesi
+
+Canlı ortam (Render) aynı ağırlığı **ONNX Runtime** ile çalıştırır;
+gerekçe lisans değil **bellek**: torch yolu tepe 810 MB ister, ücretsiz
+katman 512 MB verir, ONNX yolu 281 MB'da kalır
+(`results/onnx-dogrulama.md`).
+
+| Paket | Sürüm | Lisans | Not |
+|---|---|---|---|
+| fastapi | 0.115.6 | MIT | |
+| uvicorn[standard] | 0.34.0 | BSD-3-Clause | |
+| python-multipart | 0.0.20 | Apache-2.0 | |
+| pillow | 11.1.0 | MIT-CMU | |
+| onnxruntime | 1.29.0 | MIT | çıkarım motoru |
+| numpy | 2.4.6 | BSD-3-Clause | |
+| opencv-python-headless | 4.13.0.90 | Apache-2.0 | ölçekleme (`INTER_LINEAR`) |
+
+Bu listede **AGPL bir paket yoktur** ve `model-service/onnx_cikarim.py`
+`ultralytics` içe aktarmaz.
+
+⚠️ **Bu, AGPL yükümlülüğünü ortadan KALDIRMAZ.** Ağırlık ultralytics ile
+eğitildi ve dışa aktarılan `.onnx` dosyası kendi meta verisinde
+`license = AGPL-3.0 License` taşır; `/health` bunu bildirmeye devam eder.
+Bölüm 3'ün tamamı geçerlidir. Değişen tek şey, çalışan canlı imajda AGPL
+bir paketin kurulu olmamasıdır — bir lisans kaçışı değil, dağıtılabilirlik
+çözümüdür. Yerel `docker compose` paketi (Madde 10.3) hâlâ torch +
+ultralytics yolunu kullanır.
 
 ### 2.4.3. Konteyner temel imajları
 

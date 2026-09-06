@@ -72,10 +72,26 @@ göremiyordu.
 `docker/compose.gercek-model.yaml` bindirmesi. Ağırlık salt okunur
 bağlanır; yoksa `/predict` **503** döner ve uydurma üretilmez.
 
-**Canlı demo ayrı bir karar:** gerçek servis torch içerir (diskte
-**1,2 GB**, ölçüldü); Render ücretsiz katmanı **512 MB RAM** veriyor.
-Sığmıyor. Bu bir tercih değil ölçülmüş bir kısıt; `render.yaml`'a
-gerekçesiyle yazıldı ve arayüz sahteliği zaten kalıcı bantla söylüyor.
+**Canlı demo ayrı bir karardı — ve 06.09'da KAPANDI.**
+
+02.09'daki gerekçe şuydu: gerçek servis torch içerir (diskte 1,2 GB) ve
+Render ücretsiz katmanı 512 MB RAM verir, sığmaz. Gerekçe doğruydu ama
+ölçü yanlıştı: sınırlayan disk değil **bellek**. Bellek ölçülünce torch
+yolunun tepe **809,4 MB RSS** istediği görüldü — sınırın gerçekten
+üstünde.
+
+Çözüm bandı gizlemek değil, çalışma zamanını değiştirmek oldu: **aynı
+ağırlık** ONNX Runtime ile **280,9 MB**'da kalıyor. `render.yaml` artık
+`docker/model-service-onnx.Dockerfile` kullanır ve canlı demo gerçek
+modeli çalıştırır.
+
+Eşdeğerlik uydurma değil, ölçülmüş: ham ağ çıktısı bağıl **3e-6** farkla
+aynı, ön işleme ultralytics `LetterBox` ile **birebir** aynı, 24
+görüntüde tespitler **birebir** aynı. Ayrıntı: `results/onnx-dogrulama.md`,
+mekanizma: `tests/test_onnx_esdegerlik.py`.
+
+⚠️ Bu bir lisans kaçışı DEĞİLDİR: `.onnx` dosyası meta verisinde
+`AGPL-3.0` taşır ve `/health` bunu bildirmeye devam eder.
 
 ### 2.3 🔴 Konteynerde sistem kendi ölçümünü yalanlıyordu
 

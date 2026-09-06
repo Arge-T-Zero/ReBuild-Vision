@@ -5,6 +5,73 @@ GG.AA.YYYY.
 
 ## [Yayımlanmamış]
 
+### 06.09.2026 — Canlı demo artık GERÇEK modeli çalıştırıyor; APK üretimi kuruldu
+
+**1. Canlı demodaki "SAHTE MODEL SERVİSİ" bandı kalktı — gizlenerek değil,
+sebebi ortadan kaldırılarak.**
+
+`render.yaml` bugüne kadar sahte servisi dağıtıyordu. 02.09'daki gerekçe
+"torch diskte 1,2 GB, ücretsiz katman 512 MB RAM" idi; gerekçe doğru ama
+ölçü yanlıştı — sınırlayan disk değil bellek. Ölçüldü: torch yolu tepe
+**809,4 MB RSS**, gerçekten sığmıyor.
+
+Çözüm çalışma zamanını değiştirmek oldu: aynı ağırlık ONNX Runtime ile
+**280,9 MB**'da kalıyor (canlı bağımlılık listesiyle kurulan gerçek
+uvicorn sürecinde ölçülen: 283,7 MB).
+
+Bu "yaklaşık bir model" değil — eşdeğerlik ölçüldü ve teste bağlandı
+(`tests/test_onnx_esdegerlik.py`, `results/onnx-dogrulama.md`):
+
+- ham ağ çıktısı torch ile bağıl **3e-6** farkla aynı (float32 gürültüsü)
+- ön işleme ultralytics `LetterBox` ile **birebir** aynı (`np.array_equal`)
+- 24 görüntüde tespitler **birebir** aynı; en büyük güven farkı 1,52e-06
+
+İki tuzak eşdeğerliği sessizce bozuyordu ve ikisi de yakalandı: ölçekleme
+Pillow `BILINEAR` ile yapılınca güven skorları 0,5041 ↔ 0,9163 ayrışıyordu
+(OpenCV `INTER_LINEAR` şart), ve dolgu kareye değil `stride` katına
+yapılmalı (1200×630 → 640×352).
+
+Sınıf sırası denetimi ONNX yolunda da çalışıyor: `.onnx` dosyası `names`
+sözlüğünü meta verisinde taşır; uyuşmazlıkta servis yine **çalışmayı
+reddediyor** (doğrulandı: `/predict` → 503).
+
+⚠️ Lisans kaçışı DEĞİLDİR. ONNX imajında `ultralytics` kurulu olmasa da
+ağırlık onunla eğitildi, `.onnx` meta verisinde `AGPL-3.0` taşıyor ve
+`/health` bunu bildirmeye devam ediyor.
+
+Yerel `docker compose` paketi (Madde 10.3) torch yolunda kaldı.
+
+**2. Mobil uygulama artık kurulabilir bir APK olarak üretiliyor.**
+
+`.github/workflows/apk.yml`: geliştirme ortamında Android SDK yok ve ağ
+politikası `dl.google.com`'u engelliyor, bu yüzden derleme GitHub
+koşucusuna taşındı. Actions → APK → Artifacts'tan indirilir; `v*`
+etiketinde Release'e eklenir. Kılavuz: `docs/apk-kurulumu.md`.
+
+İlk koşu **kırmızı döndü ve bir arıza ortaya çıkardı: release APK hiç
+üretilemiyormuş.** `flutter_secure_storage` compileSdk 37 istiyor, proje
+36 ile derleniyordu. `flutter run` ve `flutter test` etkilenmediği için
+kimse fark etmemişti. compileSdk 37'ye sabitlendi; `targetSdk`/`minSdk`
+değişmedi.
+
+İş ayrıca **üretilen dosyada** `aapt2 dump permissions` ile INTERNET,
+kamera, konum ve ağ durumu izinlerini doğruluyor — manifest doğru
+göründüğü hâlde APK'da izin bulunmaması tam olarak yaşanan arızaydı.
+
+Üretilen: `ReBuild-Vision-0.1.0-43c1896.apk` (24,2 MB, tek/universal APK).
+
+**3. Android izinleri ve uygulama adı**
+
+`INTERNET` yalnızca debug/profile manifestlerindeydi; release APK'da her
+API çağrısı sessizce ölürdü. Kamera, konum ve galeri izinleri hiç
+tanımlı değildi. Kamera/konum `required="false"` — kamerasız tablete de
+kurulur. Uygulama adı `rebuild_vision_mobil` → **ReBuild Vision**.
+
+**4. Sunum görselleri v2 sınıflarıyla yenilendi**
+
+Kırpılmış kart çerçevesine ince üst şerit eklendi; numara rozeti artık
+içerik metnini örtmüyor.
+
 ### 04.09.2026 — Model v2'ye geçirildi; teslimin tek 🔴 maddesi kapandı
 
 Teslim edilen model `model-v1` (YOLO11m) yerine **`model-v2`** (YOLO11s,

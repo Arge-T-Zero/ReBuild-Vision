@@ -97,6 +97,8 @@ Varsayılan değerler bilinçli olarak "DEGISTIRIN" uyarısı taşır.
 |---|---|---|---|
 | `veritabani` | `postgis/postgis:17-3.5` | iç | PostGIS **GPL-2.0** |
 | `model-mock` | `docker/model-mock.Dockerfile` | iç | Sahte servis, model ağırlığı içermez |
+| `model-service` | `docker/model-service.Dockerfile` | iç | Gerçek model, torch + ultralytics (yerel tam paket) |
+| `model-service-onnx` | `docker/model-service-onnx.Dockerfile` | iç | Gerçek model, ONNX Runtime — canlı ortam (512 MB sınırı) |
 | `api` | `docker/api.Dockerfile` | iç | **`ultralytics` İÇERMEZ** |
 | `web` | `docker/web.Dockerfile` | **8080** | Çok aşamalı derleme → nginx |
 

@@ -8,29 +8,34 @@
 # ASLA yüklenmez (şartname Madde 9.1 ve 10.5).
 
 services:
-  # --- Model servisi (canlı ortamda SAHTE) -------------------------------
+  # --- Model servisi (canlı ortamda GERÇEK) -----------------------------
   # AGPL sınırı gereği model her zaman AYRI bir serviste kalır
   # (docs/lisans-analizi.md 3.4).
   #
-  # ⚠️ CANLI DEMO BİLİNÇLİ OLARAK SAHTE SERVİSLE ÇALIŞIR.
+  # ⚠️ BU SERVİS 06.09.2026'YA KADAR SAHTEYDİ ve arayüzde her ekranda
+  # kalıcı "SAHTE MODEL SERVİSİ" bandı görünüyordu.
   #
-  # Gerçek servis (docker/model-service.Dockerfile) torch içerir; torch
-  # tek başına diskte ~1,2 GB ve çalışırken Render'ın ücretsiz katmanının
-  # verdiği 512 MB RAM'e sığmaz. Bu bir tercih değil, ölçülmüş bir
-  # kısıttır.
+  # Sebep ölçülmüştü: torch yolu tepe 810 MB yerleşik bellek (RSS)
+  # istiyor, ücretsiz katman 512 MB veriyor. Çözüm modeli küçültmek ya da
+  # bandı gizlemek değil, ÇALIŞMA ZAMANINI değiştirmek oldu: aynı ağırlık
+  # ONNX Runtime ile 281 MB'da kalıyor.
   #
-  # Gizlenmiyor: arayüz sahte servis çalışırken her ekranda kalıcı
-  # "SAHTE MODEL SERVİSİ" bandı gösterir (ana talimat Bölüm 9.5).
+  # Aynı model, aynı sayılar — uydurma değil:
+  #   tests/test_onnx_esdegerlik.py  (sınıf listesi, ön işleme, tespitler)
+  #   results/onnx-dogrulama.md      (ölçümler)
   #
-  # GERÇEK MODELİ GÖRMEK İÇİN yerel docker paketi kullanılır:
+  # Ağırlık depoda değildir; imaj onu derleme sırasında yayın varlığından
+  # indirir. İNDİREMEZSE SAHTE VERİ ÜRETİLMEZ: /health
+  # `agirlik_yuklendi: false` der, /predict 503 döner ve arayüz bunu
+  # olduğu gibi gösterir (ana talimat Bölüm 9.5).
+  #
+  # Torch yolu kaldırılmadı; yerelde tam paket hâlâ odur:
   #   docker compose -f docker/compose.yaml \
   #                  -f docker/compose.gercek-model.yaml up --build
-  # Madde 10.3 zaten bunu ister; canlı demo onun yerine geçmez
-  # (docs/yayin.md).
   - type: web
     name: rebuild-vision-model
     runtime: docker
-    dockerfilePath: ./docker/model-mock.Dockerfile
+    dockerfilePath: ./docker/model-service-onnx.Dockerfile
     dockerContext: .
     plan: free
     region: frankfurt
