@@ -39,6 +39,13 @@ reddediyor** (doğrulandı: `/predict` → 503).
 ağırlık onunla eğitildi, `.onnx` meta verisinde `AGPL-3.0` taşıyor ve
 `/health` bunu bildirmeye devam ediyor.
 
+İmaj CI'da gerçekten derlendi ve **512 MB bellek sınırıyla** çalıştırıldı
+(`.github/workflows/imaj.yml`): konteyner **192,9 MiB** kullandı (sınırın
+%37,7'si), `/health` `sahte: false · calisma_zamani: onnx` döndü ve
+`/predict` gerçek bir görüntüde ölçülen değerleri verdi. Beklenen tespit
+değerleri işe sabit yazıldı: canlı imaj başka bir cevap verirse CI
+kırmızıya döner.
+
 Yerel `docker compose` paketi (Madde 10.3) torch yolunda kaldı.
 
 **2. Mobil uygulama artık kurulabilir bir APK olarak üretiliyor.**

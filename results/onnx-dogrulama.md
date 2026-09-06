@@ -151,24 +151,39 @@ o koşuda doğrulanmış dosyaya aittir.
 
 ---
 
-## 6. Bu ortamda doğrulanamayan tek şey: imajın kendisi
+## 6. İmaj — CI'da derlendi ve ÇALIŞTIRILDI
 
-`docker build` bu oturumda çalıştırılamadı — ağ politikası Docker Hub'ı
-engelliyor:
+`docker build` **bu ortamda** çalıştırılamıyor; ağ politikası Docker
+Hub'ı engelliyor:
 
 ```
-production.cloudfront.docker.com ... Forbidden
+production.cloudfront.docker.com … Forbidden
 ```
 
-Bu yüzden `docker/model-service-onnx.Dockerfile` **derlenmiş olarak
-doğrulanmadı.** Doğrulanan şey, imajın kuracağı **birebir aynı bağımlılık
-listesiyle** (`requirements-onnx.txt`, sürümler sabit) kurulan bir ortamda
-servisin çalışması: `/health` → `sahte: false`, `agirlik_yuklendi: true`,
-`calisma_zamani: onnx`; `/predict` → doğru tespitler; RSS 283,7 MB.
+Bu boşluk açık bırakılmadı: doğrulama GitHub koşucusuna taşındı
+(`.github/workflows/imaj.yml`, koşu #1 — 06.09.2026). İmaj gerçekten
+derlendi, **Render ücretsiz katmanının sınırı olan 512 MB bellekle**
+kaldırıldı ve uç noktaları çağrıldı.
 
-Kalan risk imaj katmanındadır (temel imaj, `libglib2.0-0`, ağırlığın
-yayın varlığından indirilmesi). İlk Render dağıtımında
-`/health` çıktısına bakılarak doğrulanmalıdır.
+| Ölçüm | Sonuç |
+|---|---|
+| İmaj boyutu | 557 MB |
+| Konteyner belleği (512 MB sınırıyla) | **192,9 MiB — sınırın %37,7'si** |
+| Ağırlığın yayından indirilmesi | ✅ derleme sırasında başarılı |
+| `/health` | `sahte: false` · `agirlik_yuklendi: true` · `calisma_zamani: onnx` · `sinif_sayisi: 5` |
+| `/predict` (og-kapak-1.jpg) | 3 tespit — `cam 0,5858` · `ahsap 0,3715` · `cam 0,3064` |
+
+Son satır önemli: bu değerler işin içine **sabit yazılmıştır**. Canlı
+imaj bu görüntüye başka bir cevap verirse iş kırmızıya döner. Yani
+"aynı model" iddiası her imaj derlemesinde yeniden sınanır.
+
+Eksik bir sistem kütüphanesi de artık çalışma zamanında değil derleme
+zamanında yakalanır: `opencv-python-headless` tekerleği bağımlılıklarının
+hepsini taşımıyor — `libxcb1`, `libxau6`, `libxdmcp6`, `libbsd0`,
+`libmd0` sistemden gelir ("headless" adına rağmen X kütüphaneleri
+bağlanır) ve `python:3.11-slim`de yokturlar. Dockerfile bunları kurar ve
+`model-service/dogrula_kurulum.py` içe aktarmaları, ağırlığı ve sınıf
+sırasını derleme sırasında sınar.
 
 Ağırlık indirilemezse **uydurma üretilmez**: `agirlik_yuklendi: false`,
-`/predict` 503 ve arayüz bunu olduğu gibi gösterir.
+`/predict` 503 ve arayüz sahte model bandını geri getirir.
