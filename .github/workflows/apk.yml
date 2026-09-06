@@ -1,0 +1,118 @@
+# Saha uygulamasının kurulabilir APK'sını üretir.
+#
+# Neden bu iş var: APK bu depoda geliştirme ortamında ÜRETİLEMİYOR —
+# ortamda Android SDK yok ve ağ politikası `dl.google.com` adresini
+# engelliyor. GitHub'ın `ubuntu-latest` koşucusunda Android SDK kurulu
+# gelir, yani APK'yı üretebilecek TEK yer burasıdır.
+#
+# Şartname Madde 10.3 jürinin projeyi bağımsız bir ortamda
+# çalıştırabilmesini ister. Web tarafı `docker compose` ile kuruluyor;
+# mobil taraf için jürinin eline kurulabilir bir dosya geçmelidir.
+#
+# İki çıkış yolu:
+#   1. Her `main` itmesinde  → koşu ekinde (artifact) APK, 90 gün durur
+#   2. `v*` etiketi atılınca → GitHub Release'e eklenir, kalıcı bağlantı
+#
+# İmzalama: `android/app/build.gradle.kts` release yapısını HATA AYIKLAMA
+# anahtarıyla imzalar. Yan yükleme (sideload) için yeterlidir; Play
+# Store'a yüklemek için yeterli DEĞİLDİR. Bu bilinçli: yarışma teslimi
+# mağaza yayını değil, cihaza elle kurulumdur.
+# Ayrıntı: docs/apk-kurulumu.md
+name: APK
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    name: Release APK (Android)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # yalnızca etiket koşusunda Release'e dosya eklemek için
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          # build.gradle.kts JVM hedefi 17; koşucunun varsayılanı
+          # daha yeni olabilir ve Kotlin eklentisi uyuşmazlıkta durur.
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # APK üretmeden önce testler geçmeli. Kırık bir uygulamanın
+      # kurulabilir olması, kurulamaz olmasından daha kötüdür.
+      - run: flutter analyze
+      - run: flutter test
+
+      # Tek (universal) APK: arm64, arm32 ve x86_64 aynı dosyada.
+      # `--split-per-abi` daha küçük dosyalar verir ama jürinin hangi
+      # cihazı kullanacağını bilmiyoruz; tek dosya yanlış seçim riskini
+      # ortadan kaldırır.
+      #
+      # API adresi `lib/api.dart` içinde varsayılan olarak canlı sunucuyu
+      # gösterir; burada ayrıca --dart-define VERİLMEZ ki depodaki
+      # varsayılan ile kurulan APK aynı şeyi yapsın.
+      - run: flutter build apk --release
+
+      - name: Dosyayı adlandır
+        id: ad
+        run: |
+          set -euo pipefail
+          SURUM=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          KISA=$(git rev-parse --short HEAD)
+          AD="ReBuild-Vision-${SURUM}-${KISA}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "$AD"
+          echo "ad=$AD" >> "$GITHUB_OUTPUT"
+          echo "yol=mobile/$AD" >> "$GITHUB_OUTPUT"
+          ls -lh "$AD"
+
+      # İzinleri makinede değil, ÜRETİLEN DOSYADA doğrula. Manifest'e
+      # bakmak yetmez: Gradle birleştirmesi izinleri düşürebilir ve tam
+      # bu arıza (INTERNET izninin release'de olmaması) bir kez yaşandı.
+      - name: Üretilen APK'da izinleri doğrula
+        run: |
+          set -euo pipefail
+          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          echo "aapt2: $AAPT"
+          "$AAPT" dump permissions "${{ steps.ad.outputs.ad }}" | tee /tmp/izin.txt
+          for i in INTERNET ACCESS_NETWORK_STATE CAMERA ACCESS_FINE_LOCATION; do
+            grep -q "android.permission.$i" /tmp/izin.txt \
+              || { echo "::error::APK'da eksik izin: $i"; exit 1; }
+          done
+          echo "✅ INTERNET dahil dört izin de üretilen APK'da var"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.ad.outputs.ad }}
+          path: ${{ steps.ad.outputs.yol }}
+          retention-days: 90
+          if-no-files-found: error
+
+      # Etiketli koşuda kalıcı, herkese açık indirme bağlantısı.
+      - name: Release'e ekle
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Etiket elle atıldığında Release henüz var olmayabilir;
+          # `upload` o durumda 'release not found' ile düşer.
+          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 \
+            || gh release create "${GITHUB_REF_NAME}" \
+                 --title "ReBuild Vision ${GITHUB_REF_NAME}" \
+                 --notes "Saha uygulaması kurulum dosyası. Kurulum: docs/apk-kurulumu.md"
+          gh release upload "${GITHUB_REF_NAME}" "${{ steps.ad.outputs.ad }}" --clobber

@@ -4,11 +4,45 @@
 çalıştırabilmesini istiyor. Web arayüzü `docker compose` ile kuruluyor;
 mobil taraf için jürinin eline **kurulabilir bir APK** geçmelidir.
 
-> ⚠️ Bu belge yazıldığında APK **bu depoda üretilemedi**: geliştirme
-> ortamında Android SDK yok ve ağ politikası `dl.google.com` adresini
-> engelliyor (SDK indirilemiyor). Adımlar Android SDK'sı olan bir
-> makinede çalıştırılmalıdır. Manifest ve gradle yapılandırması
-> hazırdır ve doğrulanmıştır.
+---
+
+## En kısa yol: APK'yı GitHub üretsin, siz indirin
+
+**Kendi makinenize hiçbir şey kurmanız gerekmez.**
+
+Geliştirme ortamında Android SDK yok ve ağ politikası `dl.google.com`
+adresini engelliyor — APK orada üretilemiyor. GitHub'ın koşucularında
+Android SDK kurulu gelir, bu yüzden derleme oraya taşındı:
+[`.github/workflows/apk.yml`](../.github/workflows/apk.yml).
+
+### İndirme
+
+1. Depoda **Actions** sekmesi → soldan **APK**
+2. En üstteki yeşil koşuya girin
+3. Sayfanın altında **Artifacts** → `ReBuild-Vision-0.1.0-<özet>.apk`
+   dosyasını indirin
+
+İnen dosya bir **.zip**'tir (GitHub her eki zipler); açınca içinden
+`.apk` çıkar. Telefona/tablete o `.apk` dosyasını kopyalayın.
+
+Ekler **90 gün** durur. Kalıcı ve herkese açık bir bağlantı gerekiyorsa
+bir etiket atın; koşu APK'yı o sürümün Release sayfasına ekler:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+### İş ne yapar
+
+| Adım | Neden |
+|---|---|
+| `flutter analyze` + `flutter test` | Kırık bir uygulamanın kurulabilir olması, kurulamaz olmasından kötüdür |
+| `flutter build apk --release` | Tek (universal) APK — arm64, arm32 ve x86_64 aynı dosyada |
+| `aapt2 dump permissions` | **Üretilen dosyada** `INTERNET` dahil dört izni doğrular |
+
+Son satır önemli: aşağıdaki arıza tam olarak manifest doğru göründüğü
+hâlde **üretilen APK'da** izin bulunmamasıydı. Artık makinede değil,
+çıkan dosyada kontrol ediliyor; izin düşerse iş kırmızıya döner.
 
 ---
 
@@ -43,7 +77,10 @@ Uygulama adı da düzeltildi: cihazda `rebuild_vision_mobil` yerine
 
 ---
 
-## APK üretimi
+## Elle üretim (kendi makinenizde)
+
+Yukarıdaki GitHub yolu yetmiyorsa ya da kendi sunucunuza bağlanan
+bir sürüm istiyorsanız:
 
 ### Gereken
 
