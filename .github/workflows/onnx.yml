@@ -1,0 +1,123 @@
+# `best.pt` → `best.onnx` dışa aktarımı ve yayına (release) yüklenmesi.
+#
+# ## Neden bir iş
+#
+# Canlı ortam modeli ONNX biçiminde çalıştırır (torch yolu 810 MB tepe
+# bellek ister, ücretsiz katman 512 MB verir; ONNX yolu 281 MB —
+# results/onnx-dogrulama.md). Docker imajı `.onnx` dosyasını derleme
+# sırasında yayın varlığından indirir, yani o dosyanın orada olması
+# gerekir.
+#
+# Dışa aktarımı elle yapmak iki riski taşır: (1) ultralytics kurulu bir
+# makine gerekir, (2) dışa aktarılan dosyanın torch yoluyla AYNI sonucu
+# verdiği doğrulanmadan yüklenebilir. İkincisi sessiz ve pahalıdır:
+# canlıda ölçülmemiş ikinci bir model çalışıyor olurdu.
+#
+# Bu iş ikisini de kapatır — dışa aktarır, EŞDEĞERLİĞİ DOĞRULAR, ancak
+# testler geçerse yükler.
+#
+# Elle çalıştırılır: Actions → ONNX dışa aktarımı → Run workflow.
+name: ONNX dışa aktarımı
+
+on:
+  workflow_dispatch:
+    inputs:
+      yayin:
+        description: "Ağırlığın bulunduğu yayın etiketi"
+        default: "model-v2"
+        required: true
+      yukle:
+        description: "Doğrulama geçerse .onnx dosyasını yayına yükle"
+        type: boolean
+        default: true
+
+jobs:
+  onnx:
+    name: Dışa aktar, doğrula, yükle
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # yalnızca yayına dosya eklemek için
+
+    services:
+      # Eşdeğerlik testi `tests/conftest.py` üzerinden yükleniyor; o da
+      # veri tabanı kuruyor. testler.yml ile aynı yapılandırma.
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Ağırlığı yayından indir
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p model-service/agirliklar
+          gh release download "${{ inputs.yayin }}" \
+             --pattern best.pt --dir model-service/agirliklar --clobber
+          ls -lh model-service/agirliklar/best.pt
+          sha256sum model-service/agirliklar/best.pt
+
+      - name: Bağımlılıklar
+        run: |
+          set -euo pipefail
+          python -m venv .venv
+          .venv/bin/pip install -q -r api/requirements-dev.txt
+          .venv/bin/pip install -q -r model-mock/requirements.txt
+          # Dışa aktarım için AGPL paket gerekir; üretim servisi onu
+          # içe aktarmaz (model-service/onnx_cikarim.py).
+          .venv/bin/pip install -q \
+            --extra-index-url https://download.pytorch.org/whl/cpu \
+            ultralytics==8.4.137 onnx onnxslim
+          .venv/bin/pip install -q -r model-service/requirements-onnx.txt
+
+      - name: Dışa aktar
+        run: |
+          set -euo pipefail
+          .venv/bin/python scripts/onnx_disa_aktar.py
+          ls -lh model-service/agirliklar/best.onnx
+          sha256sum model-service/agirliklar/best.onnx
+
+      # ⚠️ ASIL KAPI BURASI. Testler torch yolu ile ONNX yolunu
+      # karşılaştırır: sınıf listesi, ön işleme (ultralytics LetterBox
+      # ile birebir) ve tespitler. Geçmezse yükleme adımı çalışmaz.
+      - name: Eşdeğerliği doğrula
+        env:
+          PG_BIN: /usr/lib/postgresql/16/bin
+          PGHOST: localhost
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          ALEMBIC: .venv/bin/alembic
+        run: .venv/bin/python -m pytest tests/test_onnx_esdegerlik.py -v
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: best.onnx
+          path: model-service/agirliklar/best.onnx
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Yayına yükle
+        if: inputs.yukle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload "${{ inputs.yayin }}" \
+             model-service/agirliklar/best.onnx --clobber
+          echo "✅ best.onnx '${{ inputs.yayin }}' yayınına yüklendi"
