@@ -187,3 +187,27 @@ sırasını derleme sırasında sınar.
 
 Ağırlık indirilemezse **uydurma üretilmez**: `agirlik_yuklendi: false`,
 `/predict` 503 ve arayüz sahte model bandını geri getirir.
+
+---
+
+## 7. CANLIDA doğrulandı — 06.09.2026
+
+`https://rebuild-vision-model.onrender.com/health` çıktısı:
+
+```json
+{"durum":"calisiyor","sahte":false,"agirlik_yuklendi":true,"model":"best",
+ "calisma_zamani":"onnx","model_license":"AGPL-3.0 (ultralytics)",
+ "sinif_sayisi":5,"review_threshold":0.5}
+```
+
+Render ücretsiz katmanında **gerçek model çalışıyor**: ağırlık yüklendi,
+çalışma zamanı ONNX, beş sınıf. `sahte: false` olduğu için arayüzdeki
+kalıcı "SAHTE MODEL SERVİSİ" bandı canlı demoda **artık görünmüyor**.
+
+Bu belgenin 1. bölümündeki sorun tanımı böylece kapandı: canlı demo
+02.09–06.09 arasında sahte servisle çalışıyordu, bugünden itibaren
+takımın eğittiği modelle çalışıyor.
+
+> ⚠️ Ücretsiz katman 15 dakika hareketsizlikten sonra servisi uyutur;
+> ilk istek ~50 saniye sürer. **Sunum ve demo öncesi adresi bir kez açıp
+> uyandırın** (docs/yayin.md 2.4).

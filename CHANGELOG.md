@@ -46,6 +46,11 @@ ağırlık onunla eğitildi, `.onnx` meta verisinde `AGPL-3.0` taşıyor ve
 değerleri işe sabit yazıldı: canlı imaj başka bir cevap verirse CI
 kırmızıya döner.
 
+**Canlıda doğrulandı (06.09.2026):**
+`rebuild-vision-model.onrender.com/health` → `sahte: false`,
+`agirlik_yuklendi: true`, `calisma_zamani: onnx`, `sinif_sayisi: 5`.
+Sahte model bandı canlı demoda artık görünmüyor.
+
 Yerel `docker compose` paketi (Madde 10.3) torch yolunda kaldı.
 
 **2. Mobil uygulama artık kurulabilir bir APK olarak üretiliyor.**
