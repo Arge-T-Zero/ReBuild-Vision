@@ -26,6 +26,11 @@ Yukarıdaki komut **sahte** model servisini kaldırır; arayüzde kalıcı
 çalıştırmak için ağırlık dosyasını yerine koyup bindirme dosyasıyla
 başlatın:
 
+> Canlı demo (Render) bunun yerine **ONNX** çalışma zamanını kullanır:
+> torch yolu tepe 809,4 MB bellek ister, ücretsiz katman 512 MB verir.
+> Aynı ağırlık, aynı sayılar — `results/onnx-dogrulama.md`. Yerelde
+> bellek sınırı olmadığı için tam paket aşağıdaki torch yoludur.
+
 ```bash
 # Ağırlığı model-v2 sürümünden indirin (18 MB · sha256 468cf535a4e26977…)
 curl -L -o model-service/agirliklar/best.pt \

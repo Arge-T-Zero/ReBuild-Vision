@@ -35,8 +35,27 @@ Bu belge, herkese açık demo bağlantısının nasıl kurulduğunu anlatır.
                                    │ HTTP
                           ┌────────▼────────┐
                           │ model servisi   │  ← AGPL sınırı burada
+                          │ (GERÇEK, ONNX)  │
                           └─────────────────┘
 ```
+
+**Canlı model servisi 06.09.2026'dan beri GERÇEKTİR.** Öncesinde sahte
+servis dağıtılıyordu; arayüzde kalıcı "SAHTE MODEL SERVİSİ" bandı
+görünüyordu. Sebep ölçülmüştü: torch yolu tepe **809,4 MB** yerleşik
+bellek istiyor, ücretsiz katman **512 MB** veriyor.
+
+Çözüm çalışma zamanını değiştirmek oldu — **aynı ağırlık**, ONNX Runtime
+ile **280,9 MB**. Eşdeğerlik ölçülmüş ve teste bağlanmıştır
+(`results/onnx-dogrulama.md`, `tests/test_onnx_esdegerlik.py`): 24
+görüntüde tespitler birebir aynı.
+
+`.onnx` dosyası depoda değildir; imaj onu `model-v2` yayınından derleme
+sırasında indirir. **Yeni bir ağırlık yayımlarsanız** önce
+Actions → *ONNX dışa aktarımı* işini çalıştırın: dışa aktarır,
+eşdeğerliği doğrular ve yalnızca testler geçerse yayına yükler.
+
+⚠️ İndirilemezse uydurma üretilmez: `/health` `agirlik_yuklendi: false`
+der, `/predict` 503 döner ve arayüz sahte model bandını **geri getirir**.
 
 `/api` yönlendirmesi `web/vercel.json` içindedir. Böylece arayüz kodu hem
 geliştirmede hem canlıda `/api/...` çağırır ve değişmez; CORS sorunu da
@@ -206,7 +225,26 @@ Diğer değişkenler otomatik gelir:
 curl https://rebuild-vision-api.onrender.com/sistem/durum
 ```
 
-`model_servisi.ulasilabilir: true` dönmelidir.
+`model_servisi.ulasilabilir: true` **ve** `model_servisi.sahte: false`
+dönmelidir.
+
+Model servisinin kendisini de doğrulayın — gerçek modelin yüklendiği
+buradan görünür:
+
+```bash
+curl https://rebuild-vision-model.onrender.com/health
+```
+
+Beklenen:
+
+```json
+{ "durum": "calisiyor", "sahte": false, "agirlik_yuklendi": true,
+  "calisma_zamani": "onnx", "sinif_sayisi": 5 }
+```
+
+`agirlik_yuklendi: false` görürseniz `.onnx` dosyası yayında yok ya da
+derleme sırasında indirilemedi; `hata` alanı sebebi söyler. Bu durumda
+sistem **uydurma üretmez**, sahte model bandı geri gelir.
 
 > **Ücretsiz katman sınırları — ikisini de bilin:**
 >
