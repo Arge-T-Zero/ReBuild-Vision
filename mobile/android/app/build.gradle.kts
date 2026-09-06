@@ -6,7 +6,16 @@ plugins {
 
 android {
     namespace = "tr.gov.argetzero.rebuild_vision_mobil"
-    compileSdk = flutter.compileSdkVersion
+
+    // ⚠️ `flutter.compileSdkVersion` DEĞİL — bilinçli olarak sabitlendi.
+    //
+    // Flutter'ın varsayılanı 36 idi ve `flutter build apk --release`
+    // AAR meta veri denetiminde DURUYORDU:
+    //   ':flutter_secure_storage' requires ... version 37 or later
+    // Eklenti kimlik jetonunu şifreli saklıyor; sürümü düşürmek yerine
+    // derleme hedefi yükseltildi. `targetSdk` ve `minSdk` Flutter'ın
+    // varsayılanında kalır — çalışma zamanı davranışı değişmez.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
