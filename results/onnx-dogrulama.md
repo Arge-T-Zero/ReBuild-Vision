@@ -190,7 +190,7 @@ Ağırlık indirilemezse **uydurma üretilmez**: `agirlik_yuklendi: false`,
 
 ---
 
-## 7. CANLIDA doğrulandı — 06.09.2026
+## 7. Canlıda MODEL SERVİSİ doğrulandı — 06.09.2026
 
 `https://rebuild-vision-model.onrender.com/health` çıktısı:
 
@@ -207,6 +207,23 @@ kalıcı "SAHTE MODEL SERVİSİ" bandı canlı demoda **artık görünmüyor**.
 Bu belgenin 1. bölümündeki sorun tanımı böylece kapandı: canlı demo
 02.09–06.09 arasında sahte servisle çalışıyordu, bugünden itibaren
 takımın eğittiği modelle çalışıyor.
+
+⚠️ **BU SATIRIN KAPSAMI DAR — ilk yazıldığında fazla geniş anlaşıldı.**
+
+`/health` YALNIZCA model servisinin ayakta ve ağırlığın yüklü olduğunu
+söyler. API'nin veri tabanında ne olduğu, arayüzde ne göründüğü
+hakkında hiçbir şey söylemez. Bu belge ilk yazıldığında başlığı
+"CANLIDA doğrulandı" idi; o ifade, arayüzün de doğrulandığı izlenimini
+veriyordu. Vermiyordu.
+
+Nitekim aynı gün arayüz açıldığında canlı veri tabanının 30.08.2026'dan
+kalma olduğu ve artık var olmayan v1 sınıflarını (`sert_plastik`,
+`karton`, `konteyner`…) gösterdiği görüldü. Model servisi doğruydu,
+gösterilen veri değildi. Ayrıntı ve düzeltme: `CHANGELOG.md`
+06.09.2026 girdisi.
+
+**Ders:** bir uç noktanın yeşil dönmesi, sistemin doğrulandığı anlamına
+gelmez. Arayüz ekranları açılmadan "canlıda doğrulandı" yazılmamalıdır.
 
 > ⚠️ Ücretsiz katman 15 dakika hareketsizlikten sonra servisi uyutur;
 > ilk istek ~50 saniye sürer. **Sunum ve demo öncesi adresi bir kez açıp
