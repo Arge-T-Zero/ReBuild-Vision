@@ -3,8 +3,13 @@
   Uygulama simgesinin zemin rengi.
 
   Projenin marka rengi: mobile/lib/tema.dart → Acik.marka (#0D6B48) ve
-  web/src/index.css içindeki `--u-marka` ile aynı. Simge, işaret ve
-  arayüz tek renk kullanır.
+  web/src/index.css içindeki `u-marka` özel özelliği ile aynı. Simge,
+  işaret ve arayüz tek renk kullanır.
+
+  ⚠️ Bu yorumda İKİ TİRE YAN YANA YAZILAMAZ; XML bunu yasaklar ve
+  `flutter build apk` `packageReleaseResources` adımında durur. CSS
+  değişkeninin baştaki iki tiresi bu yüzden yazılmadı. Aynı hata
+  07.09.2026'da bu dosyada, öncesinde AndroidManifest.xml'de yaşandı.
 -->
 <resources>
     <color name="ic_launcher_background">#0D6B48</color>

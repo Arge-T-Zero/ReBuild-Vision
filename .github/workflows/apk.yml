@@ -53,6 +53,30 @@ jobs:
 
       - run: flutter pub get
 
+      # ⚠️ XML'İ ÖNCE DENETLE — Gradle'ı 4 dakika beklemeden.
+      #
+      # Bu hata bu depoda İKİ KEZ yaşandı: bir XML yorumunun içine yan
+      # yana iki tire girdi (`--release`, sonra bir CSS değişken adı).
+      # XML bunu yasaklar; `flutter analyze` ve `flutter test` görmez,
+      # çünkü ikisi de Android kaynaklarını ayrıştırmaz. Hata ancak
+      # `packageReleaseResources` adımında, derlemenin sonunda çıkıyordu.
+      - name: Android XML dosyalarını denetle
+        run: |
+          python3 - <<'PY'
+          import glob, sys, xml.dom.minidom as m
+          kotu = []
+          for f in sorted(glob.glob("android/**/*.xml", recursive=True)):
+              try:
+                  m.parse(f)
+              except Exception as e:
+                  kotu.append(f"{f}: {e}")
+          for k in kotu:
+              print(f"::error::{k}")
+          print("✅ Android XML dosyaları geçerli" if not kotu
+                else f"❌ {len(kotu)} bozuk dosya")
+          sys.exit(1 if kotu else 0)
+          PY
+
       # APK üretmeden önce testler geçmeli. Kırık bir uygulamanın
       # kurulabilir olması, kurulamaz olmasından daha kötüdür.
       - run: flutter analyze
