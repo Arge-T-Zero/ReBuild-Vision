@@ -66,7 +66,7 @@ api/app/
 ├── db.py                SQLAlchemy async motor + oturum
 ├── deps.py              kimlik ve yetki bağımlılıkları
 ├── geo.py               PostGIS geometri yardımcıları
-├── models.py            sekiz tablo — kurallar burada zorlanır
+├── models.py            dokuz tablo — kurallar burada zorlanır
 ├── schemas.py           API sözleşmesi (Pydantic)
 ├── core/
 │   ├── config.py        ortam + siniflar.json okuma

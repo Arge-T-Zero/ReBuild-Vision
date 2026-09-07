@@ -158,6 +158,23 @@ class Renk {
   static String sinifAdi(String ad) => malzemeAdi[ad] ?? ad;
 }
 
+
+/// Türkçe büyük harf çevirisi.
+///
+/// ⚠️ `String.toUpperCase()` TÜRKÇEYİ BOZAR. Dart'ın çevirisi yerel
+/// duyarlı değildir ve nokta kuralını bilmez:
+///
+///   "Belediye yetkilisi".toUpperCase() → "BELEDIYE YETKILISI"
+///
+/// Doğrusu "BELEDİYE YETKİLİSİ"dir. Aynı hata "ı" için de ters yönde
+/// çalışır ("yıkım" → "YIKIM" doğru, ama "i" → "I" yanlış). Rol adı
+/// ekranda büyük harfle yazıldığı için kullanıcı kendi rolünü yanlış
+/// yazılmış görüyordu.
+///
+/// Yalnızca iki harf özel; gerisi Dart'a bırakılır.
+String turkceBuyuk(String metin) =>
+    metin.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
+
 /// Seçilen temaya göre `ThemeData` üretir.
 ///
 /// `Renk` sınıfı önce `temayiKur()` ile ayarlanmalıdır; bu fonksiyon

@@ -37,6 +37,24 @@ async def durum():
     `sahte_model_servisi: true` ise arayüz kalıcı 'SAHTE MODEL SERVİSİ'
     rozeti gösterir (ana talimat Bölüm 9.5) — demo sırasında yanlışlıkla
     'gerçek model çalışıyor' izlenimi verilmesin.
+
+    ⚠️ ÜÇÜNCÜ BİR DURUM VARDIR: "OKUNAMIYOR".
+
+    06.09.2026'da canlıda yükleme sayfası kırmızı "MODEL YOK" rozetiyle
+    şunu yazıyordu:
+
+        Model servisine ulaşılamadı: Client error '429 Too Many Requests'
+
+    Oysa model servisi çalışıyordu; `/health` doğrudan çağrıldığında
+    `agirlik_yuklendi: true` dönüyordu. 429 "servis yok" demek DEĞİL,
+    "şu an cevap veremiyorum" demektir. İkisini aynı göstermek yanlış
+    beyandır. Tersi de yanlış olurdu — 429 alındığında "model çalışıyor,
+    sahte değil" demek de bilinmeyeni bilinir gibi göstermek olurdu.
+
+    Bu yüzden yanıt `hiz_siniri` ve `durum_kodu` alanlarını taşır;
+    arayüz üç durumu ayrı gösterir: çalışıyor / okunamıyor / ulaşılamıyor.
+    Sağlık sorgusunun kendisi `model_client` içinde kısa süreli
+    önbelleklenir, böylece hız sınırı yeniden tetiklenmez.
     """
     try:
         saglik = await model_client.saglik()
@@ -47,7 +65,16 @@ async def durum():
             "lisans": saglik.get("model_license"),
         }
     except model_client.ModelServisiHatasi as e:
-        model_durumu = {"ulasilabilir": False, "sahte": None, "hata": str(e)}
+        model_durumu = {
+            "ulasilabilir": False,
+            # `sahte` BİLİNMİYOR (null) — false yazmak "gerçek model
+            # çalışıyor" demek olurdu ve Bölüm 9.5'i çiğnerdi.
+            "sahte": None,
+            "hata": str(e),
+            "durum_kodu": e.durum_kodu,
+            "hiz_siniri": e.hiz_siniri,
+            "tekrar_dene_saniye": e.tekrar_dene_saniye,
+        }
 
     return {
         "model_servisi": model_durumu,
@@ -60,7 +87,9 @@ async def durum():
 async def siniflar():
     """Sınıf tanımları. Arayüz renk ve etiketleri buradan alır.
 
-    Model beş sınıf tanır: ahsap, beton_tugla, cam, metal, seramik.
+    Model beş sınıf tanır; adları burada SABİT YAZILMAZ, `siniflar.json`
+    tek doğruluk kaynağıdır (02.09.2026'da liste 10'dan 5'e indi ve bu
+    docstring'de kalan eski adlar yanlışa dönüşmüştü).
 
     `kapsanmayan_gruplar` da döner — dolgu/toprak, plastik, tekstil,
     karton, alçıpan: model bu grupları tanımaz. Arayüz bunu görünür kılar,

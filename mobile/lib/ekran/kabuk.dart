@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../duzen.dart';
 import '../kuyruk.dart';
+import '../roller.dart';
 import '../tema.dart';
+import 'hesap.dart';
 import 'olcum.dart';
 import 'yukle.dart';
 
@@ -14,6 +16,17 @@ import 'yukle.dart';
 ///
 /// Kuyruk sayacı burada tutulur: hangi sekmede olursanız olun kaç kaydın
 /// beklediğini görürsünüz. Saha personelinin en çok merak ettiği şey budur.
+///
+/// ⚠️ SEKMELER SABİTTİ VE ROL HİÇ OKUNMUYORDU. "Görüntü" ve "Ölçüm"
+/// herkese, her rolde gösteriliyordu; oysa sunucu bu iki işlemi farklı
+/// rol kümelerine açıyor (`api/app/core/permissions.py` →
+/// `GORUNTU_YUKLEYEBILIR`, `OLCUM_GIREBILIR`). Belediye yetkilisi ölçüm
+/// formunu, doğrulayıcı uzman yükleme formunu, AFAD/yıkım/tesis ise
+/// ikisini birden görüyor ama düğmeye bastığında 403 alıyordu.
+///
+/// Sekmeler artık `roller.dart` üzerinden kurulur ve her rolde bir
+/// "Hesap" sekmesi bulunur (bkz. `ekran/hesap.dart`). Gerekçenin tamamı
+/// `roller.dart` başındaki açıklamadadır.
 class Kabuk extends StatefulWidget {
   final Api api;
   final Kuyruk kuyruk;
@@ -37,7 +50,15 @@ class Kabuk extends StatefulWidget {
 }
 
 class _KabukDurumu extends State<Kabuk> {
-  int _sekme = 0;
+  late final RolTanimi _rol = rolTanimi(widget.kullanici.rol);
+
+  /// Bu rolün gördüğü sekmeler — sunucudaki yetkiye göre kurulur.
+  late final List<MobilEkran> _ekranlar = _rol.ekranlar;
+
+  /// Açılış sekmesi: asıl işi mobilde olan rol doğrudan işine düşer,
+  /// olmayan rol önce "işiniz nerede" ekranını görür.
+  late int _sekme = _rol.acilisSekmesi;
+
   int _kuyruktaBekleyen = 0;
   bool _cevrimici = true;
   // `null` = henüz sorulmadı ya da sunucuya ulaşılamadı. Bilinmiyorken
@@ -143,7 +164,8 @@ class _KabukDurumu extends State<Kabuk> {
       // sonsuza kadar aynı sonucu verir. Kullanıcı hangisiyle karşı
       // karşıya olduğunu bilmelidir.
       if (!sessiz) {
-        _bildir('Sunucu kayıtları kabul etmedi: ${h.mesaj}', uzun: true);
+        _bildir('Sunucu kayıtları kabul etmedi: ${h.kullaniciMesaji}',
+            uzun: true);
       }
     } catch (_) {
       // Buraya yalnızca gerçek ağ/bağlantı arızaları düşer — sahada
@@ -169,18 +191,17 @@ class _KabukDurumu extends State<Kabuk> {
 
   @override
   Widget build(BuildContext context) {
-    final sayfalar = [
-      YukleEkrani(api: widget.api, cevrimici: _cevrimici),
-      OlcumEkrani(
-        api: widget.api,
-        kuyruk: widget.kuyruk,
-        cevrimici: _cevrimici,
-        kuyrukDegisti: _kuyrukSay,
-        esitle: esitle,
-      ),
-    ];
+    // Sayfalar ve gezinme hedefleri AYNI listeden türer: iki yerde
+    // ayrı ayrı yazılırsa biri güncellenip diğeri unutulur ve sekme
+    // sırası kayar — kullanıcı "Ölçüm"e basıp "Hesap" görür.
+    final sayfalar = _ekranlar.map(_sayfa).toList();
 
     final genis = Duzen.genisMi(context);
+
+    // Tek sekmesi olan rolde (AFAD, yıkım, tesis, rolü atanmamış hesap)
+    // gezinme çubuğu GÖSTERİLMEZ. Tek hedefli bir gezinme çubuğu
+    // kullanıcıya seçenek varmış izlenimi verir; yoktur.
+    final gezinmeVar = _ekranlar.length > 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -224,7 +245,7 @@ class _KabukDurumu extends State<Kabuk> {
       // dağılıyordu. Material 3, 600 dp üstünde yan gezinme rayını
       // (`NavigationRail`) öneriyor: sekmeler tek bir kenarda toplanır
       // ve dikey alan içeriğe kalır. Dar ekranda alt çubuk aynen kalır.
-      body: genis
+      body: genis && gezinmeVar
           ? Row(
               children: [
                 NavigationRail(
@@ -234,18 +255,13 @@ class _KabukDurumu extends State<Kabuk> {
                   indicatorColor: Renk.marka.withValues(alpha: 0.18),
                   labelType: NavigationRailLabelType.all,
                   destinations: [
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.photo_camera_outlined),
-                      selectedIcon:
-                          Icon(Icons.photo_camera, color: Renk.marka),
-                      label: const Text('Görüntü'),
-                    ),
-                    NavigationRailDestination(
-                      icon: _kuyrukRozeti(
-                          const Icon(Icons.straighten_outlined)),
-                      selectedIcon: Icon(Icons.straighten, color: Renk.marka),
-                      label: const Text('Ölçüm'),
-                    ),
+                    for (final e in _ekranlar)
+                      NavigationRailDestination(
+                        icon: _rozetli(e, Icon(_ikon(e))),
+                        selectedIcon:
+                            Icon(_seciliIkon(e), color: Renk.marka),
+                        label: Text(_etiket(e)),
+                      ),
                   ],
                 ),
                 VerticalDivider(width: 1, color: Renk.kenar),
@@ -255,7 +271,7 @@ class _KabukDurumu extends State<Kabuk> {
               ],
             )
           : IndexedStack(index: _sekme, children: sayfalar),
-      bottomNavigationBar: genis
+      bottomNavigationBar: (genis || !gezinmeVar)
           ? null
           : NavigationBar(
               selectedIndex: _sekme,
@@ -263,20 +279,57 @@ class _KabukDurumu extends State<Kabuk> {
               backgroundColor: Renk.yuzey,
               indicatorColor: Renk.marka.withValues(alpha: 0.18),
               destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.photo_camera_outlined),
-                  selectedIcon: Icon(Icons.photo_camera, color: Renk.marka),
-                  label: 'Görüntü',
-                ),
-                NavigationDestination(
-                  icon: _kuyrukRozeti(const Icon(Icons.straighten_outlined)),
-                  selectedIcon: Icon(Icons.straighten, color: Renk.marka),
-                  label: 'Ölçüm',
-                ),
+                for (final e in _ekranlar)
+                  NavigationDestination(
+                    icon: _rozetli(e, Icon(_ikon(e))),
+                    selectedIcon: Icon(_seciliIkon(e), color: Renk.marka),
+                    label: _etiket(e),
+                  ),
               ],
             ),
     );
   }
+
+  /// Bir sekmenin içeriği.
+  Widget _sayfa(MobilEkran e) => switch (e) {
+        MobilEkran.yukle =>
+          YukleEkrani(api: widget.api, cevrimici: _cevrimici),
+        MobilEkran.olcum => OlcumEkrani(
+            api: widget.api,
+            kuyruk: widget.kuyruk,
+            cevrimici: _cevrimici,
+            kuyrukDegisti: _kuyrukSay,
+            esitle: esitle,
+          ),
+        MobilEkran.hesap => HesapEkrani(
+            kullanici: widget.kullanici,
+            tanim: _rol,
+            sahteModel: _sahteModel,
+          ),
+      };
+
+  String _etiket(MobilEkran e) => switch (e) {
+        MobilEkran.yukle => 'Görüntü',
+        MobilEkran.olcum => 'Ölçüm',
+        MobilEkran.hesap => 'Hesap',
+      };
+
+  IconData _ikon(MobilEkran e) => switch (e) {
+        MobilEkran.yukle => Icons.photo_camera_outlined,
+        MobilEkran.olcum => Icons.straighten_outlined,
+        MobilEkran.hesap => Icons.badge_outlined,
+      };
+
+  IconData _seciliIkon(MobilEkran e) => switch (e) {
+        MobilEkran.yukle => Icons.photo_camera,
+        MobilEkran.olcum => Icons.straighten,
+        MobilEkran.hesap => Icons.badge,
+      };
+
+  /// Kuyruk rozeti YALNIZCA Ölçüm sekmesindedir: bekleyen kayıtlar
+  /// oradan girilir ve orada düzeltilir.
+  Widget _rozetli(MobilEkran e, Widget ikon) =>
+      e == MobilEkran.olcum ? _kuyrukRozeti(ikon) : ikon;
 
   /// Kuyrukta bekleyen kayıt sayısını ikonun üstünde gösterir.
   ///

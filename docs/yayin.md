@@ -209,15 +209,61 @@ Diğer değişkenler otomatik gelir:
 | `MODEL_SERVICE_URL` | model servisinin adresi | |
 | `IZIN_VERILEN_KAYNAKLAR` | Vercel adresi | |
 
-### 2.3. İlk açılışta ne olur
+### 2.3. Her açılışta ne olur
 
-`rebuild-vision-api` servisi açılırken sırayla:
+`rebuild-vision-api` servisi açılırken sırayla (`docker/baslat-api.sh`):
 
-1. `alembic upgrade head` → sekiz tabloyu Supabase'de oluşturur
-2. `python scripts/demo_veri.py` → sekiz sentetik demo hesabı ekler
+1. `alembic upgrade head` → şemayı Supabase'de kurar/günceller
+2. `python scripts/demo_veri.py` → demo verisini **sürüme göre** tazeler
 3. `uvicorn` → API'yi başlatır
 
 İlk derleme 5–10 dakika sürebilir.
+
+#### Demo verisi neye göre yenilenir
+
+> ⚠️ **06.09.2026'ya kadar bu adım hiçbir şey yapmıyordu.** Betik ilk demo
+> sahasını görünce "zaten var" deyip dönüyordu; canlı veri tabanı
+> 30.08.2026'da kuruldu ve bir daha yenilenmedi. Sınıf listesi 02.09'da
+> 10'dan 5'e inince ekranda artık üretilemeyecek sınıflar kaldı
+> (`sert_plastik`, `karton`, `konteyner`, `alcipan`, `dolgu_toprak`).
+
+Betik artık her açılışta üç şey yapar:
+
+| Adım | Ne zaman çalışır | Neye dokunur |
+|---|---|---|
+| Sentetik görselleri geri kopyala | **her açılışta** | yalnızca dosya sistemi |
+| Senaryonun sürüm damgasını oku | her açılışta | okuma |
+| Sentetik kayıtları yenile | damga değiştiyse, `siniflar.json`'da olmayan bir sınıf kaldıysa ya da `DEMO_VERISI_ZORLA` ayarlıysa | yalnızca **sentetik** kayıtlar |
+
+Damga `demo_damgasi` tablosunda durur ve senaryonun kendisinden üretilir:
+sınıf listesi, saha adları, gerçek model çıktısı (`demo_tespitleri.json`)
+ve senaryo sürümü. Yani `siniflar.json` değişirse damga da değişir —
+sürüm numarasını elle artırmayı unutmak arıza üretmez.
+
+Yenileme kapsamı bilinçli olarak dardır ve **kullanıcı verisine
+dokunmaz**: silinen şeyler demo hesaplarının (`@demo.local`) yüklediği
+görüntüler, `siniflar.json`'da bulunmayan sınıflı tespitler ve görüntüsü
+kalmayan `(sentetik)` sahalardır. Jürinin kendi kurduğu saha, yüklediği
+görüntü ve geçerli tespitleri yerinde kalır. Temizliğin kendisi
+`islem_gecmisi` tablosuna `demo_verisi / silme` satırı olarak yazılır.
+
+#### Demo verisini elle tazelemek (`DEMO_VERISI_ZORLA`)
+
+Damga aynı olsa bile yeniden kurmak isterseniz:
+
+1. Render → `rebuild-vision-api` → **Environment** → *Add Environment
+   Variable*: `DEMO_VERISI_ZORLA` = `1`
+2. **Save, rebuild, and deploy**
+3. Açılış kaydında (**Logs**) şunu görün:
+
+   ```
+   >> Demo verisi yeniden kuruluyor. Sebep:
+      · DEMO_VERISI_ZORLA ayarlı
+   >> Temizlenen sentetik kayıt: … görüntü, … tespit, … saha
+   Demo verisi hazır.
+   ```
+4. **Değişkeni silin.** Kalırsa her dağıtımda yeniden kurulur ve jürinin
+   demo sahalarına girdiği kayıtlar da silinir.
 
 ### 2.4. Doğrula
 
@@ -256,6 +302,16 @@ sistem **uydurma üretmez**, sahte model bandı geri gelir.
 >    dağıtımda kaybolur. Demo için sorun değildir, ancak canlı ortama
 >    saklanması gereken bir şey yüklenmemelidir. (Zaten Madde 9.1/10.5
 >    gereği oraya yalnızca sentetik veri girer.)
+>
+>    **Demo görselleri bunun istisnasıdır:** `scripts/demo_veri.py` her
+>    açılışta eksik olanları depodan geri kopyalar. 06.09.2026'ya kadar
+>    kopyalama senaryo kurulumunun içindeydi, kurulum da atlandığı için
+>    dosyalar bir daha geri gelmiyordu — arayüzde tespit kutularının
+>    yerinde kırık görsel ikonu çıkıyordu.
+> 3. **Hız sınırı (HTTP 429).** Ücretsiz katman sık istekleri reddeder.
+>    API artık model servisinin `/health` cevabını kısa süreli
+>    önbelleklediği için bu tetiklenmez; tetiklenirse arayüz "MODEL YOK"
+>    değil **"Model meşgul"** der (aşağıya bakın).
 
 ---
 
@@ -361,6 +417,7 @@ ALTER TABLE olcum            DISABLE ROW LEVEL SECURITY;
 ALTER TABLE miktar_hesabi    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE tehlikeli_kayit  DISABLE ROW LEVEL SECURITY;
 ALTER TABLE islem_gecmisi    DISABLE ROW LEVEL SECURITY;
+ALTER TABLE demo_damgasi     DISABLE ROW LEVEL SECURITY;
 ```
 
 Bu güvenli bir işlemdir: Data API kapalı olduğu için tablolara yalnızca
@@ -369,3 +426,48 @@ kendi backend'imiz erişir.
 **İlk istek çok yavaş (~50 sn)**
 Render ücretsiz katmanı servisi uyutmuştur. Normaldir; sunum öncesi
 uyandırın.
+
+**Arayüzde artık var olmayan sınıflar görünüyor**
+(`sert_plastik`, `karton`, `konteyner`, `alcipan`, `dolgu_toprak`…)
+
+Veri tabanı eski bir sınıf listesiyle doldurulmuş ve o günden beri
+yenilenmemiştir. Doğru davranış artık kendiliğinden çalışır: açılışta
+`siniflar.json`'da bulunmayan sınıflı tespit sayılır, sıfırdan büyükse
+sentetik kayıtlar yenilenir. Yine de duruyorsa API servisini yeniden
+dağıtın ve **Logs** çıktısında şu satırları arayın:
+
+```
+>> Demo verisi yeniden kuruluyor. Sebep:
+   · N tespitin sınıfı siniflar.json'da yok (emekli modelden kalan ölü kayıt)
+```
+
+Görünmüyorsa göç uygulanmamış olabilir (`demo_damgasi` tablosu yoksa
+betik damga okuyamaz); `alembic upgrade head` adımının günlükte hatasız
+geçtiğini doğrulayın.
+
+**Tespit kutularının yerinde kırık görsel ("?") çıkıyor**
+Dosya sistemi sıfırlanmış ve görüntü dosyaları gitmiştir. Demo
+görselleri her açılışta geri kopyalanır; günlükte
+
+```
+>> Eksik sentetik görsel geri kopyalandı: demo_sentetik_1.webp, …
+```
+
+satırı görünmelidir. **Canlıda arayüzden yüklenen** görüntüler geri
+gelmez — bunlar depoda yoktur ve ücretsiz katmanda kalıcı disk de yoktur.
+
+**Başlıkta kırmızı "MODEL YOK" rozeti ve `429 Too Many Requests`**
+Model servisi büyük olasılıkla ÇALIŞIYOR; doğrudan sorun:
+
+```bash
+curl https://rebuild-vision-model.onrender.com/health
+```
+
+`agirlik_yuklendi: true` dönüyorsa sorun servis değil, `/health`'in çok
+sık çağrılmasıydı. API artık cevabı kısa süreli önbellekliyor ve 429'u
+"model yok" diye göstermiyor: arayüzde turuncu **"Model meşgul"** rozeti
+çıkar, metin de servisin durumunun **okunamadığını** söyler ("çalışıyor"
+demez — bilinmeyen şey bilinir gibi gösterilmez).
+
+Rozet hâlâ kırmızıysa `MODEL_SERVICE_URL` yanlış ya da model servisi
+gerçekten ayakta değildir.

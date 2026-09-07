@@ -17,7 +17,7 @@ from decimal import Decimal
 from sqlalchemy import event, insert, inspect
 from sqlalchemy.orm import Session
 
-from ..models import IslemGecmisi
+from ..models import DemoDamgasi, IslemGecmisi
 
 # İstek başına aktif kullanıcı. Middleware/bağımlılık tarafından set edilir.
 aktif_kullanici_id: contextvars.ContextVar[int | None] = contextvars.ContextVar(
@@ -25,7 +25,13 @@ aktif_kullanici_id: contextvars.ContextVar[int | None] = contextvars.ContextVar(
 )
 
 # Kendi kendini kaydetmemesi için geçmiş tablosu hariç tutulur.
-HARIC = {IslemGecmisi.__tablename__}
+#
+# `demo_damgasi` de hariçtir: alan verisi değil, DAĞITIM İŞARETİDİR.
+# `scripts/demo_veri.py` açılışta çalışır ve oturumda kullanıcı bağlamı
+# yoktur; her yenilemede kullanıcısız bir "guncelleme" satırı üretirdi ve
+# geçmiş dökümünü anlamsızca doldururdu. Demo verisinin TEMİZLİĞİ ise
+# geçmişe açıkça yazılır (`demo_verisi / silme`), yani iz kaybolmaz.
+HARIC = {IslemGecmisi.__tablename__, DemoDamgasi.__tablename__}
 
 # Parola özeti gibi alanlar geçmişe yazılmaz.
 GIZLI_ALANLAR = {"sifre_hash"}

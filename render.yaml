@@ -81,3 +81,20 @@ services:
       # Arayüz Vercel'de; /api istekleri oradan vekillenir.
       - key: IZIN_VERILEN_KAYNAKLAR
         value: https://re-build-vision.vercel.app
+
+      # ⚠️ DEMO_VERISI_ZORLA BURADA TANIMLI DEĞİLDİR — BİLİNÇLİ.
+      #
+      # Demo verisi artık kendi sürüm damgasına bakıyor
+      # (scripts/demo_veri.py): senaryo ya da sınıf listesi değişince
+      # sentetik kayıtlar kendiliğinden yenileniyor, aynı kaldığında
+      # hiçbir şeye dokunulmuyor. Zorlama yalnızca ELLE müdahale
+      # kapısıdır ve Render panelinden eklenir:
+      #
+      #   Environment → Add Environment Variable
+      #     DEMO_VERISI_ZORLA = 1
+      #   → Deploy → açılış kaydında "Demo verisi yeniden kuruluyor"
+      #   → değişkeni SİLİN (yoksa her dağıtımda yeniden kurulur ve
+      #     jürinin girdiği kayıtlar da silinir)
+      #
+      # Blueprint'e yazılsaydı panelden verilen değer her dağıtımda
+      # geri alınırdı; o yüzden burada yalnızca belgelenir.

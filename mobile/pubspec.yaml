@@ -30,3 +30,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Giriş ekranının arka plan görseli. Web arayüzündeki dosyanın
+  # AYNISI (`web/public/gorseller/giris-hero.webp`, 1100x821, 166 KB) —
+  # iki yüz aynı ekranı göstermeli. Görsel yapay zekâ ile üretilmiştir;
+  # gerçek bir afet fotoğrafı değildir (web/public/gorseller/README.md,
+  # şartname Madde 10.7).
+  assets:
+    - assets/gorseller/giris-hero.webp

@@ -78,7 +78,28 @@ async def yukle(
             f"yüklenebilir; {len(dosyalar)} gönderildi.",
         )
 
-    saglik = await model_client.saglik()
+    # ⚠️ SAĞLIK SORGUSU BAŞARISIZ OLURSA 500 DÖNÜYORDU.
+    #
+    # `ModelServisiHatasi` bir `RuntimeError`'dır ve hiçbir yerde
+    # yakalanmıyordu: canlıda model servisi hız sınırına takıldığında
+    # (429) kullanıcı "Internal Server Error" görüyordu. Sebep sunucunun
+    # bozulması değil, çıkarımın ŞU AN yapılamaması; bu ayrım söylenmeli.
+    #
+    # 503 seçildi: geçici bir hizmet dışılık. Uydurma tespit ÜRETİLMEZ,
+    # boş liste de dönülmez (ana talimat Bölüm 9.5) — istek reddedilir ve
+    # sebebi yazılır.
+    try:
+        saglik = await model_client.saglik()
+    except model_client.ModelServisiHatasi as e:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            (f"Model servisi şu an yoğun (HTTP {e.durum_kodu}); görüntü "
+             "sınıflandırılamadı. Kayıt oluşturulmadı — birkaç saniye "
+             "sonra tekrar deneyin.")
+            if e.hiz_siniri else
+            (f"Model servisine ulaşılamadı, görüntü sınıflandırılamadı. "
+             f"Uydurma sonuç üretilmez. Ayrıntı: {e}"),
+        ) from e
     sahte = bool(saglik.get("sahte"))
 
     klasor = ayarlar().yukleme_yolu
@@ -141,9 +162,18 @@ async def yukle(
         db.add(g)
         await db.flush()
 
-        sonuc = await model_client.tahmin_et(
-            dosya.filename or yol.name, icerik, dosya.content_type
-        )
+        try:
+            sonuc = await model_client.tahmin_et(
+                dosya.filename or yol.name, icerik, dosya.content_type
+            )
+        except model_client.ModelServisiHatasi as e:
+            # Aynı gerekçe: uydurma tespit yerine açık bir ret.
+            # `db` oturumu commit edilmediği için yarım kalan görüntü
+            # kaydı da yazılmaz.
+            raise HTTPException(
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                f"Çıkarım yapılamadı, kayıt oluşturulmadı: {e}",
+            ) from e
 
         tespitler: list[Tespit] = []
         for d in sonuc.get("detections", []):

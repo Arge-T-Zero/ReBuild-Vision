@@ -77,6 +77,10 @@ from api.app.models import EnkazAlani, Goruntu, Kullanici, Tespit  # noqa: E402
 TABLOLAR = [
     "miktar_hesabi", "tehlikeli_kayit", "olcum", "tespit",
     "goruntu", "enkaz_alani", "islem_gecmisi", "kullanici",
+    # Demo verisinin sürüm damgası. Testler arasında kalırsa
+    # `scripts/demo_veri.py`'yi sınayan testler "zaten kurulu" cevabını
+    # alır ve hiçbir şeyi sınamaz.
+    "demo_damgasi",
 ]
 
 TEST_PAROLA = "test12345"
@@ -112,6 +116,21 @@ def _temiz_tablolar():
     """Her testten önce tabloları boşaltır (senkron psql — döngüden bağımsız)."""
     _psql(TEST_VT, f"TRUNCATE {', '.join(TABLOLAR)} RESTART IDENTITY CASCADE")
     yield
+
+
+@pytest.fixture(autouse=True)
+def _model_saglik_onbellegi_temiz():
+    """Model sağlık önbelleğini her testten önce boşaltır.
+
+    Önbellek süreç genelindedir (06.09.2026'da hız sınırı arızası için
+    eklendi). Testler arasında taşınırsa bir testin kurduğu sahte cevap
+    diğerine sızar ve testler birbirini sessizce etkiler.
+    """
+    from api.app.services import model_client
+
+    model_client.onbellegi_temizle()
+    yield
+    model_client.onbellegi_temizle()
 
 
 @pytest_asyncio.fixture

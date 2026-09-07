@@ -210,6 +210,32 @@ SQLAlchemy `after_flush` olay dinleyicisiyle **otomatik** yazılır; elle
 
 Yazılmayanlar: `sifre_hash` ve geometri sütunları.
 
+### `demo_damgasi`
+
+| Alan | Tip | Not |
+|---|---|---|
+| `id` | int PK | Her zaman `1` — tek satır (CHECK kısıtı) |
+| `damga` | varchar(64) | Senaryonun sha256 parmak izi |
+| `senaryo_surumu` | varchar(20) | `scripts/demo_veri.py` → `SENARYO_SURUMU` |
+| `siniflar_surumu` | varchar(20) | `siniflar.json` → `surum` |
+| `siniflar` | text | Damga anındaki sınıf adları |
+| `tarih` | timestamptz | |
+
+**Alan verisi değil, dağıtım kaydıdır.** Demo verisinin HANGİ SÜRÜMLE
+kurulduğunu tutar.
+
+⚠️ Varlık sebebi bir arızadır: `scripts/demo_veri.py` her açılışta
+çalışıyor ama ilk demo sahasını görünce dönüyordu. Canlı veri tabanı
+30.08.2026'da kuruldu ve bir daha yenilenmedi; sınıf listesi 02.09'da
+10'dan 5'e inince ekranda artık üretilemeyecek sınıf adları kaldı.
+Damga aynıysa hiçbir kayda dokunulmaz, değiştiyse yalnızca **sentetik**
+demo kayıtları yenilenir (kullanıcı verisi korunur).
+
+Bu tablo `islem_gecmisi`'ne yazılmaz: alan kaydı değil, kurulum
+işaretidir ve her açılışta kullanıcısız bir satır üretirdi. Buna karşılık
+temizliğin KENDİSİ `islem_gecmisi`'ne `demo_verisi / silme` satırı olarak
+açıkça yazılır.
+
 ---
 
 ## 2. İlişki şeması
@@ -219,6 +245,8 @@ kullanici ─┬─< enkaz_alani ─< goruntu ─< tespit ─┬─< olcum
            │                                     ├─── miktar_hesabi (1:1)
            │                                     └─< tehlikeli_kayit
            └─< islem_gecmisi
+
+demo_damgasi   (bağımsız, tek satır — demo verisinin sürüm damgası)
 ```
 
 ---

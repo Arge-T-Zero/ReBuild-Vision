@@ -316,3 +316,41 @@ class IslemGecmisi(Temel):
         ForeignKey("kullanici.id"), nullable=True
     )
     tarih: Mapped[datetime] = _simdi()
+
+
+class DemoDamgasi(Temel):
+    """Demo verisinin HANGİ SÜRÜMLE kurulduğunu tutan tek satırlık damga.
+
+    ⚠️ BU TABLO 06.09.2026'DA BİR ARIZAYI KAPATMAK İÇİN EKLENDİ.
+
+    `scripts/demo_veri.py` her açılışta çalışıyordu ama ilk demo sahasını
+    görünce "zaten var" deyip dönüyordu. Yani demo verisi CANLI ORTAMDA
+    30.08.2026'da bir kez kuruldu ve bir daha hiç yenilenmedi. Sınıf
+    listesi 02.09'da 10'dan 5'e inince canlı veri tabanında artık var
+    OLMAYAN sınıflar (`sert_plastik`, `karton`, `konteyner`, `alcipan`,
+    `dolgu_toprak`) kaldı; jüri ekranda modelin üretemeyeceği adları
+    görüyordu.
+
+    Erken dönüşü tamamen kaldırmak da yanlış olurdu: o zaman her açılışta
+    veri silinip yeniden kurulur, jürinin sisteme girdiği kayıtlar da
+    uçardı. Doğrusu bir SÜRÜM DAMGASIDIR — kurulan senaryonun parmak izi
+    burada durur; parmak izi değişmediyse hiçbir şeye dokunulmaz,
+    değiştiyse yalnızca SENTETİK demo kayıtları temizlenip yeniden
+    kurulur.
+
+    Tek satırlıdır (`id = 1`). Parmak izinin neyden üretildiği
+    `scripts/demo_veri.py` → `demo_damgasi()` içinde yazılıdır.
+    """
+    __tablename__ = "demo_damgasi"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # Senaryonun parmak izi (sha256). Sürüm numarası TEK BAŞINA yetmez:
+    # kimse elle artırmayı unutabilir. Parmak izi senaryonun kendisinden
+    # üretilir, unutulamaz.
+    damga: Mapped[str] = mapped_column(String(64))
+    senaryo_surumu: Mapped[str] = mapped_column(String(20))
+    siniflar_surumu: Mapped[str] = mapped_column(String(20))
+    # Damganın kurulduğu andaki sınıf adları — canlıda "hangi sınıflarla
+    # kuruldu" sorusunun cevabı veri tabanının kendisinden okunabilsin.
+    siniflar: Mapped[str] = mapped_column(Text)
+    tarih: Mapped[datetime] = _simdi()

@@ -36,10 +36,19 @@
          uygulama kurulabilmeli, galeriden seçim çalışır. -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:name="android.hardware.location" android:required="false"/>
+    <!-- ⚠️ UYGULAMA SİMGESİ FLUTTER'IN VARSAYILANIYDI (mavi "F").
+         Simge artık web arayüzünün favicon'undan türetildi ve
+         `mobile/tools/simge_uret.py` ile üretiliyor.
+
+         `roundIcon` ve uyarlanır simge (mipmap-anydpi-v26) birlikte
+         gerekiyor: yalnızca `icon` verilirse Android 8+ cihazlar
+         maskeyi uygulayamaz ve simge, launcher'ın beyaz kutusu içinde
+         küçük bir kare olarak görünür. -->
     <application
         android:label="ReBuild Vision"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
         <activity
             android:name=".MainActivity"
             android:exported="true"

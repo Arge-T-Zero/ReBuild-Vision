@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Uygulama simgesinin zemin rengi.
+
+  Projenin marka rengi: mobile/lib/tema.dart → Acik.marka (#0D6B48) ve
+  web/src/index.css içindeki `--u-marka` ile aynı. Simge, işaret ve
+  arayüz tek renk kullanır.
+-->
+<resources>
+    <color name="ic_launcher_background">#0D6B48</color>
+</resources>

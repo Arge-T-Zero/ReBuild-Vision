@@ -125,10 +125,22 @@ export interface SiniflarYaniti {
 export interface SistemDurumu {
   model_servisi: {
     ulasilabilir: boolean
+    /**
+     * `null` = BİLİNMİYOR. Servis okunamadığında `false` yazmak
+     * "gerçek model çalışıyor" demek olurdu (ana talimat Bölüm 9.5).
+     */
     sahte: boolean | null
     model?: string
     lisans?: string
     hata?: string
+    /** Sunucunun döndürdüğü HTTP kodu (ulaşılamadığında). */
+    durum_kodu?: number | null
+    /**
+     * 429 — servis MEŞGUL, yok değil. Bu ayrım olmadan arayüz canlıda
+     * çalışan bir model servisi için kırmızı "MODEL YOK" gösteriyordu.
+     */
+    hiz_siniri?: boolean
+    tekrar_dene_saniye?: number | null
   }
   kapsam_uyarisi: string
   model_metrikleri: string

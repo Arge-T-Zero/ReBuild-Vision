@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from sqlalchemy import Select, func, select
 
+from ..core import config as yapilandirma
 from ..core.config import malzeme_siniflari
 from ..core.permissions import TUM_SAHALARI_GORUR, Rol
 from ..models import DogrulamaDurumu, EnkazAlani, Goruntu, Tespit
@@ -157,4 +158,46 @@ def gorulebilir_tespitler(rol: Rol | None, kullanici_id: int) -> Select:
         .where(Goruntu.enkaz_alani_id.in_(
             gorulebilir_alanlar(rol, kullanici_id).with_only_columns(EnkazAlani.id)
         ))
+    )
+
+
+def tanimli_siniflar() -> frozenset[str]:
+    """`siniflar.json`'daki BÜTÜN sınıf adları (malzeme olsun olmasın).
+
+    Liste modül üzerinden okunur (`yapilandirma.siniflar()`), doğrudan
+    içe aktarılan bir adla değil: testler sınıf listesini yamalayabiliyor
+    ve denetimin o yamayı GÖRMESİ gerekiyor.
+    """
+    return frozenset(s["ad"] for s in yapilandirma.siniflar()["siniflar"])
+
+
+def bilinmeyen_sinifli_tespitler() -> Select:
+    """Sınıf adı `siniflar.json`'da BULUNMAYAN tespitler.
+
+    ⚠️ BU SORGU 06.09.2026'DA, AYLARDIR SÜREN SESSİZ BİR ARIZADAN SONRA
+    EKLENDİ.
+
+    Sınıf listesi 02.09'da 10'dan 5'e indi. Canlı veri tabanındaki eski
+    kayıtlar (`sert_plastik`, `karton`, `konteyner`, `alcipan`,
+    `dolgu_toprak`) olduğu yerde kaldı ve jüri ekranda modelin
+    üretemeyeceği adları görmeye devam etti. Hiçbir yerde hata çıkmadı:
+    `sadece_malzeme()` bilinmeyen adı zaten eliyor, arayüz de tanımadığı
+    sınıf için ham adı basıyor. Yani sistem yanlışı SESSİZCE taşıyordu.
+
+    Böyle bir kayıt ölü veridir: haritaya girmez, miktara girmez,
+    düzeltilemez (arayüz sınıf listesini `siniflar.json`'dan kurar) ve
+    ekranda modelin asla üretemeyeceği bir ad gösterir. Bu sorgu onları
+    görünür kılar; `scripts/demo_veri.py` sentetik demo ortamında
+    temizler, `tests/test_demo_verisi.py` de bir daha birikmelerini
+    engeller.
+
+    GEÇERLİ sınıf üzerinden bakılır: uzman düzeltmesi model tahminini
+    geçersiz kılar, ama HAM tahmin de ekranda "model şunu demişti" diye
+    görünür — ikisinden biri tanımsızsa kayıt yine bozuktur.
+    """
+    tanimli = tuple(tanimli_siniflar())
+    return select(Tespit).where(
+        Tespit.sinif.notin_(tanimli)
+        | (Tespit.duzeltilen_sinif.is_not(None)
+           & Tespit.duzeltilen_sinif.notin_(tanimli))
     )

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Uyarlanır uygulama simgesi (Android 8.0 / API 26 ve üstü).
+
+  ⚠️ UYGULAMANIN SİMGESİ YOKTU: Flutter şablonundan gelen mavi "F"
+  simgesi duruyordu. Yalnızca `mipmap-*/ic_launcher.png` dosyalarını
+  değiştirmek Android 8 ve üstünde YETMEZ — cihaz üreticisinin maskesi
+  (daire, kare, sıkıştırılmış kare) uygulanamadığı için simge küçük bir
+  kutu içinde, kendi arka planıyla birlikte gösterilir. Uyarlanır
+  simge, zemini ve işareti ayrı katmanlar hâlinde verir; maskeyi cihaz
+  uygular.
+
+  Katmanlar `mobile/tools/simge_uret.py` ile üretilir.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+    <monochrome android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>

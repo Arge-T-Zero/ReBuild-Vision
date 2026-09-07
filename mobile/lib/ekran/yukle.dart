@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
+import '../bekleme.dart';
 import '../duzen.dart';
 import '../tema.dart';
 
@@ -52,7 +54,9 @@ class _YukleDurumu extends State<YukleEkrani> {
     } on ApiHatasi catch (h) {
       // Aynı ayrım: sunucu cevap verdiyse gerekçesi yazılır. "Bağlantı
       // gerekiyor" demek, yetki sorununu ağ sorunu gibi gösterirdi.
-      if (mounted) setState(() => _hata = h.mesaj);
+      // Sunucu susarsa kodun Türkçe karşılığı yazılır — çıplak sayı
+      // değil (`ApiHatasi.kullaniciMesaji`).
+      if (mounted) setState(() => _hata = h.kullaniciMesaji);
     } catch (_) {
       if (mounted) {
         setState(() => _hata = 'Saha listesi alınamadı. Bağlantı gerekiyor.');
@@ -123,13 +127,24 @@ class _YukleDurumu extends State<YukleEkrani> {
       // "tekrar deneyin" demek sahadaki kullanıcıyı sonuçsuz bir
       // döngüde bırakır — enkaz alanında geçen her dakikanın bedeli var.
       //
-      // Giriş ekranı bu ayrımı zaten yapıyordu (`giris.dart`); yükleme
-      // ekranı yapmıyordu.
+      // ⚠️ AMA HÂLÂ YETMİYORDU: sunucu 500 döndüğünde gövde JSON değil,
+      // Starlette'in düz metin `Internal Server Error` çıktısı oluyor.
+      // O durumda kullanıcının gördüğü cümle
+      // "Yükleme başarısız (500): İstek başarısız (500)" idi — kullanıcı
+      // tablette tam olarak bunu bildirdi. Metin artık `api.dart` →
+      // `yuklemeHataMesaji()` içinde kuruluyor: anlam önce, ham kod
+      // metnin içinde.
+      if (mounted) setState(() => _hata = yuklemeHataMesaji(h));
+    } on TimeoutException {
+      // Zaman aşımı ağ kopması DEĞİLDİR: istek gitti, sunucu süresinde
+      // dönmedi. Sunucu kaydı yazmış bile olabilir — bu yüzden
+      // "tekrar gönderin" demeden önce durumu söylemek gerekir.
       if (mounted) {
-        setState(() => _hata = h.durum == 401 || h.durum == 403
-            ? '${h.mesaj} Fotoğraflar listede duruyor.'
-            : 'Yükleme başarısız (${h.durum}): ${h.mesaj} '
-                'Fotoğraflar listede duruyor.');
+        setState(() => _hata =
+            'Sunucu ${Api.yuklemeSuresi(_dosyalar.length).inSeconds} saniye '
+            'içinde yanıt vermedi. Yükleme sunucuda tamamlanmış olabilir: '
+            'tekrar göndermeden önce Ölçüm sekmesinden alanın '
+            'tespitlerine bakın. Fotoğraflar listede duruyor.');
       }
     } catch (_) {
       // Buraya yalnızca sunucuya HİÇ ulaşılamadığında düşülür; "bağlantı
@@ -243,6 +258,16 @@ class _YukleDurumu extends State<YukleEkrani> {
                     ))
                 .toList(),
           ),
+          // Yükleme uzun sürebilir: sunucu her görüntü için model
+          // servisini çağırıyor ve ücretsiz katmanda servis uykuda
+          // olabiliyor. Kullanıcı devre dışı bir düğmeye bakmasın.
+          if (_yukleniyor) ...[
+            const SizedBox(height: 16),
+            UyanmaNotu(
+              islem: '${_dosyalar.length} fotoğraf gönderiliyor…',
+              enFazla: Api.yuklemeSuresi(_dosyalar.length),
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
             onPressed:

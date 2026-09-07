@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -73,6 +74,52 @@ class Api {
     defaultValue: 'https://rebuild-vision-api.onrender.com',
   );
 
+  /// Web arayüzünün adresi (docs/yayin.md).
+  ///
+  /// Mobil uygulama saha akışını taşır; harita, inceleme kuyruğu, işlem
+  /// geçmişi ve rapor ekranları webdedir. Hesap ekranı kullanıcıya bu
+  /// adresi GÖSTERİR — "web arayüzünü kullanın" deyip nereye gideceğini
+  /// söylememek yarım bir yönlendirmedir.
+  static const webTaban = String.fromEnvironment(
+    'WEB_TABAN',
+    defaultValue: 'https://re-build-vision.vercel.app',
+  );
+
+  /// Zaman aşımı süreleri.
+  ///
+  /// ⚠️ HİÇBİR İSTEKTE ZAMAN AŞIMI YOKTU. `http.Client` kendiliğinden
+  /// bir istek zaman aşımı uygulamaz (`HttpClient.connectionTimeout`
+  /// varsayılan `null`); yani sunucu cevap vermediğinde uygulama
+  /// süresiz bekliyor, kullanıcı da "Giriş yapılıyor…" yazısına
+  /// bakıyordu. Kullanıcının bildirdiği "girişler yavaş" şikâyetinin
+  /// arayüz tarafındaki payı budur: bekleyişin bir sonu ve açıklaması
+  /// yoktu.
+  ///
+  /// Süreler CANLI ORTAMIN ÖLÇÜLEN DAVRANIŞINA göre seçildi: Render
+  /// ücretsiz katmanı 15 dakika hareketsizlikten sonra servisi uyutur
+  /// ve ilk istek konteyner ayağa kalkana kadar bekler (docs/yayin.md
+  /// → "Uyanma"). Bu yüzden kimlik istekleri cömert, sıradan istekler
+  /// dar tutuldu — kısa bir zaman aşımı sunucuyu uyandırmadan vazgeçer
+  /// ve kullanıcı hiç giremez.
+  static const kimlikSuresi = Duration(seconds: 90);
+
+  /// Liste/okuma istekleri. Sunucu zaten uyanıksa bu kadarı fazlasıyla
+  /// yeter; uyanık değilse kimlik isteği onu zaten uyandırmış olur.
+  static const istekSuresi = Duration(seconds: 45);
+
+  /// Yükleme için TABAN süre — üstüne dosya başına pay eklenir.
+  ///
+  /// Sunucu her görüntü için model servisini çağırır ve oradaki zaman
+  /// aşımı 60 saniyedir (`api/app/services/model_client.py` →
+  /// `ZAMAN_ASIMI`). Mobil tarafın bundan önce vazgeçmesi, sunucunun
+  /// yazdığı kaydı kullanıcının hiç görmemesi demektir.
+  static const yuklemeTabanSuresi = Duration(seconds: 90);
+  static const yuklemeDosyaBasiSure = Duration(seconds: 60);
+
+  /// Bir yükleme isteği için toplam süre.
+  static Duration yuklemeSuresi(int dosyaSayisi) =>
+      yuklemeTabanSuresi + yuklemeDosyaBasiSure * dosyaSayisi;
+
   static const _jetonAnahtari = 'rebuild_vision_jeton';
   static const _temaAnahtari = 'rebuild_vision_tema';
 
@@ -125,13 +172,31 @@ class Api {
     };
   }
 
+  /// Sunucu hatasını okunur bir istisnaya çevirir.
+  ///
+  /// ⚠️ SUNUCU HER ZAMAN JSON DÖNMÜYOR. FastAPI, yakalanmamış bir
+  /// istisnada Starlette'in düz metin `Internal Server Error` gövdesini
+  /// döner — JSON değil. Eski kod bu durumda `jsonDecode` hatasını yutup
+  /// mesaj olarak "İstek başarısız (500)" bırakıyordu; yükleme ekranı da
+  /// onu "Yükleme başarısız (500): İstek başarısız (500)" diye
+  /// yazıyordu. Kullanıcının gördüğü tek bilgi iki kez tekrarlanmış bir
+  /// sayıydı.
+  ///
+  /// Artık sunucunun AÇIKLAMA YAPIP YAPMADIĞI da taşınıyor
+  /// (`sunucuAcikladi`): açıkladıysa onun Türkçe gerekçesi gösterilir,
+  /// açıklamadıysa duruma göre anlamlı bir cümle yazılır. Ham kod her
+  /// iki hâlde de metnin içinde kalır — gizlenmez.
   Never _hata(http.Response y) {
-    String mesaj = 'İstek başarısız (${y.statusCode})';
+    String? detay;
     try {
       final g = jsonDecode(utf8.decode(y.bodyBytes));
-      if (g is Map && g['detail'] is String) mesaj = g['detail'] as String;
-    } catch (_) {/* gövde JSON değilse varsayılan mesaj kalır */}
-    throw ApiHatasi(y.statusCode, mesaj);
+      if (g is Map && g['detail'] is String) detay = g['detail'] as String;
+    } catch (_) {/* gövde JSON değil — düz metin ya da boş */}
+    throw ApiHatasi(
+      y.statusCode,
+      detay ?? 'İstek başarısız (${y.statusCode})',
+      sunucuAcikladi: detay != null,
+    );
   }
 
   dynamic _coz(http.Response y) {
@@ -142,11 +207,13 @@ class Api {
   // --- Kimlik ---------------------------------------------------------
 
   Future<Kullanici> giris(String eposta, String parola) async {
-    final y = await _istemci.post(
-      Uri.parse('$taban/auth/giris'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'eposta': eposta, 'parola': parola}),
-    );
+    final y = await _istemci
+        .post(
+          Uri.parse('$taban/auth/giris'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'eposta': eposta, 'parola': parola}),
+        )
+        .timeout(kimlikSuresi);
     final d = _coz(y) as Map<String, dynamic>;
     await _depo.write(key: _jetonAnahtari, value: d['jeton'] as String);
     return Kullanici.jsondan(d['kullanici'] as Map<String, dynamic>);
@@ -154,10 +221,15 @@ class Api {
 
   Future<Kullanici?> ben() async {
     if (await jeton() == null) return null;
-    final y = await _istemci.get(
-      Uri.parse('$taban/auth/ben'),
-      headers: await _basliklar(),
-    );
+    final y = await _istemci
+        .get(
+          Uri.parse('$taban/auth/ben'),
+          headers: await _basliklar(),
+        )
+        // Uygulama açılışındaki tek istek budur ve sunucu uykuda
+        // olabilir: kimlik süresi (90 sn) kullanılır. Kısa tutulursa
+        // oturumu açık olan kullanıcı her sabah giriş ekranına düşer.
+        .timeout(kimlikSuresi);
     if (y.statusCode == 401 || y.statusCode == 403) {
       await jetonSil();
       return null;
@@ -168,10 +240,12 @@ class Api {
   // --- Saha ve görüntü -------------------------------------------------
 
   Future<List<EnkazAlani>> alanlar() async {
-    final y = await _istemci.get(
-      Uri.parse('$taban/enkaz-alani'),
-      headers: await _basliklar(),
-    );
+    final y = await _istemci
+        .get(
+          Uri.parse('$taban/enkaz-alani'),
+          headers: await _basliklar(),
+        )
+        .timeout(istekSuresi);
     return (_coz(y) as List)
         .map((e) => EnkazAlani.jsondan(e as Map<String, dynamic>))
         .toList();
@@ -199,15 +273,21 @@ class Api {
         contentType: goruntuTuru(d.path),
       ));
     }
-    final y = await http.Response.fromStream(await istek.send());
+    // Zaman aşımı dosya sayısına göre uzar: sunucu her görüntü için
+    // model servisini ayrı ayrı çağırıyor.
+    final y = await http.Response.fromStream(
+      await istek.send().timeout(yuklemeSuresi(dosyalar.length)),
+    );
     return _coz(y) as Map<String, dynamic>;
   }
 
   Future<List<Tespit>> alanTespitleri(int alanId) async {
-    final y = await _istemci.get(
-      Uri.parse('$taban/goruntu/alan/$alanId'),
-      headers: await _basliklar(),
-    );
+    final y = await _istemci
+        .get(
+          Uri.parse('$taban/goruntu/alan/$alanId'),
+          headers: await _basliklar(),
+        )
+        .timeout(istekSuresi);
     return (_coz(y) as List)
         .expand((g) => (g['tespitler'] as List))
         .map((e) => Tespit.jsondan(e as Map<String, dynamic>))
@@ -221,18 +301,22 @@ class Api {
   /// Kısmi başarı normaldir: yirmi kayıttan üçü geçersizse diğerleri
   /// yazılır. Çağıran taraf yalnızca `hata` olanları kuyrukta tutmalıdır.
   Future<EsitlemeSonucu> esitle(List<KuyrukKaydi> kayitlar) async {
-    final y = await _istemci.post(
-      Uri.parse('$taban/esitleme/olcum'),
-      headers: await _basliklar(govdeVar: true),
-      body: jsonEncode({
-        'kayitlar': kayitlar.map((k) => k.esitlemeIcin()).toList(),
-      }),
-    );
+    final y = await _istemci
+        .post(
+          Uri.parse('$taban/esitleme/olcum'),
+          headers: await _basliklar(govdeVar: true),
+          body: jsonEncode({
+            'kayitlar': kayitlar.map((k) => k.esitlemeIcin()).toList(),
+          }),
+        )
+        .timeout(istekSuresi);
     return EsitlemeSonucu.jsondan(_coz(y) as Map<String, dynamic>);
   }
 
   Future<Map<String, dynamic>> siniflar() async {
-    final y = await _istemci.get(Uri.parse('$taban/sistem/siniflar'));
+    final y = await _istemci
+        .get(Uri.parse('$taban/sistem/siniflar'))
+        .timeout(istekSuresi);
     return _coz(y) as Map<String, dynamic>;
   }
 
@@ -247,7 +331,9 @@ class Api {
   ///
   /// Kimlik gerektirmez; giriş yapılmadan da çağrılabilir.
   Future<bool> sahteModelMi() async {
-    final y = await _istemci.get(Uri.parse('$taban/sistem/durum'));
+    final y = await _istemci
+        .get(Uri.parse('$taban/sistem/durum'))
+        .timeout(istekSuresi);
     final d = _coz(y) as Map<String, dynamic>;
     final servis = d['model_servisi'] as Map<String, dynamic>?;
     return servis?['sahte'] == true;
@@ -256,10 +342,90 @@ class Api {
 
 class ApiHatasi implements Exception {
   final int durum;
+
+  /// Sunucunun ham gerekçesi ya da (yoksa) yer tutucu bir cümle.
   final String mesaj;
-  ApiHatasi(this.durum, this.mesaj);
+
+  /// Sunucu `detail` alanında GERÇEKTEN bir açıklama yazdı mı?
+  ///
+  /// `false` ise `mesaj` bizim ürettiğimiz yer tutucudur; kullanıcıya
+  /// gösterilecek metin duruma göre kurulur.
+  final bool sunucuAcikladi;
+
+  ApiHatasi(this.durum, this.mesaj, {this.sunucuAcikladi = true});
+
+  /// HTTP kodunun Türkçe karşılığı — sunucu susarsa bu kullanılır.
+  ///
+  /// Kod listesi bu uygulamanın gerçekten karşılaştığı durumlarla
+  /// sınırlı: yetki (401/403), bulunamayan kayıt (404), boyut ve tür
+  /// denetimleri (413/415 — `api/app/routers/goruntuler.py`), hız
+  /// sınırı (429) ve sunucu arızaları (5xx).
+  String? get _kodAciklamasi => switch (durum) {
+        400 => 'Sunucu isteği geçersiz buldu.',
+        401 => 'Oturumunuz geçerli değil. Yeniden giriş yapın.',
+        403 => 'Bu işlem için yetkiniz yok.',
+        404 => 'İstenen kayıt sunucuda bulunamadı.',
+        408 => 'Sunucu isteği zamanında alamadı.',
+        409 => 'Bu kayıt sunucuda zaten var.',
+        413 => 'Gönderilen dosya sunucunun kabul ettiğinden büyük.',
+        415 => 'Sunucu bu dosya türünü kabul etmiyor.',
+        422 => 'Gönderilen bilgiler eksik ya da hatalı.',
+        // Ücretsiz sunucu katmanında sık görülür ve GEÇİCİDİR.
+        429 => 'Sunucu şu an çok fazla istek alıyor (hız sınırı). '
+            'Bir iki dakika bekleyip tekrar deneyin.',
+        500 => 'Sunucuda beklenmeyen bir hata oluştu; istek '
+            'tamamlanamadı.',
+        502 || 503 || 504 => 'Sunucu şu an cevap veremiyor. '
+            'Uyanması bir dakika sürebilir; tekrar deneyin.',
+        _ => null,
+      };
+
+  /// Kullanıcıya gösterilecek metin.
+  ///
+  /// Kural: ANLAM önce, ham kod sonra. Ham kod gizlenmez — hata
+  /// bildirimi yapan kullanıcının ve jürinin işine yarar — ama tek
+  /// başına da bırakılmaz. "500" bir kullanıcıya hiçbir şey anlatmaz.
+  String get kullaniciMesaji {
+    final anlam = sunucuAcikladi
+        ? mesaj
+        : (_kodAciklamasi ?? 'Sunucu isteği tamamlayamadı.');
+    return '$anlam (HTTP $durum)';
+  }
+
   @override
-  String toString() => mesaj;
+  String toString() => kullaniciMesaji;
+}
+
+/// Yükleme hatası için kullanıcı mesajı — bilinen nedeni de söyler.
+///
+/// ⚠️ KULLANICI TABLETTE "Yükleme başarısız 500" GÖRÜYORDU ve bu doğru
+/// ama yararsız bir cümleydi. 500'ün kaynağı YERELDE YENİDEN ÜRETİLDİ:
+/// model servisi 429 (hız sınırı) döndüğünde
+/// `api/app/routers/goruntuler.py` içindeki `model_client.saglik()`
+/// çağrısı `ModelServisiHatasi` fırlatıyor, bu istisnayı yakalayan bir
+/// işleyici olmadığı için FastAPI düz metin `Internal Server Error`
+/// gövdesiyle 500 dönüyor. (Sunucu tarafındaki asıl düzeltme API
+/// ekibindedir; mobil, sunucunun 500'ünü 200 yapamaz.)
+///
+/// Mobilin yapabileceği ve yapması gereken şey: kullanıcıya NE OLDUĞUNU
+/// ve NE YAPACAĞINI söylemek. Sahada telefonuna bakan kişi için
+/// "birazdan tekrar deneyin" ile "boşuna deneme" arasındaki fark,
+/// enkaz alanında geçirilen dakikalardır.
+String yuklemeHataMesaji(ApiHatasi h) {
+  final taban = h.kullaniciMesaji;
+  // 429 ve 5xx: model servisi meşgul ya da uykuda olabilir. Bu geçici
+  // bir durumdur; tekrar denemek işe yarar.
+  if (h.durum == 429 || h.durum >= 500) {
+    return '$taban\n\nBunun bilinen nedeni model servisinin şu an '
+        'ulaşılamaz olmasıdır: ücretsiz sunucu katmanında servis '
+        'uykuya geçebilir ya da hız sınırına takılabilir. '
+        'Fotoğraflar listede duruyor — bir iki dakika sonra tekrar '
+        'gönderin.';
+  }
+  // Yetki, boyut, tür… — sunucu ne dediyse o geçerlidir. Her hâlde
+  // fotoğrafların kaybolmadığı söylenir: kullanıcı yeniden çekmeye
+  // kalkmasın.
+  return '$taban Fotoğraflar listede duruyor.';
 }
 
 // --- Veri sınıfları ---------------------------------------------------
