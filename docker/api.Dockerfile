@@ -33,7 +33,30 @@ COPY siniflar.json katsayilar.json ./
 # ölçümünü yalanlıyordu.
 COPY results/egitim/metrikler.json results/egitim/metrikler.json
 # Açılışta göç ve demo verisi çalıştırılır (docker/baslat-api.sh).
+#
+# ⚠️ BETİK TEK BAŞINA YETMEZ — OKUDUĞU DOSYALAR DA GELMELİ.
+#
+# 07.09.2026'da canlı dağıtım tam burada çöktü:
+#   FileNotFoundError: '/uygulama/scripts/demo_tespitleri.json'
+#
+# Sebep: yalnızca `demo_veri.py` kopyalanıyordu. Eskiden sorun çıkarmıyordu
+# çünkü betik ilk demo sahasını görünce hemen dönüyor, o dosyaya hiç
+# ulaşmıyordu. Sürüm damgası eklenince damga EN BAŞTA hesaplanır oldu ve
+# eksiklik ilk açılışta ortaya çıktı.
 COPY scripts/demo_veri.py scripts/demo_veri.py
+
+# Demo tespitlerinin GERÇEK model çıktısı — senaryonun parmak izi bundan
+# hesaplanır (demo_veri.py: TESPITLER_YOLU).
+COPY scripts/demo_tespitleri.json scripts/demo_tespitleri.json
+
+# Sentetik demo görselleri. Render ücretsiz katmanında dosya sistemi her
+# dağıtımda sıfırlanır; betik eksik görselleri buradan geri kopyalar
+# (demo_veri.py: KAYNAK_GORSELLER). Bunlar imajda yoksa arayüzde tespit
+# kutularının yerinde kırık görsel ikonu kalır.
+COPY web/public/gorseller/ornek-enkaz-1.webp \
+     web/public/gorseller/ornek-enkaz-2.webp \
+     web/public/gorseller/ornek-enkaz-3.webp \
+     web/public/gorseller/
 COPY docker/baslat-api.sh /baslat-api.sh
 RUN chmod +x /baslat-api.sh
 

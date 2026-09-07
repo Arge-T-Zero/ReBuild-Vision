@@ -18,8 +18,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "docker/model-service-onnx.Dockerfile"
+      - "docker/**"
       - "model-service/**"
+      - "api/**"
+      - "scripts/**"
       - "siniflar.json"
       - ".github/workflows/imaj.yml"
   workflow_dispatch:
@@ -106,3 +108,74 @@ jobs:
       - name: Kayıtlar
         if: always()
         run: docker logs rv 2>&1 | tail -30
+
+  api:
+    name: API imajını derle ve açılışını çalıştır
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derle
+        run: docker build -f docker/api.Dockerfile -t rv-api .
+
+      # ⚠️ ASIL SINAV BU ADIM.
+      #
+      # 07.09.2026'da canlı dağıtım açılışta çöktü:
+      #   FileNotFoundError: '/uygulama/scripts/demo_tespitleri.json'
+      # Dosya depoda vardı, imaja KOPYALANMIYORDU. Yerel testler bunu
+      # göremez: orada depo kökünden çalışılır, her dosya yerindedir.
+      # Tek yakalama yolu imajı derleyip AÇILIŞ BETİĞİNİ çalıştırmaktır —
+      # göç + demo verisi, gerçek bir veri tabanına karşı.
+      - name: Açılışı çalıştır (göç + demo verisi)
+        run: |
+          set -euo pipefail
+          docker run --rm --network host \
+            -e VERITABANI_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/postgres" \
+            -e ORTAM=gelistirme \
+            --entrypoint sh rv-api -c '
+              set -e
+              alembic -c api/alembic.ini upgrade head
+              python scripts/demo_veri.py
+            ' | tee /tmp/acilis.log
+
+      - name: Açılış çıktısını denetle
+        run: |
+          set -euo pipefail
+          grep -q "Senaryo damgası:" /tmp/acilis.log \
+            || { echo "::error::demo verisi kurulmadı (damga satırı yok)"; exit 1; }
+          # Sınıf adları siniflar.json ile aynı olmalı: canlıda aylarca
+          # eski (v1) adlar durdu ve kimse fark etmedi.
+          grep -q "ahsap,beton,cam,seramik,tugla" /tmp/acilis.log \
+            || { echo "::error::damgadaki sınıf listesi beklenenden farklı"; exit 1; }
+          echo "✅ imaj açılışı temiz: göç uygulandı, demo verisi kuruldu"
+
+      # İkinci kez çalıştırıldığında hiçbir şey yapmamalı: açılış betiği
+      # her dağıtımda koşar, veriyi her seferinde silip kurmamalıdır.
+      - name: İkinci açılış — veri korunmalı
+        run: |
+          set -euo pipefail
+          docker run --rm --network host \
+            -e VERITABANI_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/postgres" \
+            -e ORTAM=gelistirme \
+            --entrypoint sh rv-api -c '
+              alembic -c api/alembic.ini upgrade head
+              python scripts/demo_veri.py
+            ' | tee /tmp/acilis2.log
+          grep -q "yeniden kurulmadı" /tmp/acilis2.log \
+            || { echo "::error::ikinci açılışta veri gereksiz yere yeniden kuruldu"; exit 1; }
+          echo "✅ ikinci açılış veriye dokunmadı"
