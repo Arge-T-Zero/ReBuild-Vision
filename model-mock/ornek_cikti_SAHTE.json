@@ -37,7 +37,7 @@
     },
     {
       "class_id": 1,
-      "class_name": "beton_tugla",
+      "class_name": "beton",
       "confidence": 0.7,
       "bbox": {
         "x": 993,

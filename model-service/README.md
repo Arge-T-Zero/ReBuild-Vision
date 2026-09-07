@@ -35,17 +35,27 @@ export MODEL_AGIRLIK=/bir/yer/best.pt
 Eğitimdeki `data.yaml` içindeki `names:` listesi
 [`siniflar.json`](../siniflar.json) ile **birebir aynı sırada** olmalıdır:
 
+<!-- siniflar:tablo -->
 | id | ad | görünen ad |
 |---|---|---|
 | 0 | ahsap | Ahşap |
-| 1 | beton_tugla | Beton / tuğla |
+| 1 | beton | Beton |
 | 2 | cam | Cam |
-| 3 | metal | Metal |
-| 4 | seramik | Seramik |
+| 3 | seramik | Seramik |
+| 4 | tugla | Tuğla |
+<!-- /siniflar:tablo -->
 
-Bu liste 02.09.2026'da **10 sınıftan 5'e indi**: model CDW-Seg ile değil,
-takımın kendi topladığı veri setiyle eğitildi. Sıra `data.yaml`'dan gelir;
-`tests/test_sinif_tanimlari.py` ikisinin ayrışmasını CI'da yakalar.
+⚠️ **BU TABLO 07.09.2026'DA DÜZELTİLDİ.** v1'in listesini gösteriyordu
+(`beton_tugla`, `metal`) — yani "`siniflar.json` ile birebir aynı
+olmalıdır" diyen tablonun kendisi ayrışmıştı. Artık
+`tests/test_belge_sinif_listeleri.py` bu tabloyu `siniflar.json` ile
+karşılaştırır.
+
+Liste 04.09.2026'da v2 ile yeniden düzenlendi: `metal` çıktı,
+`beton_tugla` `beton` ve `tugla` diye ikiye ayrıldı. Model üç kamuya
+açık CC BY 4.0 veri setinin birleşimiyle eğitildi. Sıra `data.yaml`'dan
+gelir; `tests/test_sinif_tanimlari.py` data.yaml ile siniflar.json
+ayrışmasını CI'da yakalar.
 
 Sıra kayarsa model "ahşap" derken arayüz "metal" gösterir. Servis, sınıf
 adını modelin kendi `names` sözlüğünden **almaz** — `siniflar.json`

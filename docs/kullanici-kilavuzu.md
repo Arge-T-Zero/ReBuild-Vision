@@ -316,18 +316,33 @@ dağılımı görünür.
 
 ### Modelin tanıdığı beş sınıf
 
-**Ahşap · Beton / tuğla · Cam · Metal · Seramik**
+<!-- siniflar:taninan -->
+**Ahşap · Beton · Cam · Seramik · Tuğla**
+<!-- /siniflar:taninan -->
 
-> Bu liste 02.09.2026'da **10 sınıftan 5'e indi**: model, planlanan
-> üç kamuya açık CC BY 4.0 veri setinin birleşimiyle
-> eğitildi. Kılavuzun önceki sürümü "cam ve seramik tanınmıyor, tuğla
-> betondan ayrılmıyor" diyordu; **üçü de artık geçerli değil.** `Cam`
-> bugün modelin en iyi sınıfıdır.
+> ⚠️ **BU LİSTE 07.09.2026'DA DÜZELTİLDİ.** Kılavuz "Ahşap · Beton /
+> tuğla · Cam · **Metal** · Seramik" diyordu — yani v1'in ara listesi.
+> **Metal artık tanınan bir sınıf DEĞİL** (aşağıya bakın) ve beton ile
+> tuğla ayrı sınıflar. Kılavuzu okuyan bir hakem, modelin metali
+> tanıdığını sanacaktı. Liste artık `siniflar.json`'a bağlıdır ve
+> ayrışması `tests/test_belge_sinif_listeleri.py` ile yakalanır.
+
+> Liste 02.09.2026'da **10 sınıftan 5'e indi**: model üç kamuya açık
+> CC BY 4.0 veri setinin birleşimiyle eğitildi. Kılavuzun daha eski bir
+> sürümü "cam ve seramik tanınmıyor, tuğla betondan ayrılmıyor"
+> diyordu; **üçü de artık geçerli değil.**
 
 ### Kapsanmayan gruplar
 
-Model bu beşin dışındaki malzeme gruplarını — **dolgu/toprak, plastik,
-tekstil, karton, alçıpan** — **tanımaz.**
+<!-- siniflar:kapsanmayan -->
+Model bu beşin dışındaki malzeme gruplarını — **Metal, Dolgu / toprak,
+Sert plastik, Yumuşak plastik, Tekstil, Karton, Alçıpan** — **tanımaz.**
+<!-- /siniflar:kapsanmayan -->
+
+🔴 **Metal özellikle önemlidir:** v1 modelinde sınıf olarak VARDI, v2'de
+YOK. Eğitim veri setinde metal sınıfı bulunmuyor. Enkazdaki metal
+sistemde **kayıt dışı kalır.** Bu bir gerileme değil kapsam
+daralmasıdır ve gizlenmez.
 
 Bir malzemenin haritada görünmemesi, **o malzemenin sahada olmadığı
 anlamına gelmez.**
