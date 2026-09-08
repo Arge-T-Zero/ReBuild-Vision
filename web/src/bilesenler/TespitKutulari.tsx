@@ -179,6 +179,24 @@ export function TespitKutulari({
         const renk = siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.renk ?? '#8593a1'
         const aktif = secili === t.id
         const one = vurgulu === t.id
+
+        /* GÖRÜNTÜ GENELİ TESPİT — kutu neredeyse tüm kareyi kaplıyor.
+         *
+         * ⚠️ BU BİR ÇİZİM HATASI DEĞİL, MODELİN GERÇEK DAVRANIŞI.
+         * Eğitim veri setindeki etiketlerin önemli bir bölümü tüm
+         * görüntüyü kaplayan kutulardır (results/egitim/gorseller/
+         * ...__labels.jpg, genişlik-yükseklik grafiğinde (1,0 · 1,0)
+         * noktasındaki yığın). Model o örneklerden "bu görüntünün
+         * tamamı şu malzemedir" demeyi öğrendi.
+         *
+         * Böyle bir çıktıyı kenarlara yapışan sıkı bir kutu gibi çizmek
+         * YANLIŞ BEYANDIR: model bir nesneyi konumlandırdığını değil,
+         * kareye bütün olarak karar verdiğini söylüyor. Arayüz de bunu
+         * olduğu gibi söyler. Eşik ölçülerek seçildi: demo görüntülerinde
+         * bu kutular karenin %93–100'ünü kaplıyor, konumlandırılmış
+         * kutular ise %0–1'ini. */
+        const kapsama = (t.bbox.w * t.bbox.h) / (kaynakG * kaynakY)
+        const gorseGeneli = kapsama >= GORUNTU_GENELI_ESIGI
         // Başka bir kutu vurgulanmışken bu kutu geri çekilir; göz doğrudan
         // listede üzerine gelinen kayda gider.
         const soluk = vurgulu != null && !one && !aktif
@@ -204,16 +222,20 @@ export function TespitKutulari({
               `${siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.gorunen_ad
                 ?? (t.duzeltilen_sinif ?? t.sinif)} tespiti`
               + `, model güveni yüzde ${yuzdeMetni(t.guven_skoru)}`
+              + (gorseGeneli ? ', görüntünün geneli için' : '')
               + (t.duzeltilen_sinif ? ' (uzman düzeltmesi)' : ' (ön tahmin)')
             }
             className="absolute p-0 min-h-0 focus-visible:z-20 transition-opacity"
             style={{
-              left: t.bbox.x * oran,
-              top: t.bbox.y * oran,
-              width: t.bbox.w * oran,
-              height: t.bbox.h * oran,
+              /* Görüntü geneli tespitte kutu kenarlara yapıştırılmaz:
+                 içeriden boşluk bırakılır ki "bir şeyi çerçeveledim"
+                 izlenimi vermesin. */
+              left: gorseGeneli ? 6 : t.bbox.x * oran,
+              top: gorseGeneli ? 6 : t.bbox.y * oran,
+              width: gorseGeneli ? 'calc(100% - 12px)' : t.bbox.w * oran,
+              height: gorseGeneli ? 'calc(100% - 12px)' : t.bbox.h * oran,
               border: `${aktif || one ? 3 : 2}px ${
-                t.inceleme_gerekli ? 'dashed' : 'solid'} ${renk}`,
+                gorseGeneli || t.inceleme_gerekli ? 'dashed' : 'solid'} ${renk}`,
               background: aktif || one ? `${renk}2e` : 'transparent',
               borderRadius: 3,
               opacity: soluk ? 0.35 : 1,
@@ -257,6 +279,12 @@ export function TespitKutulari({
                 zIndex: one ? 12 : aktif ? 6 : 2,
               }}
             >
+              {gorseGeneli && (
+                /* Modelin ne dediğini kutunun kendisi söyleyemez; yazı
+                   söyler. "Görüntü geneli" ibaresi olmadan hakem, tüm
+                   kareyi saran kutuyu başarısız bir konumlandırma sanar. */
+                <span className="font-bold">GÖRÜNTÜ GENELİ · </span>
+              )}
               {siniflar.get(t.duzeltilen_sinif ?? t.sinif)?.gorunen_ad ?? t.sinif}
               {' · %'}{yuzdeMetni(t.guven_skoru)}
               {/* Her kutuda "ön tahmin", istisnasız (ana talimat Bölüm 1.4).
@@ -277,6 +305,13 @@ export function TespitKutulari({
     </div>
   )
 }
+
+/** Kutu bu orandan fazlasını kaplıyorsa "görüntü geneli" sayılır.
+ *
+ * Ölçüldü (07.09.2026, demo görüntüleri + model v2): konumlandırılmış
+ * kutular karenin %0–1'ini, görüntü geneli kutular %93–100'ünü kaplıyor.
+ * Arada örnek yok, yani eşik geniş bir boşluğun ortasında duruyor. */
+const GORUNTU_GENELI_ESIGI = 0.85
 
 /** Çizilemeyen kutular için uyarı — sessizce yutulmaz. */
 export function CizilemeyenKutuUyarisi({ tespitler }: { tespitler: Tespit[] }) {
