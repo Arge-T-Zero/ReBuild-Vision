@@ -177,25 +177,51 @@ SENARYO_ORTUSU = {
     # `ahsap` katsayılı tek sınıf; `beton` katsayısız. Düzeltme, bir
     # kaydın iki kuralı birden taşımasını sağlıyor.
 
-    # --- 2. görüntü (Saha A) — modelin en güvenli çıktısı (%94,20) ----
-    # Kural 1: ölçüm var + katsayı kaynaklı (ahsap) → belirsizlik aralığı.
-    (1, 0): dict(dogrulama="onaylandi",
+    # ⚠️ UZMAN KARARLARI 08.09.2026'DA FOTOĞRAFLARA GÖRE YENİDEN
+    # KURULDU. Önceki senaryoda uzman, %94,20 güvenli `ahsap` tahminini
+    # ONAYLIYORDU — oysa o fotoğrafta ahşap YOK: metal karkas, beton
+    # moloz ve cam var. Yani demo, uzmanın yanlış bir tahmini onayladığını
+    # gösteriyordu. Bu, doğrulama kapısının varlık sebebini yalanlar.
+    #
+    # Görüntülerde gerçekte ne olduğu (gözle bakıldı):
+    #   ornek-enkaz-1: beton moloz + demir donatı — ahşap YOK
+    #   ornek-enkaz-2: metal karkas + beton + cam — ahşap YOK
+    #   ornek-enkaz-3: ayrık yığınlar; ahşap, tuğla, beton, metal — ahşap VAR
+    #
+    # Model üçünde de yalnızca `ahsap` diyor. Yani sınıf yalnızca 3.
+    # görüntüde doğru. Senaryo bunu olduğu gibi yansıtır.
+
+    # --- 3. görüntü (Saha B) · %76,12 — SINIF DOĞRU ------------------
+    # Fotoğrafta sol üstte gerçek bir ahşap yığını var. Model sınıfı
+    # doğru bildi (kapsamı abarttı; arayüz onu "GÖRÜNTÜ GENELİ" diye
+    # gösteriyor). Uzman onaylıyor, ölçüm giriliyor.
+    # Kural 1: ölçüm + katsayı kaynaklı sınıf → belirsizlik aralığı.
+    (2, 0): dict(dogrulama="onaylandi",
                  olcum=(OlcumTuru.HACIM, 40.0, "m3",
                         "Şerit metre ile kaba hacim")),
 
-    # --- 3. görüntü (Saha B, kısıtlı erişim) · %76,12 -----------------
-    # Kural 2 — EN GÜÇLÜ AN: doğrulandı ama ölçüm YOK → miktar BOŞ.
-    (2, 0): dict(dogrulama="onaylandi"),
-
-    # --- 1. görüntü (Saha A) · %51,00 --------------------------------
-    # Kural 4 + Kural 3 AYNI KAYITTA: model `ahsap` dedi, uzman `beton`
-    # yaptı. Ham tahmin izlenebilirlik için saklanır. Etkin sınıf artık
-    # `beton` ve betonun doğrulanmış katsayısı YOK — yani ölçüm girilmiş
-    # olmasına rağmen miktar üretilmiyor. "Ölçüm var ama sayı yok" da bir
-    # kuraldır ve gerekçesi ekranda yazılıdır.
-    (0, 0): dict(dogrulama="duzeltildi", duzeltilen="beton",
+    # --- 2. görüntü (Saha A) · %94,20 — MODEL YÜKSEK GÜVENLE YANILDI -
+    # DEMONUN EN ÖNEMLİ ANI. Model %94,20 ile `ahsap` diyor; fotoğrafta
+    # ahşap yok. Uzman yakalıyor ve `beton` yapıyor (moloz baskın).
+    # Ham tahmin izlenebilirlik için saklanır, silinmez.
+    #
+    # Kural 3 + Kural 4 aynı kayıtta: etkin sınıf `beton` oldu, betonun
+    # doğrulanmış katsayısı YOK — ölçüm girilmiş olmasına rağmen miktar
+    # üretilmiyor ve gerekçesi ekranda yazılı.
+    #
+    # Not: karedeki baskın malzeme aslında METAL, ama metal v2'de
+    # tanınan bir sınıf değil (siniflar.json kapsanmayan_gruplar).
+    # Uzman yalnızca tanınan sınıflar arasından seçebilir; sistemin
+    # kapsam sınırı burada da görünür.
+    (1, 0): dict(dogrulama="duzeltildi", duzeltilen="beton",
                  olcum=(OlcumTuru.HACIM, 62.0, "m3",
                         "Şerit metre ile kaba hacim")),
+
+    # --- 1. görüntü (Saha A) · %51,00 — YİNE YANLIŞ ------------------
+    # Fotoğraf baştan sona beton moloz ve donatı demiri. Uzman `beton`
+    # yapıyor ama ÖLÇÜM GİRMİYOR.
+    # Kural 2: ölçüm yoksa miktar BOŞ kalır — sıfır değil.
+    (0, 0): dict(dogrulama="duzeltildi", duzeltilen="beton"),
 
     # (0, 1) — %27,11: dokunulmuyor. Eşiğin (0,50) altında olduğu için
     # sistem kendiliğinden `inceleme_gerekli` işaretleyip uzman kuyruğuna
@@ -212,7 +238,7 @@ GORUNTU_SAHASI = [0, 0, 1]
 # artırılır. Parmak izinin tek girdisi bu değil: aşağıdaki `demo_damgasi()`
 # sınıf listesini ve gerçek model çıktısını da içeri katar, böylece
 # sürümü artırmayı unutmak sessiz bir arızaya dönüşmez.
-SENARYO_SURUMU = "2"
+SENARYO_SURUMU = "3"
 
 # `DEMO_VERISI_ZORLA=1` — damga aynı olsa bile yeniden kurar.
 #
